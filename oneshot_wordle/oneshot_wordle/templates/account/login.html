@@ -3,57 +3,73 @@
 {% load i18n %}
 {% load account socialaccount %}
 {% load crispy_forms_tags %}
+{% load static %}
 
-{% block head_title %}{% translate "Sign In" %}{% endblock %}
+{% block head_title %} {% translate "Sign In" %}{% endblock %}
 
 {% block inner %}
 
-<h1>{% translate "Sign In" %}</h1>
+<div class="container">
+  <div class="row">
+    <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
+      <div class="card border-0 shadow rounded-3 my-5">
+        <div class="card-body p-4 p-sm-5">
+          <img class="d-block mx-auto mb-4" src="{% static 'images/logo.svg' %}" alt="" width="80" height="80">
 
-{% get_providers as socialaccount_providers %}
+          <h5>{% translate "Sign In" %}</h5>
 
-{% if socialaccount_providers %}
-  <p>
-    {% translate "Please sign in with one of your existing third party accounts:" %}
-    {% if ACCOUNT_ALLOW_REGISTRATION %}
-      {% blocktranslate trimmed %}
-        Or, <a href="{{ signup_url }}">sign up</a>
-        for a {{ site_name }} account and sign in below:
-      {% endblocktranslate %}
-    {% endif %}
-  </p>
+          {% get_providers as socialaccount_providers %}
 
-  <div class="socialaccount_ballot">
+          {% if socialaccount_providers %}
+            <p>
+              {% translate "Please sign in with one of your existing third party accounts:" %}
+              {% if ACCOUNT_ALLOW_REGISTRATION %}
+                {% blocktranslate trimmed %}
+                  Or, <a href="{{ signup_url }}">sign up</a>
+                  for a {{ site_name }} account and sign in below:
+                {% endblocktranslate %}
+              {% endif %}
+            </p>
 
-    <ul class="socialaccount_providers">
-      {% include "socialaccount/snippets/provider_list.html" with process="login" %}
-    </ul>
+            <div class="socialaccount_ballot">
 
-    <div class="login-or">{% translate "or" %}</div>
+              <ul class="socialaccount_providers">
+                {% include "socialaccount/snippets/provider_list.html" with process="login" %}
+              </ul>
 
-  </div>
+              <div class="login-or">{% translate "or" %}</div>
 
-  {% include "socialaccount/snippets/login_extra.html" %}
+            </div>
 
-{% else %}
-  {% if ACCOUNT_ALLOW_REGISTRATION %}
-    <p>
-      {% blocktranslate trimmed %}
-        If you have not created an account yet, then please
-        <a href="{{ signup_url }}">sign up</a> first.
-      {% endblocktranslate %}
-    </p>
-  {% endif %}
-{% endif %}
+            {% include "socialaccount/snippets/login_extra.html" %}
 
-<form class="login" method="POST" action="{% url 'account_login' %}">
-  {% csrf_token %}
-  {{ form|crispy }}
-  {% if redirect_field_value %}
-  <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
-  {% endif %}
-  <a class="button secondaryAction" href="{% url 'account_reset_password' %}">{% translate "Forgot Password?" %}</a>
-  <button class="primaryAction btn btn-primary" type="submit">{% translate "Sign In" %}</button>
-</form>
+          {% else %}
+            {% if ACCOUNT_ALLOW_REGISTRATION %}
+              <p>
+                {% blocktranslate trimmed %}
+                  If you have not created an account yet, then please
+                  <a href="{{ signup_url }}">sign up</a> first.
+                {% endblocktranslate %}
+              </p>
+            {% endif %}
+          {% endif %}
+
+
+            <form class="login" method="POST" action="{% url 'account_login' %}">
+              {% csrf_token %}
+              {{ form|crispy }}
+              {% if redirect_field_value %}
+              <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+              {% endif %}
+              <a class="button secondaryAction" href="{% url 'account_reset_password' %}">{% translate "Forgot Password?" %}</a>
+              <button class="primaryAction btn btn-primary" type="submit">{% translate "Sign In" %}</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>    
+
+
 
 {% endblock %}

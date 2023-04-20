@@ -34,18 +34,18 @@ services:
     env_file:
       - ./.envs/.local/.postgres
 
-  docs:
-    image: oneshot_wordle_local_docs
-    container_name: oneshot_wordle_local_docs
-    build:
-      context: .
-      dockerfile: ./compose/local/docs/Dockerfile
-    env_file:
-      - ./.envs/.local/.django
-    volumes:
-      - ./docs:/docs:z
-      - ./config:/app/config:z
-      - ./oneshot_wordle:/app/oneshot_wordle:z
-    ports:
-      - "9000:9000"
-    command: /start-docs
+  # docs:
+  #   image: oneshot_wordle_local_docs
+  #   container_name: oneshot_wordle_local_docs
+  #   build:
+  #     context: .
+  #     dockerfile: ./compose/local/docs/Dockerfile
+  #   env_file:
+  #     - ./.envs/.local/.django
+  #   volumes:
+  #     - ./docs:/docs:z
+  #     - ./config:/app/config:z
+  #     - ./oneshot_wordle:/app/oneshot_wordle:z
+  #   ports:
+  #     - "9000:9000"
+  #   command: /start-docs
