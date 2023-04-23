@@ -2,13 +2,15 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 from django.http import HttpResponse
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, RedirectView, UpdateView
 from django.shortcuts import render, redirect
 import json
-from datetime import date, timedelta, datetime
+from datetime import timedelta, datetime, date
 from django.conf import settings
 from django.contrib.staticfiles.finders import find
 from django.templatetags.static import static
@@ -39,7 +41,7 @@ def load_words(request):
         wd = data[item].rstrip('\n')  
         if not Word.objects.filter(word=wd).exists():
             obj = Word.objects.update_or_create(
-                word = wd,
+                word = wd
             )
             newWords += 1
         print(f"{round((item/lenOfData)*100,2)}%")
@@ -48,31 +50,51 @@ def load_words(request):
     return render(request, 'pages/games/words_loaded.html', context)# HttpResponse(msg, content_type='text/plain')
 
 def get_random_word():
-    startdate = date.today()
-    enddate = startdate + timedelta(days=730)
-    return Word.objects.filter(sampledate__gte=date(enddate)).order_by('?')[0]
+    return Word.objects.filter(Q(lastOccurance__lte=datetime.now() - timedelta(days=730)) | Q(frequency=0)).order_by('?')[0]
 
+def get_random_clues(oneshotWord):
+    clues = Word.objects.order_by('?')
+    cows,bulls=0,0
+    clue1,clue2,clue3,clue4,clue5 = clues[0],clues[1],clues[2],clues[3],clues[4]
+    while clue1==oneshotWord:
+        clue1=Word.objects.order_by('?')
+    while clue2==oneshotWord:
+        clue2=Word.objects.order_by('?')
+    while clue3==oneshotWord:
+        clue3=Word.objects.order_by('?')
+    while clue4==oneshotWord:
+        clue4=Word.objects.order_by('?')
+    while clue5==oneshotWord:
+        clue5=Word.objects.order_by('?')
+    
+    for letter in clue1:
+        for char in oneshotWord:
+            if letter==char:
+                bull+=1
+    return 
 
 def wordle(request):
     # https://codepen.io/nht007/pen/jOaPNRg?editors=1000
     # https://codepen.io/ThatAladdin/pen/NWwaVjb?editors=0010
     # https://codepen.io/nht007/pen/jOaPNRg?editors=0010 
     # https://github.com/ragsub/wordle DAJNGO!!!!!!
-    # Todays Date
-    today=date.today()
-    print(today)
     
-    # Check no words have been selected for today
-    if not OneshotWord.objects.filter(date=today):
-        # get a new word for today
+    # Get today's todays date
+    today=datetime.today()
+    start_date = datetime(year=today.year, month=today.month, day=today.day, hour=0, minute=0, second=0) # represents 00:00:00
+    end_date = datetime(year=today.year, month=today.month, day=today.day, hour=23, minute=59, second=59) # represents 23:59:59
+    
+    # query if a word has been created already today in the DB.
+    if OneshotWord.objects.filter(date__range=(start_date, end_date)).exists():
+        todaysword = OneshotWord.objects.filter(date__range=(start_date, end_date))[0] 
+    else:
+        # get a new word for today if one doesn't exist
         todaysword = get_random_word()
-        a = OneshotWord.create(word = todaysword)
-        a.save()
+        a = OneshotWord.objects.update_or_create(word = todaysword)
         b = Word.objects.get(word=todaysword)
         b.frequency += 1
         b.save()
-    else:
-        todaysword = OneshotWord.objects.filter(date=today)
+    
     
     context = {'todaysword':todaysword}
     return render(request, 'pages/games/wordle.html', context)
