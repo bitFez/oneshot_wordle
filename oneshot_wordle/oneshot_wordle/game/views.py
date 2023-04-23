@@ -8,6 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, RedirectView, UpdateView
 from django.shortcuts import render, redirect
 import json
+from datetime import date, timedelta, datetime
 from django.conf import settings
 from django.contrib.staticfiles.finders import find
 from django.templatetags.static import static
@@ -18,7 +19,7 @@ User = get_user_model()
 
 from django.core.mail import send_mail
 
-from .models import Word
+from .models import Word, OneshotWord
 # from .forms import MessageForm
 
 # Create your views here.
@@ -46,10 +47,32 @@ def load_words(request):
     context = {'msg':msg}
     return render(request, 'pages/games/words_loaded.html', context)# HttpResponse(msg, content_type='text/plain')
 
+def get_random_word():
+    startdate = date.today()
+    enddate = startdate + timedelta(days=730)
+    return Word.objects.filter(sampledate__gte=date(enddate)).order_by('?')[0]
+
+
 def wordle(request):
     # https://codepen.io/nht007/pen/jOaPNRg?editors=1000
     # https://codepen.io/ThatAladdin/pen/NWwaVjb?editors=0010
     # https://codepen.io/nht007/pen/jOaPNRg?editors=0010 
     # https://github.com/ragsub/wordle DAJNGO!!!!!!
-    context = {}
+    # Todays Date
+    today=date.today()
+    print(today)
+    
+    # Check no words have been selected for today
+    if not OneshotWord.objects.filter(date=today):
+        # get a new word for today
+        todaysword = get_random_word()
+        a = OneshotWord.create(word = todaysword)
+        a.save()
+        b = Word.objects.get(word=todaysword)
+        b.frequency += 1
+        b.save()
+    else:
+        todaysword = OneshotWord.objects.filter(date=today)
+    
+    context = {'todaysword':todaysword}
     return render(request, 'pages/games/wordle.html', context)
