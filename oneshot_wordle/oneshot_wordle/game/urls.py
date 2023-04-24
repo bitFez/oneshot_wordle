@@ -11,6 +11,6 @@ urlpatterns = [
     path("", wordle, name="home"),
     path("load_words", load_words, name="load_words"),
     #path('/',process_word, name='process_word'),
-    path('/help',help_menu, name='help'),
-    path('/results', results, name='results'),
+    path('help',help_menu, name='help'),
+    path('results', results, name='results'),
 ]
