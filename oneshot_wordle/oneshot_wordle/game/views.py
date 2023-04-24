@@ -9,7 +9,10 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, RedirectView, UpdateView
 from django.shortcuts import render, redirect
-import json
+import json, os
+from cryptography.fernet import Fernet
+from django.forms.formsets import formset_factory
+from django.contrib import messages
 from datetime import timedelta, datetime, date
 from django.conf import settings
 from django.contrib.staticfiles.finders import find
@@ -21,8 +24,11 @@ User = get_user_model()
 
 from django.core.mail import send_mail
 
+from .forms import WordleForm, GuessForm, AlphabetForm
 from .models import Word, OneshotWord, OneshotClues
 # from .forms import MessageForm
+
+ENCODING_FORMAT='utf8' 
 
 # Create your views here.
 def load_words(request):
@@ -95,12 +101,7 @@ def get_random_clues(oneshotWord):
 
     return clues_list
 
-def wordle(request):
-    # https://codepen.io/nht007/pen/jOaPNRg?editors=1000
-    # https://codepen.io/ThatAladdin/pen/NWwaVjb?editors=0010
-    # https://codepen.io/nht007/pen/jOaPNRg?editors=0010 
-    # https://github.com/ragsub/wordle DAJNGO!!!!!!
-    
+def wordle(request): 
     # Get today's todays date
     today=datetime.today()
     start_date = datetime(year=today.year, month=today.month, day=today.day, hour=0, minute=0, second=0) # represents 00:00:00
@@ -130,6 +131,59 @@ def wordle(request):
             clue4 = todayclues[3],
             clue5 = todayclues[4]
         )
-       
+    
+    #load the 5-words scrabble dictionary
+    if settings.DEBUG:
+        five_letter_words = find('dicts/5-letter-words.json')
+    else:
+        five_letter_words = static('dicts/5-letter-words.json')
+    en_dict = json.load(open(five_letter_words))
+    en_list = [en['word'] for en in en_dict]
+
+    #initiate cryptography
+    SECRET_KEY = bytes(os.getenv('ENCRYPTION_KEY', None),ENCODING_FORMAT)
+    f = Fernet(SECRET_KEY)
+
+    #initiate array for alphabet colors
+    AlphabetFormSet = formset_factory(AlphabetForm, extra=26, max_num=26)
+    
+    #initiate formset for guesslist
+    GuessFormSet = formset_factory(GuessForm, extra=6, max_num=6)
+
+    if request.method == 'POST':
+        #read the forms from copy of request.POST to make them mutable
+        guess_formset = GuessFormSet(request.POST.copy(), form_kwargs={'empty_permitted': False}, prefix='guess')
+        alphabet_formset = AlphabetFormSet(request.POST.copy(), form_kwargs={'empty_permitted': False}, prefix='alphabet')
+        form = WordleForm(request.POST.copy())
+
+    else:
+           #initiate the forms
+        form = WordleForm()
+        form.fields['attempts_left'].initial= 6
+        form.fields['attempt_number'].initial = 1
+        guess_formset = GuessFormSet(prefix='guess')
+        alphabet_formset = AlphabetFormSet(prefix='alphabet')
+        i=1
     context = {'todaysword':todaysword, 'todayclues':todayclues}
     return render(request, 'pages/games/wordle.html', context)
+
+def help_menu(request):
+    return render(request=request,template_name='word/help.html')
+
+def results(request):
+    context = {}
+    results = request.session.get('results',None)
+    if results:
+        df = pd.DataFrame.from_dict(results, orient='index')
+    else:
+        results = {'1':0,'2':0,'3':0,'4':0,'5':0,'6':0}
+        df = pd.DataFrame.from_dict([results], orient='index')
+
+    df.reset_index(inplace=True)
+    df.columns = ['attempts','count']
+
+    fig = px.bar(df, x="count", y="attempts", width=350, height=500, labels={'count':'Count','attempts':'Attempts'})
+    fig.update_layout(autosize=True, margin_autoexpand=False, template='simple_white')
+
+    context['result'] = fig.to_html(config= {'displaylogo': False, 'displayModeBar':False}, include_plotlyjs=False)
+    return render(request=request, template_name='word/results.html',context=context)
