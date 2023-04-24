@@ -12,6 +12,17 @@ class OneshotWord(models.Model):
     def __str__(self):
         return self.word
 
+class OneshotClues(models.Model):
+    clue1 = models.CharField(max_length=5)
+    clue2 = models.CharField(max_length=5)
+    clue3 = models.CharField(max_length=5)
+    clue4 = models.CharField(max_length=5)
+    clue5 = models.CharField(max_length=5)
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.date
+
 class Word(models.Model):
     word = models.CharField(max_length=5)
     frequency = models.PositiveBigIntegerField(default=0)

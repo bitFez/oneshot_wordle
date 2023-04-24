@@ -21,7 +21,7 @@ User = get_user_model()
 
 from django.core.mail import send_mail
 
-from .models import Word, OneshotWord
+from .models import Word, OneshotWord, OneshotClues
 # from .forms import MessageForm
 
 # Create your views here.
@@ -53,25 +53,47 @@ def get_random_word():
     return Word.objects.filter(Q(lastOccurance__lte=datetime.now() - timedelta(days=730)) | Q(frequency=0)).order_by('?')[0]
 
 def get_random_clues(oneshotWord):
-    clues = Word.objects.order_by('?')
-    cows,bulls=0,0
-    clue1,clue2,clue3,clue4,clue5 = clues[0],clues[1],clues[2],clues[3],clues[4]
-    while clue1==oneshotWord:
-        clue1=Word.objects.order_by('?')
-    while clue2==oneshotWord:
-        clue2=Word.objects.order_by('?')
-    while clue3==oneshotWord:
-        clue3=Word.objects.order_by('?')
-    while clue4==oneshotWord:
-        clue4=Word.objects.order_by('?')
-    while clue5==oneshotWord:
-        clue5=Word.objects.order_by('?')
-    
-    for letter in clue1:
-        for char in oneshotWord:
-            if letter==char:
-                bull+=1
-    return 
+    cows,bulls,newclue=5,5,5
+    while bulls>1 or cows >3:
+        cows,bulls=0,0
+        clues = Word.objects.order_by('?')
+        
+        clue1,clue2,clue3,clue4,clue5 = clues[0],clues[1],clues[2],clues[3],clues[4]
+        while clue1==oneshotWord:
+            clue1=clues[newclue]
+            newclue+=1
+        while clue2==oneshotWord:
+            clue2=clues[newclue]
+            newclue+=1
+        while clue3==oneshotWord:
+            clue3=clues[newclue]
+            newclue+=1
+        while clue4==oneshotWord:
+            clue4=clues[newclue]
+            newclue+=1
+        while clue5==oneshotWord:
+            clue5=clues[newclue]
+            newclue+=1
+        clues_list = [clue1.word,clue2.word,clue3.word,clue4.word,clue5.word]
+        
+        print(f"oneshotword: {oneshotWord}")
+        print(f"Clues: {clues_list}")
+        # checking for cows (letters that are in the word but not in the correct place
+        for words in clues_list:
+            for letter in words:
+                if letter in oneshotWord.word:
+                    cows +=1
+
+        # checking for bulls (letters in a word that are in the correct place)
+        for words in clues_list:
+            for letter in words:
+                for char in oneshotWord.word:
+                    if letter==char:
+                        bulls+=1
+                        cows -=1
+        
+
+    return clues_list
 
 def wordle(request):
     # https://codepen.io/nht007/pen/jOaPNRg?editors=1000
@@ -95,6 +117,19 @@ def wordle(request):
         b.frequency += 1
         b.save()
     
-    
-    context = {'todaysword':todaysword}
+    # get the clues for the day
+    if OneshotClues.objects.filter(date__range=(start_date, end_date)).exists():
+        todayclues = OneshotClues.objects.filter(date__range=(start_date, end_date))[0] 
+    else:
+        # get a new word for today if one doesn't exist
+        todayclues = get_random_clues(todaysword)
+        a = OneshotClues.objects.update_or_create(
+            clue1 = todayclues[0],
+            clue2 = todayclues[1],
+            clue3 = todayclues[2],
+            clue4 = todayclues[3],
+            clue5 = todayclues[4]
+        )
+       
+    context = {'todaysword':todaysword, 'todayclues':todayclues}
     return render(request, 'pages/games/wordle.html', context)
