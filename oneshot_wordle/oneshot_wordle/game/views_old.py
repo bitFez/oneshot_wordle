@@ -9,10 +9,12 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, RedirectView, UpdateView
 from django.shortcuts import render, redirect
-import json
+import json, os
+from cryptography.fernet import Fernet
 from django.forms.formsets import formset_factory
 from django.contrib import messages
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, date
+from django.conf import settings
 from django.contrib.staticfiles.finders import find
 from django.templatetags.static import static
 from django.contrib.staticfiles.storage import staticfiles_storage
@@ -27,6 +29,20 @@ from .models import Word, OneshotWord, OneshotClues
 # from .forms import MessageForm
 
 ENCODING_FORMAT='utf8' 
+
+#initiate cryptography
+
+key = Fernet.generate_key() #this is your "password"
+
+def my_encrypt(key, data):
+    f = Fernet(key)
+    return f.encrypt(b"{data}")
+
+
+def my_decrypt(key, data):
+    f = Fernet(key)
+    return f.decrypt(data)
+
 
 # Create your views here.
 def load_words(request):
@@ -156,7 +172,7 @@ def wordle(request):
         if guess_formset.is_valid() & form.is_valid() & alphabet_formset.is_valid():
             #get the target word and decrypt
             print(form.cleaned_data['target_word'])
-            TARGET_WORD = form.cleaned_data['target_word']
+            TARGET_WORD = my_decrypt(key, form.cleaned_data['target_word'])
             #get the other form data
             guess = form.cleaned_data['guess'].lower()
             attempts_left = form.cleaned_data['attempts_left']
@@ -245,8 +261,8 @@ def wordle(request):
         #see if the word is in the link, else get a new word encrypt and store in form
         if request.GET.get('target_word',None) == None:
             target_word = todaysword
-            encrypted_word = target_word
-            form.fields['target_word'].initial = encrypted_word
+            encrypted_word = my_encrypt(key, target_word)
+            form.fields['target_word'].initial = my_decrypt(key, encrypted_word)
             
         else:
             request.GET._mutable = True

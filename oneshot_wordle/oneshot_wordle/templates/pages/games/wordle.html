@@ -7,17 +7,16 @@
 {% endblock %}
 {% block content %}
 
-<div id="load-container">
-    <h1>WORDLE - Todays word {{todaysword}}</h1>
+<!-- <div>
+    <p>WORDLE - Todays word {{todaysword}}</p>
     <ul>
         <li>{{todayclues.clue1}}</li>
         <li>{{todayclues.clue2}}</li>
         <li>{{todayclues.clue3}}</li>
         <li>{{todayclues.clue4}}</li>
         <li>{{todayclues.clue5}}</li>
-    </ul>
-    
-</div>
+    </ul>  
+</div> -->
 
 <div class="container d-flex flex-column align-items-center justify-content-between h-100 w-100" x-data="{ guess_xmodel: '', guess_1_xmodel:'{{guess_formset.0.guess.value|default_if_none:""}}', guess_2_xmodel:'{{guess_formset.1.guess.value |default_if_none:""}}', guess_3_xmodel:'{{guess_formset.2.guess.value|default_if_none:""}}', guess_4_xmodel:'{{guess_formset.3.guess.value|default_if_none:""}}',guess_5_xmodel:'{{guess_formset.4.guess.value|default_if_none:""}}', guess_6_xmodel:'{{guess_formset.5.guess.value|default_if_none:""}}', attempts_left_xmodel:'{{form.attempts_left.value|default_if_none:0}}', attempt_number_xmodel:'{{form.attempt_number.value|default_if_none:0}}', show_error: false, my_modal:''}">
     <div id="modal_placeholder"></div>
