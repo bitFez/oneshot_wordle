@@ -100,54 +100,57 @@ def get_random_clues(oneshotWord):
     return clues_list
 
 def wordle(request): 
-    # Get today's todays date
-    today=datetime.today()
-    start_date = datetime(year=today.year, month=today.month, day=today.day, hour=0, minute=0, second=0) # represents 00:00:00
-    end_date = datetime(year=today.year, month=today.month, day=today.day, hour=23, minute=59, second=59) # represents 23:59:59
-    
-    # query if a word has been created already today in the DB.
-    if OneshotWord.objects.filter(date__range=(start_date, end_date)).exists():
-        todaysword = OneshotWord.objects.filter(date__range=(start_date, end_date))[0] 
-    else:
-        # get a new word for today if one doesn't exist
-        todaysword = get_random_word()
-        a = OneshotWord.objects.update_or_create(word = todaysword)
-        b = Word.objects.get(word=todaysword)
-        b.frequency += 1
-        b.save()
-    
-    # get the clues for the day
-    if OneshotClues.objects.filter(date__range=(start_date, end_date)).exists():
-        todayclues = OneshotClues.objects.filter(date__range=(start_date, end_date))[0] 
-    else:
-        # get a new word for today if one doesn't exist
-        todayclues = get_random_clues(todaysword)
-        a = OneshotClues.objects.update_or_create(
-            clue1 = todayclues[0],
-            clue2 = todayclues[1],
-            clue3 = todayclues[2],
-            clue4 = todayclues[3],
-            clue5 = todayclues[4]
-        )
-    
-    #load the 5-words scrabble dictionary
-    if settings.DEBUG:
-        five_letter_words = find('dicts/5-letter-words.json')
-    else:
-        five_letter_words = static('dicts/5-letter-words.json')
-    en_dict = json.load(open(five_letter_words))
-    en_list = [en['word'] for en in en_dict]
 
-
-    #initiate array for alphabet colors
-    AlphabetFormSet = formset_factory(AlphabetForm, extra=26, max_num=26)
-    
-    #initiate formset for guesslist
-    GuessFormSet = formset_factory(GuessForm, extra=6, max_num=6)
-
-    context = {'todaysword':todaysword, 'todayclues':todayclues}
+    context = {}
     
     if request.method == 'POST':
+
+        # Get today's todays date
+        today=datetime.today()
+        start_date = datetime(year=today.year, month=today.month, day=today.day, hour=0, minute=0, second=0) # represents 00:00:00
+        end_date = datetime(year=today.year, month=today.month, day=today.day, hour=23, minute=59, second=59) # represents 23:59:59
+        
+        # query if a word has been created already today in the DB.
+        if OneshotWord.objects.filter(date__range=(start_date, end_date)).exists():
+            todaysword = OneshotWord.objects.filter(date__range=(start_date, end_date))[0] 
+        else:
+            # get a new word for today if one doesn't exist
+            todaysword = get_random_word()
+            a = OneshotWord.objects.update_or_create(word = todaysword)
+            b = Word.objects.get(word=todaysword)
+            b.frequency += 1
+            b.save()
+        
+        # get the clues for the day
+        if OneshotClues.objects.filter(date__range=(start_date, end_date)).exists():
+            todayclues = OneshotClues.objects.filter(date__range=(start_date, end_date))[0] 
+        else:
+            # get a new word for today if one doesn't exist
+            todayclues = get_random_clues(todaysword)
+            a = OneshotClues.objects.update_or_create(
+                clue1 = todayclues[0],
+                clue2 = todayclues[1],
+                clue3 = todayclues[2],
+                clue4 = todayclues[3],
+                clue5 = todayclues[4]
+            )
+
+        context['todayclues'] = todayclues
+
+        #load the 5-words scrabble dictionary
+        if settings.DEBUG:
+            five_letter_words = find('dicts/5-letter-words.json')
+        else:
+            five_letter_words = static('dicts/5-letter-words.json')
+        en_dict = json.load(open(five_letter_words))
+        en_list = [en['word'] for en in en_dict]
+
+
+        #initiate array for alphabet colors
+        AlphabetFormSet = formset_factory(AlphabetForm, extra=26, max_num=26)
+        
+        #initiate formset for guesslist
+        GuessFormSet = formset_factory(GuessForm, extra=6, max_num=6)
         #read the forms from copy of request.POST to make them mutable
         guess_formset = GuessFormSet(request.POST.copy(), form_kwargs={'empty_permitted': False}, prefix='guess')
         alphabet_formset = AlphabetFormSet(request.POST.copy(), form_kwargs={'empty_permitted': False}, prefix='alphabet')
@@ -177,19 +180,22 @@ def wordle(request):
                     guess_form = guess_formset[attempt_number-1]
                     guess_form.cleaned_data['guess'] = guess
                     #go through each word
-                    for j in range(0,5):
-                        letter_color = 'l'+str(j+1)+'_color'
-                        if guess[j] == TARGET_WORD[j]:
-                            guess_form.cleaned_data[letter_color] = 'bg-success'
-                            alphabet_formset[ord(guess[j])-97].cleaned_data['l_color'] = 'btn-success'
-                        elif guess[j] in TARGET_WORD:
-                            guess_form.cleaned_data[letter_color] = 'bg-warning'
-                            if alphabet_formset[ord(guess[j])-97].cleaned_data['l_color'] != 'btn-success':
-                                alphabet_formset[ord(guess[j])-97].cleaned_data['l_color'] = 'btn-warning'
-                        else:
-                            guess_form.cleaned_data[letter_color] = 'bg-secondary'
-                            alphabet_formset[ord(guess[j])-97].cleaned_data['l_color'] = 'btn-secondary'
-                    
+                    for clue in range(0,4):
+                            
+                        for j in range(0,5):
+                            letter_color = 'l'+str(j+1)+'_color'
+                            if todayclues[clue][j] == TARGET_WORD[j]:
+                                guess_form.cleaned_data[letter_color] = 'bg-success'
+                                alphabet_formset[ord(guess[j])-97].cleaned_data['l_color'] = 'btn-success'
+                            elif todayclues[clue][j] in TARGET_WORD:
+                                guess_form.cleaned_data[letter_color] = 'bg-warning'
+                                if alphabet_formset[ord(guess[j])-97].cleaned_data['l_color'] != 'btn-success':
+                                    alphabet_formset[ord(guess[j])-97].cleaned_data['l_color'] = 'btn-warning'
+                            else:
+                                guess_form.cleaned_data[letter_color] = 'bg-secondary'
+                                alphabet_formset[ord(guess[j])-97].cleaned_data['l_color'] = 'btn-secondary'
+                            
+                        
                     new_guess_formset = GuessFormSet(initial = guess_formset.cleaned_data, prefix='guess')
                     new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.cleaned_data,prefix='alphabet')
 
@@ -229,10 +235,12 @@ def wordle(request):
             print(guess_formset.non_form_errors())
             print(alphabet_formset.errors)
             print(alphabet_formset.non_form_errors())
-    else:
+    else:        
+        
+
         #initiate the forms
         form = WordleForm()
-        form.fields['attempts_left'].initial= 6
+        form.fields['attempts_left'].initial= 1
         form.fields['attempt_number'].initial = 1
         guess_formset = GuessFormSet(prefix='guess')
         alphabet_formset = AlphabetFormSet(prefix='alphabet')
