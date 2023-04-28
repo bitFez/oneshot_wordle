@@ -17,7 +17,7 @@ class WordleForm(forms.Form):
     )
 
 
-    attempts_left = forms.IntegerField(initial=6, required=False, widget = forms.HiddenInput())
+    attempts_left = forms.IntegerField(initial=1, required=False, widget = forms.HiddenInput())
 
     attempt_number = forms.IntegerField(initial=1, required=False, widget=forms.HiddenInput())
 

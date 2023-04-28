@@ -9,9 +9,11 @@ A version of wordle where you only have one chance to guess the day's word!
 - [ ] Create league table of users who are most successful
 - [ ] create modal for rules
 - [ ] Create modal for displaying a user's streak data
+- [ ] Remove the warning card after success / failure and instead add to user's streak modal
 - [ ] Hide Nav bar using burger menu
 - [x] check if the word wordle is copyrighted
     It seems likes it is :-( https://www.gamerevolution.com/news/703678-wordle-archive-removed-new-york-times-trademark-clone
+- [ ] Come up with a new name for the site
 - [x] need to centre the heading without a linebreak
 
 
