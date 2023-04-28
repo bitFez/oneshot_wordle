@@ -57,17 +57,20 @@ def get_random_word():
     return Word.objects.filter(Q(lastOccurance__lte=datetime.now() - timedelta(days=730)) | Q(frequency=0)).order_by('?')[0]
 
 def get_random_clues(oneshotWord):
-    clue_dict = {'cows':[], 'bulls':[]}
+    cows,bulls = [], []
+    #clue_dict = {'cows':[], 'bulls':[]}
     newclue=5
     # checks to make sure that there are no more than 1 correct placed guesses
     # and no more than 2 incorrect placed guesses
-    cows = len(clue_dict['cows'])
-    bulls = len(clue_dict['bulls'])
-    while not (bulls == 2 and cows == 3):
-        clue_dict = {'cows':[], 'bulls':[]}
+    cows_list = len(cows)
+    bulls_list = len(bulls)
+    while not(bulls_list == 1 and cows_list ==3):
+        cows,bulls = [], []
         clues = Word.objects.order_by('?')
         
         clue1,clue2,clue3,clue4,clue5 = clues[0],clues[1],clues[2],clues[3],clues[4]
+        
+        # This makes sure that none of the clues are the same as the daily word
         while clue1==oneshotWord:
             clue1=clues[newclue]
             newclue+=1
@@ -85,29 +88,34 @@ def get_random_clues(oneshotWord):
             newclue+=1
         clues_list = [clue1,clue2,clue3,clue4,clue5]
         
-        print(f"oneshotword: {oneshotWord.word}")
-        print(f"Clues: {clues_list}")
+        print(f"oneshotword: {oneshotWord} -- Clues: {clues_list}")
         # checking for cows (letters that are in the word but not in the correct place
         for word in clues_list:
             for letter in word.word:
-                if letter in oneshotWord.word and letter not in clue_dict['cows']:
-                    clue_dict['cows'].append(letter)
-                    
-
+                if letter in oneshotWord:
+                    if letter not in cows:
+                        cows.append(letter)
+        
         # checking for bulls (letters in a word that are in the correct place)
         for word in clues_list:
-            for letter in word.word:
-                for char in oneshotWord.word:
-                    if letter==char:
-                        if letter not in clue_dict['bulls']:
-                            clue_dict['bulls'].append(letter)
-                            if letter in clue_dict['cows']:
-                                placement = clue_dict['cows'].index(letter)
-                                #del(clue_dict['cows'][placement])
-        cows = len(clue_dict['cows'])
-        bulls = len(clue_dict['bulls'])                        
+            
+            for char in range(0,len(oneshotWord)):
+                # checks if each character in the clues are in the same place as the daily word
+                if word.word[char]==oneshotWord[char]:
+                    # makes sure the letter is not already in the list of bulls
+                    # before adding the word to the list
+                    if word.word[char] not in bulls:
+                        bulls.append(word.word[char])
+                        # Checks if the bull is already in the cows. It should be!
+                        if word.word[char] in cows:
+                            # find the index position of the cow and removes it.
+                            placement = cows.index(word.word[char])
+                            cows.pop(placement)
+                            
+        cows_list = len(cows)
+        bulls_list = len(bulls)                        
         
-        print(f"Cows: {cows} -- Bulls: {bulls}")
+        # print(f"Cows: {cows_list} -- Bulls: {bulls_list}")
     return clues_list
 
 def wordle(request): 
@@ -140,7 +148,7 @@ def wordle(request):
         clues = [todayclues.clue1,todayclues.clue2,todayclues.clue3,todayclues.clue4,todayclues.clue5]
     else:
         # get a new word for today if one doesn't exist
-        todayclues = get_random_clues(todaysword)
+        todayclues = get_random_clues(TARGET_WORD)
         a = OneshotClues.objects.update_or_create(
             clue1 = todayclues[0],
             clue2 = todayclues[1],
@@ -151,6 +159,7 @@ def wordle(request):
         todayclues = OneshotClues.objects.filter(date__range=(start_date, end_date))[0]
         clues = [todayclues.clue1,todayclues.clue2,todayclues.clue3,todayclues.clue4,todayclues.clue5]
     
+    # This section will add each clue to the wordle rows with the correct colour for each letter.
     cluesRow = []
     for clue in range(0,4):
         row='<div class="btn-group">'
