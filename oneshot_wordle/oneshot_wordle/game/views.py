@@ -121,7 +121,7 @@ def get_random_clues(oneshotWord):
 def wordle(request): 
     #initiate array for alphabet colors
     AlphabetFormSet = formset_factory(AlphabetForm, extra=26, max_num=26)
-    
+    alphabet_formset = AlphabetFormSet(form_kwargs={'empty_permitted': False}, prefix='alphabet')
     #initiate formset for guesslist
     GuessFormSet = formset_factory(GuessForm, extra=1, max_num=1)
 
@@ -165,18 +165,23 @@ def wordle(request):
         row='<div class="btn-group">'
         guess = clues[clue]                
         for j in range(0,5):
-            # letter_color = 'l'+str(j+1)+'_color'
+            letter_color = 'l'+str(j+1)+'_color'
             if guess[j] in TARGET_WORD:
                 letter= '<button style="height:60px;width:60px;" class="form-control btn btn-warning fw-bold text-center text-light fs-5 disabled" type="text", size="1">'+guess[j].upper()+'</button>'
+                alphabet_formset[ord(guess[j])-97].data['l_color'] = 'btn-warning'
                 if guess[j] == TARGET_WORD[j]:
                     letter= '<button style="height:60px;width:60px;" class="form-control btn btn-success fw-bold text-center text-light fs-5 disabled" type="text", size="1">'+guess[j].upper()+'</button>'
+                    alphabet_formset[ord(guess[j])-97].data['l_color'] = 'btn-success'
                 row+=letter
             else:
                 letter= '<button style="height:60px;width:60px;" class="form-control btn btn-secondary fw-bold text-center text-light fs-5 disabled" type="text", size="1">'+guess[j].upper()+'</button>'
+                alphabet_formset[ord(guess[j])-97].data['l_color'] = 'btn-secondary'
                 row+=letter
         row+='</div><br>'
         cluesRow.append(row)
 
+    new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.data,prefix='alphabet')
+    context['alphabet_formset'] = new_alphabet_formset
     context['cluesRow'] = cluesRow
     
     # Dealing with the post of a guess
@@ -207,83 +212,82 @@ def wordle(request):
             attempts_left = form.cleaned_data['attempts_left']
             attempt_number = form.cleaned_data['attempt_number']
             
-            #clear the word for the next refresh
-            form.data['word'] = ""
-
             #check sufficient attempts are left
-            if attempts_left > 0:
+            #if attempts_left > 0:
                 #check if entered word is in dictionary
-                if guess in en_list:
-                    #valid attempt to increment
-                    form.data['attempt_number'] = attempt_number+ 1
-                    form.data['attempts_left'] = attempts_left - 1
+            if guess in en_list:
+                #valid attempt to increment
+                form.data['attempt_number'] = attempt_number+ 1
+                form.data['attempts_left'] = attempts_left - 1
 
-                    #get the latest word
-                    guess_form = guess_formset[attempt_number-1]
-                    guess_form.cleaned_data['guess'] = guess
-                    
-                    # Display hte result of the guess
-                    
-                    # for clue in range(0,4):
-                            
-                    #     for j in range(0,5):
-                    #         letter_color = 'l'+str(j+1)+'_color'
-                    #         if clues[clue][j] == TARGET_WORD[j]:
-                    #             guess_form.cleaned_data[letter_color] = 'bg-success'
-                    #             alphabet_formset[ord(clues[clue][j])-97].cleaned_data['l_color'] = 'btn-success'
-                    #         elif clues[clue][j] in TARGET_WORD:
-                    #             guess_form.cleaned_data[letter_color] = 'bg-warning'
-                    #             if alphabet_formset[ord(clues[clue][j])-97].cleaned_data['l_color'] != 'btn-success':
-                    #                 alphabet_formset[ord(clues[clue][j])-97].cleaned_data['l_color'] = 'btn-warning'
-                    #         else:
-                    #             guess_form.cleaned_data[letter_color] = 'bg-secondary'
-                    #             alphabet_formset[ord(clues[clue][j])-97].cleaned_data['l_color'] = 'btn-secondary'
-                    row='<div class="btn-group">'
-                    guess = clues[clue]                
-                    for j in range(0,5):
-                        letter_color = 'l'+str(j+1)+'_color'
-                        if guess[j] in TARGET_WORD:
-                            letter= '<button style="height:60px;width:60px;" class="form-control btn btn-warning fw-bold text-center text-light fs-5 disabled" type="text", size="1">'+guess[j].upper()+'</button>'
+                #get the latest word
+                guess_form = guess_formset[attempt_number-1]
+                guess_form.cleaned_data['guess'] = guess
+                
+                # Display hte result of the guess
+                
+                # for clue in range(0,4):
+                        
+                #     for j in range(0,5):
+                #         letter_color = 'l'+str(j+1)+'_color'
+                #         if clues[clue][j] == TARGET_WORD[j]:
+                #             guess_form.cleaned_data[letter_color] = 'bg-success'
+                #             alphabet_formset[ord(clues[clue][j])-97].cleaned_data['l_color'] = 'btn-success'
+                #         elif clues[clue][j] in TARGET_WORD:
+                #             guess_form.cleaned_data[letter_color] = 'bg-warning'
+                #             if alphabet_formset[ord(clues[clue][j])-97].cleaned_data['l_color'] != 'btn-success':
+                #                 alphabet_formset[ord(clues[clue][j])-97].cleaned_data['l_color'] = 'btn-warning'
+                #         else:
+                #             guess_form.cleaned_data[letter_color] = 'bg-secondary'
+                #             alphabet_formset[ord(clues[clue][j])-97].cleaned_data['l_color'] = 'btn-secondary'
+                row='<div class="btn-group">'
+                guess = clues[clue]                
+                for j in range(0,5):
+                    letter_color = 'l'+str(j+1)+'_color'
+                    if guess[j] in TARGET_WORD:
+                        letter= '<button style="height:60px;width:60px;" class="form-control btn btn-warning fw-bold text-center text-light fs-5 disabled" type="text", size="1">'+guess[j].upper()+'</button>'
+                        alphabet_formset[ord(clues[clue][j])-97].cleaned_data['l_color'] = 'btn-warning'
+                        if guess[j] == TARGET_WORD[j]:
+                            letter= '<button style="height:60px;width:60px;" class="form-control btn btn-success fw-bold text-center text-light fs-5 disabled" type="text", size="1">'+guess[j].upper()+'</button>'
                             alphabet_formset[ord(clues[clue][j])-97].cleaned_data['l_color'] = 'btn-success'
-                            if guess[j] == TARGET_WORD[j]:
-                                letter= '<button style="height:60px;width:60px;" class="form-control btn btn-success fw-bold text-center text-light fs-5 disabled" type="text", size="1">'+guess[j].upper()+'</button>'
-                            row+=letter
-                        else:
-                            letter= '<button style="height:60px;width:60px;" class="form-control btn btn-secondary fw-bold text-center text-light fs-5 disabled" type="text", size="1">'+guess[j].upper()+'</button>'
-                            row+=letter
-                    row+='</div><br>'      
-                      
-                    new_guess_formset = GuessFormSet(initial = guess_formset.cleaned_data, prefix='guess')
-                    new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.cleaned_data,prefix='alphabet')
+                        row+=letter
+                    else:
+                        letter= '<button style="height:60px;width:60px;" class="form-control btn btn-secondary fw-bold text-center text-light fs-5 disabled" type="text", size="1">'+guess[j].upper()+'</button>'
+                        alphabet_formset[ord(clues[clue][j])-97].cleaned_data['l_color'] = 'btn-secondary'
+                        row+=letter
+                row+='</div><br>'      
+                    
+                new_guess_formset = GuessFormSet(initial = guess_formset.cleaned_data, prefix='guess')
+                new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.cleaned_data,prefix='alphabet')
 
-                    context['form'] = form
-                    context['guess_formset'] = new_guess_formset
-                    context['alphabet_formset'] = new_alphabet_formset
+                context['form'] = form
+                context['guess_formset'] = new_guess_formset
+                context['alphabet_formset'] = new_alphabet_formset
 
-                    if guess == TARGET_WORD:
-                        messages.add_message(request=request, level=messages.SUCCESS, message='You wordled in one Shot!! Challenge your friend by clicking '+'<a href='+request.path+'?target_word='+form.cleaned_data['target_word']+'>here</a>', extra_tags='safe')
-                        results = request.session.get('results',None)
-                        if results:
-                            results[str(attempt_number)] = results[str(attempt_number)]+1
-                        else:
-                            results = {'1':0,'2':0,'3':0,'4':0,'5':0,'6':0}
-                            results[str(attempt_number)] = 1
+                if guess == TARGET_WORD:
+                    messages.add_message(request=request, level=messages.SUCCESS, message='You wordled in one Shot!! Challenge your friend by clicking '+'<a href='+request.path+'?target_word='+form.cleaned_data['target_word']+'>here</a>', extra_tags='safe')
+                    results = request.session.get('results',None)
+                    if results:
+                        results[str(attempt_number)] = results[str(attempt_number)]+1
+                    else:
+                        results = {'1':0,'2':0,'3':0,'4':0,'5':0,'6':0}
+                        results[str(attempt_number)] = 1
 
-                        request.session['results'] = results
-                        print(results)
-                    if attempts_left == 1:
-                        messages.add_message(request=request, level=messages.ERROR, message = 'Chances over. word is '+TARGET_WORD)
-                else:
-                    messages.add_message(request=request, level=messages.ERROR, message=guess+' is not a valid english word')
-                    context['guess_formset'] = guess_formset
-                    context['form'] = form
-                    context['alphabet_formset'] = alphabet_formset
-
+                    request.session['results'] = results
+                    
+                if attempts_left == 1:
+                    messages.add_message(request=request, level=messages.ERROR, message = 'Chances over. word is '+TARGET_WORD)
             else:
-                messages.add_message(request=request, level=messages.ERROR, message = 'Chances over. word is '+TARGET_WORD)
+                messages.add_message(request=request, level=messages.ERROR, message=guess+' is not a valid english word')
                 context['guess_formset'] = guess_formset
                 context['form'] = form
                 context['alphabet_formset'] = alphabet_formset
+
+            # else:
+            #     messages.add_message(request=request, level=messages.ERROR, message = 'Chances over. word is '+TARGET_WORD)
+            #     context['guess_formset'] = guess_formset
+            #     context['form'] = form
+            #     context['alphabet_formset'] = alphabet_formset
 
         else:
             print(form.errors)
