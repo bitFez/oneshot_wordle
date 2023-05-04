@@ -4,6 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
+from django.utils import timezone
 from django.http import HttpResponse
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -16,7 +17,7 @@ from datetime import timedelta, datetime
 from django.contrib.staticfiles.finders import find
 from django.templatetags.static import static
 from django.contrib.staticfiles.storage import staticfiles_storage
-import pdb
+
 
 User = get_user_model()
 
@@ -126,9 +127,13 @@ def wordle(request):
 
     context = {}
     # Get today's todays date
-    today=datetime.today()
-    start_date = datetime(year=today.year, month=today.month, day=today.day, hour=0, minute=0, second=0) # represents 00:00:00
-    end_date = datetime(year=today.year, month=today.month, day=today.day, hour=23, minute=59, second=59) # represents 23:59:59
+    current_dateTime =datetime.now(tz=timezone.utc)
+    current_year=current_dateTime.year
+    current_month=current_dateTime.month
+    current_day=current_dateTime.day
+    
+    start_date = datetime(year=current_year, month=current_month, day=current_day, hour=0, minute=0, second=0) # represents 00:00:00
+    end_date = datetime(year=current_year, month=current_month, day=current_day, hour=23, minute=59, second=59) # represents 23:59:59
 
     # query if a word has been created already today in the DB.
     if OneshotWord.objects.filter(date__range=(start_date, end_date)).exists():
@@ -140,7 +145,9 @@ def wordle(request):
         b = Word.objects.get(word=todaysword)
         b.frequency += 1
         b.save()
-    TARGET_WORD = todaysword.word
+    todaysGuessle = OneshotWord.objects.all().last()
+    
+    TARGET_WORD = todaysGuessle.word
     # get the clues for the day
     if OneshotClues.objects.filter(date__range=(start_date, end_date)).exists():
         todayclues = OneshotClues.objects.filter(date__range=(start_date, end_date))[0]
@@ -186,7 +193,7 @@ def wordle(request):
     new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.data,prefix='alphabet')
     context['alphabet_formset'] = new_alphabet_formset
     context['cluesRow'] = cluesRow
-    context['guessleNo'] = todaysword.id
+    context['guessleNo'] = todaysGuessle.id
     
     # Dealing with the post of a guess
     if request.method == 'POST':   
@@ -216,9 +223,7 @@ def wordle(request):
             attempts_left = form.cleaned_data['attempts_left']
             attempt_number = form.cleaned_data['attempt_number']
             
-            #check sufficient attempts are left
-            #if attempts_left > 0:
-                #check if entered word is in dictionary
+            #check if entered word is in dictionary
             if guess in en_list:
                 #valid attempt to increment
                 form.data['attempt_number'] = attempt_number+ 1
@@ -230,7 +235,7 @@ def wordle(request):
                 
                 # Display hte result of the guess
                 row='<div class="btn-group">'
-                guess = clues[clue]                
+                                
                 for j in range(0,5):
                     letter_color = 'l'+str(j+1)+'_color'
                     if guess[j] in TARGET_WORD:
@@ -250,7 +255,7 @@ def wordle(request):
                 new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.cleaned_data,prefix='alphabet')
 
                 context['form'] = form
-                context['guess_formset'] = new_guess_formset
+                # context['guess_formset'] = new_guess_formset
                 context['alphabet_formset'] = new_alphabet_formset
                 context['cluesRow'] = cluesRow
 

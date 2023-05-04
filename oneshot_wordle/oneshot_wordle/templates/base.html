@@ -52,14 +52,14 @@
 
     <div class="container">
 
-      {% if messages %}
+      <!-- {% if messages %}
         {% for message in messages %}
           <div class="alert alert-dismissible {% if message.tags %}alert-{{ message.tags }}{% endif %}">
             {{ message }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>
         {% endfor %}
-      {% endif %}
+      {% endif %} -->
 
       {% block content %}
       {% endblock content %}
@@ -72,12 +72,12 @@
     {% comment %}
     Script tags with only code, no src (defer by default). To run
     with a "defer" so that you run inline code:
-    
-    {% endcomment %}
-    {% endblock inline_javascript %}
     <script>
       window.addEventListener('DOMContentLoaded', () => {/* Run whatever you want */});
     </script>
+    {% endcomment %}
+    {% endblock inline_javascript %}
+    
     <script src="https://getbootstrap.com/docs/5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
   </body>
 </html>
