@@ -4,6 +4,8 @@ Base settings to build other settings files upon.
 from pathlib import Path
 
 import environ
+import mimetypes
+
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 # oneshot_wordle/
@@ -272,3 +274,5 @@ SOCIALACCOUNT_FORMS = {"signup": "oneshot_wordle.users.forms.UserSocialSignupFor
 
 # Your stuff...
 # ------------------------------------------------------------------------------
+mimetypes.add_type("image/svg+xml", ".svg", True)
+mimetypes.add_type("image/svg+xml", ".svgz", True)

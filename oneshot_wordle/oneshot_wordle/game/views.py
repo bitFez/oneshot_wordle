@@ -183,6 +183,7 @@ def wordle(request):
     new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.data,prefix='alphabet')
     context['alphabet_formset'] = new_alphabet_formset
     context['cluesRow'] = cluesRow
+    context['guessleNo'] = todaysword.id
     
     # Dealing with the post of a guess
     if request.method == 'POST':   
