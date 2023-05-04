@@ -6,6 +6,8 @@ A version of wordle where you only have one chance to guess the day's word!
 - [ ] Use HTMX to only partially load the last row of the guess form
 - [ ] Colour the alphabet according to the letters in the guess and clues
 - [ ] Create page of previous words
+- [ ] Add each guess to the Wordle_Attempt model
+- [ ] Limit a user from taking a guess if they have one already in the Wordle_Attempt model
 - [ ] Create league table of users who are most successful
 - [ ] create modal for rules
 - [ ] Create modal for displaying a user's streak data

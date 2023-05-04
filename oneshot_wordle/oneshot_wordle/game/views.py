@@ -58,7 +58,6 @@ def get_random_word():
 
 def get_random_clues(oneshotWord):
     cows,bulls = [], []
-    #clue_dict = {'cows':[], 'bulls':[]}
     newclue=5
     # checks to make sure that there are no more than 1 correct placed guesses
     # and no more than 2 incorrect placed guesses
@@ -108,7 +107,7 @@ def get_random_clues(oneshotWord):
                         bulls.append(word.word[char])
                         # Checks if the bull is already in the cows. It should be!
                         if word.word[char] in cows:
-                            # find the index position of the cow and removes it.
+                            # find the index position of the cow and remove it.
                             placement = cows.index(word.word[char])
                             cows.pop(placement)
                             
@@ -161,18 +160,22 @@ def wordle(request):
     
     # This section will add each clue to the wordle rows with the correct colour for each letter.
     cluesRow = []
-    for clue in range(0,4):
+    for clue in range(0,5):
+        cows,bulls=[],[]
         row='<div class="btn-group">'
         guess = clues[clue]                
         for j in range(0,5):
             letter_color = 'l'+str(j+1)+'_color'
-            if guess[j] in TARGET_WORD:
+            if guess[j] == TARGET_WORD[j]:
+                letter= '<button style="height:60px;width:60px;" class="form-control btn btn-success fw-bold text-center text-light fs-5 disabled" type="text", size="1">'+guess[j].upper()+'</button>'
+                alphabet_formset[ord(guess[j])-97].data['l_color'] = 'btn-success'
+                bulls.append(guess[j])
+                row+=letter
+            elif guess[j] in TARGET_WORD and guess[j] not in cows and guess[j] not in bulls:
                 letter= '<button style="height:60px;width:60px;" class="form-control btn btn-warning fw-bold text-center text-light fs-5 disabled" type="text", size="1">'+guess[j].upper()+'</button>'
                 alphabet_formset[ord(guess[j])-97].data['l_color'] = 'btn-warning'
-                if guess[j] == TARGET_WORD[j]:
-                    letter= '<button style="height:60px;width:60px;" class="form-control btn btn-success fw-bold text-center text-light fs-5 disabled" type="text", size="1">'+guess[j].upper()+'</button>'
-                    alphabet_formset[ord(guess[j])-97].data['l_color'] = 'btn-success'
                 row+=letter
+                cows.append(guess[j])
             else:
                 letter= '<button style="height:60px;width:60px;" class="form-control btn btn-secondary fw-bold text-center text-light fs-5 disabled" type="text", size="1">'+guess[j].upper()+'</button>'
                 alphabet_formset[ord(guess[j])-97].data['l_color'] = 'btn-secondary'
@@ -226,21 +229,6 @@ def wordle(request):
                 guess_form.cleaned_data['guess'] = guess
                 
                 # Display hte result of the guess
-                
-                # for clue in range(0,4):
-                        
-                #     for j in range(0,5):
-                #         letter_color = 'l'+str(j+1)+'_color'
-                #         if clues[clue][j] == TARGET_WORD[j]:
-                #             guess_form.cleaned_data[letter_color] = 'bg-success'
-                #             alphabet_formset[ord(clues[clue][j])-97].cleaned_data['l_color'] = 'btn-success'
-                #         elif clues[clue][j] in TARGET_WORD:
-                #             guess_form.cleaned_data[letter_color] = 'bg-warning'
-                #             if alphabet_formset[ord(clues[clue][j])-97].cleaned_data['l_color'] != 'btn-success':
-                #                 alphabet_formset[ord(clues[clue][j])-97].cleaned_data['l_color'] = 'btn-warning'
-                #         else:
-                #             guess_form.cleaned_data[letter_color] = 'bg-secondary'
-                #             alphabet_formset[ord(clues[clue][j])-97].cleaned_data['l_color'] = 'btn-secondary'
                 row='<div class="btn-group">'
                 guess = clues[clue]                
                 for j in range(0,5):
@@ -257,16 +245,17 @@ def wordle(request):
                         alphabet_formset[ord(clues[clue][j])-97].cleaned_data['l_color'] = 'btn-secondary'
                         row+=letter
                 row+='</div><br>'      
-                    
+                cluesRow.append(row)   
                 new_guess_formset = GuessFormSet(initial = guess_formset.cleaned_data, prefix='guess')
                 new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.cleaned_data,prefix='alphabet')
 
                 context['form'] = form
                 context['guess_formset'] = new_guess_formset
                 context['alphabet_formset'] = new_alphabet_formset
+                context['cluesRow'] = cluesRow
 
                 if guess == TARGET_WORD:
-                    messages.add_message(request=request, level=messages.SUCCESS, message='You wordled in one Shot!! Challenge your friend by clicking '+'<a href='+request.path+'?target_word='+form.cleaned_data['target_word']+'>here</a>', extra_tags='safe')
+                    messages.add_message(request=request, level=messages.SUCCESS, message='You Guessled in one Shot!! Challenge your friend by clicking '+'<a href='+request.path+'?target_word='+form.cleaned_data['target_word']+'>here</a>', extra_tags='safe')
                     results = request.session.get('results',None)
                     if results:
                         results[str(attempt_number)] = results[str(attempt_number)]+1
@@ -276,7 +265,7 @@ def wordle(request):
 
                     request.session['results'] = results
                     
-                if attempts_left == 1:
+                elif attempts_left == 1:
                     messages.add_message(request=request, level=messages.ERROR, message = 'Chances over. word is '+TARGET_WORD)
             else:
                 messages.add_message(request=request, level=messages.ERROR, message=guess+' is not a valid english word')

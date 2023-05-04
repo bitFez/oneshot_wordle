@@ -44,5 +44,8 @@ class Word(models.Model):
         return self.word
 
 class Wordle_Attempt(models.Model):
+    class Meta: 
+        verbose_name = "Word Attempt"
+        verbose_name_plural = "Word Attempts"
     word = models.ForeignKey(OneshotWord, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
