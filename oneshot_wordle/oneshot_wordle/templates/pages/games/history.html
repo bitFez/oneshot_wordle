@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<table class="table table-dark table-striped">
+    <thead>
+      <tr class="table-dark">
+        <th scope="col" >Guessle #</th>
+        <th scope="col">Guessle Word</th>
+        <th scope="col">Clue 1</th>
+        <th scope="col">Clue 2</th>
+        <th scope="col">Clue 3</th>
+        <th scope="col">Clue 4</th>
+        <th scope="col">Clue 5</th>
+        <th scope="col">% of correct guesses</th>
+      </tr>
+    </thead>
+        <tbody>
+        {% for guessle in guessles.items reversed %}
+            <tr>
+                <th scope="row" class="table-dark">#{{guessle.1.id}} - {{guessle.1.date|date:"D d M Y"}}</th>
+                <td class="table-dark">{{guessle.1.word}}</td>
+                <td class="table-dark">{{guessle.1.clue1}}</td>
+                <td class="table-dark">{{guessle.1.clue2}}</td>
+                <td class="table-dark">{{guessle.1.clue3}}</td>
+                <td class="table-dark">{{guessle.1.clue4}}</td>
+                <td class="table-dark">{{guessle.1.clue5}}</td>
+                <td class="table-dark">{{guessle.1.per}}%</td>
+            </tr>            
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock content %}

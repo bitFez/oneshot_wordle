@@ -251,7 +251,7 @@ def wordle(request):
                         row+=letter
                 row+='</div><br>'      
                 cluesRow.append(row)   
-                new_guess_formset = GuessFormSet(initial = guess_formset.cleaned_data, prefix='guess')
+                # new_guess_formset = GuessFormSet(initial = guess_formset.cleaned_data, prefix='guess')
                 new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.cleaned_data,prefix='alphabet')
 
                 context['form'] = form
@@ -262,6 +262,9 @@ def wordle(request):
                 if guess == TARGET_WORD:
                     messages.add_message(request=request, level=messages.SUCCESS, message='You Guessled in one Shot!! Challenge your friend by clicking '+'<a href='+request.path+'?target_word='+form.cleaned_data['target_word']+'>here</a>', extra_tags='safe')
                     results = request.session.get('results',None)
+                    todaysGuessle.attempts+=1
+                    todaysGuessle.correctAnswers+=1
+                    todaysGuessle.save()
                     if results:
                         results[str(attempt_number)] = results[str(attempt_number)]+1
                     else:
@@ -272,6 +275,8 @@ def wordle(request):
                     
                 elif attempts_left == 1:
                     messages.add_message(request=request, level=messages.ERROR, message = 'Chances over. word is '+TARGET_WORD)
+                    todaysGuessle.attempts+=1
+                    todaysGuessle.save()
             else:
                 messages.add_message(request=request, level=messages.ERROR, message=guess+' is not a valid english word')
                 context['guess_formset'] = guess_formset
@@ -330,6 +335,26 @@ def wordle(request):
     #send back the html template
     
     return render(request, 'pages/games/wordle.html', context)
+
+def history(request):
+    guesses = OneshotWord.objects.all()
+    clues = OneshotClues.objects.all()
+
+    guessles = {}
+    # Loops through all words excluding today's date or last word
+    for i in range(0,len(guesses)-1):
+        # if percentage correct for the day is 0 stops division by 0 error
+        try:
+            per=round((guesses[i].correctAnswers/guesses[i].attempts)*100,2)
+        except:
+            per=0
+        a = {i:{'id':guesses[i].id, 'word':guesses[i].word, 'clue1':clues[i].clue1, 'clue2':clues[i].clue2,
+             'clue3':clues[i].clue3,'clue4':clues[i].clue4,'clue5':clues[i].clue5,'per':per, 'date':guesses[i].date}}
+        # adds each item in the guesses and clues tables to a dict
+        guessles.update(a)
+    context = {'guessles':guessles}
+    
+    return render(request, 'pages/games/history.html', context)
 
 def help_menu(request):
     return render(request=request,template_name='word/help.html')

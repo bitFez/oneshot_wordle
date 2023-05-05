@@ -5,17 +5,17 @@ A version of wordle where you only have one chance to guess the day's word!
 ## TODO
 - [ ] Use HTMX to only partially load the last row of the guess form
 - [ ] Colour the alphabet according to the letters in the guess and clues
-- [ ] Create page of previous words
-- [ ] Add each guess to the Wordle_Attempt model
+- [x] Create page of previous words
+- [x] Add each guess to the Wordle_Attempt model
 - [ ] Limit a user from taking a guess if they have one already in the Wordle_Attempt model
 - [ ] Create league table of users who are most successful
 - [ ] create modal for rules
 - [ ] Create modal for displaying a user's streak data
-- [ ] Remove the warning card after success / failure and instead add to user's streak modal
+- [x] Remove the warning card after success / failure and instead add to user's streak modal
 - [x] Hide Nav bar using burger menu
 - [x] check if the word wordle is copyrighted
     It seems likes it is :-( https://www.gamerevolution.com/news/703678-wordle-archive-removed-new-york-times-trademark-clone
-- [ ] Come up with a new name for the site
+- [x] Come up with a new name for the site
 - [x] need to centre the heading without a linebreak
 
 
