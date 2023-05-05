@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Word, OneshotWord, OneshotClues
+from .models import Word, OneshotWord, OneshotClues, Wordle_Attempt
 # Register your models here.
 
 class WordAdmin(admin.ModelAdmin):
@@ -21,6 +21,13 @@ class OneshotCluesAdmin(admin.ModelAdmin):
     list_filter =('date',)
     list_display = ('id','clue1','clue2','clue3','clue4','clue5','date', )
 
+class Wordle_AttemptAdmin(admin.ModelAdmin):
+    model = Wordle_Attempt
+    search_fields = ('user', 'date','word',)
+    list_filter =('date','user', 'word',)
+    list_display = ('date','user', 'word', )
+
 admin.site.register(Word, WordAdmin)
 admin.site.register(OneshotWord, OneshotWordAdmin)
 admin.site.register(OneshotClues, OneshotCluesAdmin)
+admin.site.register(Wordle_Attempt, Wordle_AttemptAdmin)

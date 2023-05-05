@@ -3,7 +3,7 @@ from django.urls import path
 from oneshot_wordle.game.views import (
     wordle,
     load_words,
-    help_menu, results, history
+    help_menu, results, history, halloffame
 )
 
 app_name = "game"
@@ -14,4 +14,6 @@ urlpatterns = [
     path('help',help_menu, name='help'),
     path('results', results, name='results'),
     path('history', history, name='history'),
+    path('halloffame', halloffame, name='hof'),
+    
 ]

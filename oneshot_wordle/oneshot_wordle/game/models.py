@@ -49,3 +49,4 @@ class Wordle_Attempt(models.Model):
         verbose_name_plural = "Word Attempts"
     word = models.ForeignKey(OneshotWord, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now=True, null=True)

@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ObjectDoesNotExist
@@ -24,7 +25,7 @@ User = get_user_model()
 from django.core.mail import send_mail
 
 from .forms import WordleForm, GuessForm, AlphabetForm
-from .models import Word, OneshotWord, OneshotClues
+from .models import Word, OneshotWord, OneshotClues, Wordle_Attempt
 # from .forms import MessageForm
 
 ENCODING_FORMAT='utf8' 
@@ -118,6 +119,7 @@ def get_random_clues(oneshotWord):
         # print(f"Cows: {cows_list} -- Bulls: {bulls_list}")
     return clues_list
 
+@login_required(login_url="/accounts/login/")
 def wordle(request): 
     #initiate array for alphabet colors
     AlphabetFormSet = formset_factory(AlphabetForm, extra=26, max_num=26)
@@ -135,6 +137,9 @@ def wordle(request):
     start_date = datetime(year=current_year, month=current_month, day=current_day, hour=0, minute=0, second=0) # represents 00:00:00
     end_date = datetime(year=current_year, month=current_month, day=current_day, hour=23, minute=59, second=59) # represents 23:59:59
 
+    # Check for previous attempts
+    attempts = Wordle_Attempt.objects.filter(date__range=(start_date, end_date), user=request.user).exists()
+    print(f"Attempts is: {attempts}")
     # query if a word has been created already today in the DB.
     if OneshotWord.objects.filter(date__range=(start_date, end_date)).exists():
         todaysword = OneshotWord.objects.filter(date__range=(start_date, end_date))[0] 
@@ -216,7 +221,7 @@ def wordle(request):
         alphabet_formset = AlphabetFormSet(request.POST.copy(), form_kwargs={'empty_permitted': False}, prefix='alphabet')
         form = WordleForm(request.POST.copy())
 
-        if guess_formset.is_valid() & form.is_valid() & alphabet_formset.is_valid():
+        if guess_formset.is_valid() & form.is_valid() & alphabet_formset.is_valid() & attempts==False:
             
             # Get form data
             guess = form.cleaned_data['guess'].lower()
@@ -265,6 +270,7 @@ def wordle(request):
                     todaysGuessle.attempts+=1
                     todaysGuessle.correctAnswers+=1
                     todaysGuessle.save()
+                    
                     if results:
                         results[str(attempt_number)] = results[str(attempt_number)]+1
                     else:
@@ -277,6 +283,12 @@ def wordle(request):
                     messages.add_message(request=request, level=messages.ERROR, message = 'Chances over. word is '+TARGET_WORD)
                     todaysGuessle.attempts+=1
                     todaysGuessle.save()
+                
+                att = Wordle_Attempt.objects.update_or_create(
+                        user=request.user,
+                        date=current_dateTime,
+                        word=todaysGuessle
+                    )
             else:
                 messages.add_message(request=request, level=messages.ERROR, message=guess+' is not a valid english word')
                 context['guess_formset'] = guess_formset
@@ -288,6 +300,11 @@ def wordle(request):
             #     context['guess_formset'] = guess_formset
             #     context['form'] = form
             #     context['alphabet_formset'] = alphabet_formset
+
+        elif attempts ==True & attempts.word == todaysGuessle:
+            messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's Guessle")
+        elif attempts ==True & attempts.word != todaysGuessle:
+            messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's Guessle")
 
         else:
             print(form.errors)
@@ -337,6 +354,26 @@ def wordle(request):
     return render(request, 'pages/games/wordle.html', context)
 
 def history(request):
+    guesses = OneshotWord.objects.all()
+    clues = OneshotClues.objects.all()
+
+    guessles = {}
+    # Loops through all words excluding today's date or last word
+    for i in range(0,len(guesses)-1):
+        # if percentage correct for the day is 0 stops division by 0 error
+        try:
+            per=round((guesses[i].correctAnswers/guesses[i].attempts)*100,2)
+        except:
+            per=0
+        a = {i:{'id':guesses[i].id, 'word':guesses[i].word, 'clue1':clues[i].clue1, 'clue2':clues[i].clue2,
+             'clue3':clues[i].clue3,'clue4':clues[i].clue4,'clue5':clues[i].clue5,'per':per, 'date':guesses[i].date}}
+        # adds each item in the guesses and clues tables to a dict
+        guessles.update(a)
+    context = {'guessles':guessles}
+    
+    return render(request, 'pages/games/history.html', context)
+
+def halloffame(request):
     guesses = OneshotWord.objects.all()
     clues = OneshotClues.objects.all()
 
