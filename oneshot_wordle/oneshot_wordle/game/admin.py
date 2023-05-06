@@ -25,7 +25,7 @@ class Wordle_AttemptAdmin(admin.ModelAdmin):
     model = Wordle_Attempt
     search_fields = ('user', 'date','word',)
     list_filter =('date','user', 'word',)
-    list_display = ('date','user', 'word', )
+    list_display = ('date','user', 'word', 'guess')
 
 admin.site.register(Word, WordAdmin)
 admin.site.register(OneshotWord, OneshotWordAdmin)

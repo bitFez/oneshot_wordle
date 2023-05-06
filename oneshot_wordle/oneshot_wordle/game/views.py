@@ -26,6 +26,7 @@ from django.core.mail import send_mail
 
 from .forms import WordleForm, GuessForm, AlphabetForm
 from .models import Word, OneshotWord, OneshotClues, Wordle_Attempt
+from .functions import guess_result
 # from .forms import MessageForm
 
 ENCODING_FORMAT='utf8' 
@@ -138,8 +139,8 @@ def wordle(request):
     end_date = datetime(year=current_year, month=current_month, day=current_day, hour=23, minute=59, second=59) # represents 23:59:59
 
     # Check for previous attempts
-    attempts = Wordle_Attempt.objects.filter(date__range=(start_date, end_date), user=request.user).exists()
-    print(f"Attempts is: {attempts}")
+    attempts = Wordle_Attempt.objects.filter(date__range=(start_date, end_date), user=request.user)
+    # print(f"\nAttempt is: {attempts[0].guess}\n")
     # query if a word has been created already today in the DB.
     if OneshotWord.objects.filter(date__range=(start_date, end_date)).exists():
         todaysword = OneshotWord.objects.filter(date__range=(start_date, end_date))[0] 
@@ -221,7 +222,7 @@ def wordle(request):
         alphabet_formset = AlphabetFormSet(request.POST.copy(), form_kwargs={'empty_permitted': False}, prefix='alphabet')
         form = WordleForm(request.POST.copy())
 
-        if guess_formset.is_valid() & form.is_valid() & alphabet_formset.is_valid() & attempts==False:
+        if guess_formset.is_valid() & form.is_valid() & alphabet_formset.is_valid():
             
             # Get form data
             guess = form.cleaned_data['guess'].lower()
@@ -239,22 +240,7 @@ def wordle(request):
                 guess_form.cleaned_data['guess'] = guess
                 
                 # Display hte result of the guess
-                row='<div class="btn-group">'
-                                
-                for j in range(0,5):
-                    letter_color = 'l'+str(j+1)+'_color'
-                    if guess[j] in TARGET_WORD:
-                        letter= '<button style="height:60px;width:60px;" class="form-control btn btn-warning fw-bold text-center text-light fs-5 disabled" type="text", size="1">'+guess[j].upper()+'</button>'
-                        alphabet_formset[ord(clues[clue][j])-97].cleaned_data['l_color'] = 'btn-warning'
-                        if guess[j] == TARGET_WORD[j]:
-                            letter= '<button style="height:60px;width:60px;" class="form-control btn btn-success fw-bold text-center text-light fs-5 disabled" type="text", size="1">'+guess[j].upper()+'</button>'
-                            alphabet_formset[ord(clues[clue][j])-97].cleaned_data['l_color'] = 'btn-success'
-                        row+=letter
-                    else:
-                        letter= '<button style="height:60px;width:60px;" class="form-control btn btn-secondary fw-bold text-center text-light fs-5 disabled" type="text", size="1">'+guess[j].upper()+'</button>'
-                        alphabet_formset[ord(clues[clue][j])-97].cleaned_data['l_color'] = 'btn-secondary'
-                        row+=letter
-                row+='</div><br>'      
+                row=guess_result(guess, TARGET_WORD)     
                 cluesRow.append(row)   
                 # new_guess_formset = GuessFormSet(initial = guess_formset.cleaned_data, prefix='guess')
                 new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.cleaned_data,prefix='alphabet')
@@ -280,7 +266,7 @@ def wordle(request):
                     request.session['results'] = results
                     
                 elif attempts_left == 1:
-                    messages.add_message(request=request, level=messages.ERROR, message = 'Chances over. word is '+TARGET_WORD)
+                    messages.add_message(request=request, level=messages.ERROR, message = 'Chances are over. word is '+TARGET_WORD)
                     todaysGuessle.attempts+=1
                     todaysGuessle.save()
                 
@@ -301,11 +287,6 @@ def wordle(request):
             #     context['form'] = form
             #     context['alphabet_formset'] = alphabet_formset
 
-        elif attempts ==True & attempts.word == todaysGuessle:
-            messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's Guessle")
-        elif attempts ==True & attempts.word != todaysGuessle:
-            messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's Guessle")
-
         else:
             print(form.errors)
             print(form.non_field_errors)
@@ -313,36 +294,55 @@ def wordle(request):
             print(guess_formset.non_form_errors())
             print(alphabet_formset.errors)
             print(alphabet_formset.non_form_errors())
+    
+    
     else:        
-        
-        #initiate the forms
-        attempt_number = 1
-        form = WordleForm(initial={})
-        form.fields['attempts_left'].initial= 1
+        if (attempts.exists() == True) & (attempts[0].guess == todaysGuessle.word):
+            messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's Guessle")
+            form = WordleForm()
+            form.fields['attempts_left'].initial= 0
+            form.fields['attempt_number'].initial = 0
+            attempt_number = 0
+            row=guess_result(attempts[0].guess, todaysGuessle.word)
+            cluesRow.append(row)
+            context['cluesRow'] = cluesRow
+            context['attempts'] = attempts
+        elif (attempts.exists() == True) & (attempts[0].guess != todaysGuessle.word):
+            messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's Guessle")
+            form = WordleForm()
+            form.fields['attempts_left'].initial= 0
+            attempt_number = 0
+            row=guess_result(attempts[0].guess, todaysGuessle.word)
+            cluesRow.append(row)
+            context['cluesRow'] = cluesRow
+            context['attempts'] = attempts
+        else:
+            #initiate the forms
+            attempt_number = 1
+            form = WordleForm(initial={})
+            form.fields['attempts_left'].initial= 1
         form.fields['attempt_number'].initial = 1
         guess_formset = GuessFormSet(prefix='guess')
         alphabet_formset = AlphabetFormSet(prefix='alphabet')
         guess_form = guess_formset[attempt_number-1]
 
-        
-
         i=1
         for guess_form in guess_formset:
-                x_ref = 'guess_'+str(i)
-                guess_form.fields['guess'].widget.attrs.update({'x-ref':x_ref,'x-model':x_ref+'_xmodel'})
-                i=i+1
+            x_ref = 'guess_'+str(i)
+            guess_form.fields['guess'].widget.attrs.update({'x-ref':x_ref,'x-model':x_ref+'_xmodel'})
+            i=i+1
 
         #see if the word is in the link, else get a new word encrypt and store in form
-        if request.GET.get('target_word',None) == None:
-            target_word = todaysword
-            encrypted_word = target_word
-            form.fields['target_word'].initial = encrypted_word
+        # if request.GET.get('target_word',None) == None:
+        #     target_word = todaysword
+        #     encrypted_word = target_word
+        #     form.fields['target_word'].initial = encrypted_word
             
-        else:
-            request.GET._mutable = True
-            encrypted_word = request.GET.get('target_word')
-            form.fields['target_word'].initial = encrypted_word
-            request.GET['target_word'] = None
+        # else:
+        #     request.GET._mutable = True
+        #     encrypted_word = request.GET.get('target_word')
+        #     form.fields['target_word'].initial = encrypted_word
+        #     request.GET['target_word'] = None
 
         #initiate the variables to send to the template
         context['form'] = form

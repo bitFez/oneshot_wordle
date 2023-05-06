@@ -48,5 +48,6 @@ class Wordle_Attempt(models.Model):
         verbose_name = "Word Attempt"
         verbose_name_plural = "Word Attempts"
     word = models.ForeignKey(OneshotWord, on_delete=models.CASCADE)
+    guess = models.CharField(max_length=5)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now=True, null=True)

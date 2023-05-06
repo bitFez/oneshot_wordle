@@ -21,6 +21,7 @@
         </div>
     </div>
     <div class="row flex-grow-1 justify-content-center align-items-center">
+        
         <form method="POST">
             {% csrf_token %}            
             <button class="btn btn-primary btn-sm" x-ref='submit_guess_button' hidden>Guess</button>
@@ -30,7 +31,7 @@
             {{guess_formset}}
             {{alphabet_formset}}
             {% for message in messages %}
-            <div x-data="{ show: true }" x-show="show" x-transition class="alert p-1 m-1 {% if message.tags == 'safe success'%} alert-success {%else%} alert-danger {%endif%}" {% if message.tags != 'safe success'%}x-init="setTimeout(() => show = false, 2000){%endif%}">
+            <div x-data="{ show: true }" x-show="show" x-transition class="alert p-1 m-1 {% if message.tags == 'safe success'%} alert-success {%else%} alert-danger {%endif%}" {% if message.tags != 'safe success'%}x-init="setTimeout(() => show = false, 10000){%endif%}">
                 {{ message |safe }}
                 {%if message.tags == "safe success"%}
                 <a href="navigator.share({{message}})"><i class="bi bi-share"></i></a>
@@ -45,9 +46,15 @@
             {% for clue in cluesRow %}
                 {{ clue |safe}}
             {% endfor %}
-            <div id="lastRow" hx-get="/" hx-swap="innerHTML">
-                {% include "pages/games/partials/guessle_form.html" %}
-            </div>        
+            {% if attempts %}
+                <div id="lastRow">
+                    {% include "pages/games/partials/guessle_without_form.html" %}
+                </div>
+            {% else %}
+                <div id="lastRow">
+                    {% include "pages/games/partials/guessle_form.html" %}
+                </div>    
+            {% endif %}    
         </div>
     </div>
     <div class="row my-2 py-2 flex-grow-1 w-100">
