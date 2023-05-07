@@ -121,7 +121,10 @@ def get_random_clues(oneshotWord):
     return clues_list
 
 @login_required(login_url="/accounts/login/")
-def wordle(request): 
+def wordle(request):
+    #get user
+    user = User.objects.get(username=request.user)
+    
     #initiate array for alphabet colors
     AlphabetFormSet = formset_factory(AlphabetForm, extra=26, max_num=26)
     alphabet_formset = AlphabetFormSet(form_kwargs={'empty_permitted': False}, prefix='alphabet')
@@ -139,7 +142,7 @@ def wordle(request):
     end_date = datetime(year=current_year, month=current_month, day=current_day, hour=23, minute=59, second=59) # represents 23:59:59
 
     # Check for previous attempts
-    attempts = Wordle_Attempt.objects.filter(date__range=(start_date, end_date), user=request.user)
+    attempts = Wordle_Attempt.objects.filter(date__range=(start_date, end_date), user=user)
     # print(f"\nAttempt is: {attempts[0].guess}\n")
     # query if a word has been created already today in the DB.
     if OneshotWord.objects.filter(date__range=(start_date, end_date)).exists():
@@ -256,7 +259,15 @@ def wordle(request):
                     todaysGuessle.attempts+=1
                     todaysGuessle.correctAnswers+=1
                     todaysGuessle.save()
-                    
+                    user.dayscorrect+=1
+                    yesterday = datetime.now() - timedelta(1)
+                    userrun = Wordle_Attempt.objects.filter(date=yesterday)
+                    if userrun.exists():
+                        user.streak +=1
+                        if user.streak > user.highestStreak:
+                            user.highestStreak = user.streak
+                    else:
+                        user.streak = 0
                     if results:
                         results[str(attempt_number)] = results[str(attempt_number)]+1
                     else:
@@ -269,9 +280,11 @@ def wordle(request):
                     messages.add_message(request=request, level=messages.ERROR, message = 'Chances are over. word is '+TARGET_WORD)
                     todaysGuessle.attempts+=1
                     todaysGuessle.save()
+                    user.daysincorrect+=1
+                    user.streak = 0
                 
                 att = Wordle_Attempt.objects.update_or_create(
-                        user=request.user,
+                        user=user,
                         date=current_dateTime,
                         word=todaysGuessle,
                         guess=guess
@@ -385,24 +398,21 @@ def history(request):
     return render(request, 'pages/games/history.html', context)
 
 def halloffame(request):
-    guesses = OneshotWord.objects.all()
-    clues = OneshotClues.objects.all()
-
-    guessles = {}
-    # Loops through all words excluding today's date or last word
-    for i in range(0,len(guesses)-1):
-        # if percentage correct for the day is 0 stops division by 0 error
-        try:
-            per=round((guesses[i].correctAnswers/guesses[i].attempts)*100,2)
-        except:
-            per=0
-        a = {i:{'id':guesses[i].id, 'word':guesses[i].word, 'clue1':clues[i].clue1, 'clue2':clues[i].clue2,
-             'clue3':clues[i].clue3,'clue4':clues[i].clue4,'clue5':clues[i].clue5,'per':per, 'date':guesses[i].date}}
-        # adds each item in the guesses and clues tables to a dict
-        guessles.update(a)
-    context = {'guessles':guessles}
+    users = User.objects.order_by("-highestStreak", "-streak")
+    table = {}
+    for person in range(0,len(users)):
+        rank=person+1,
+        username=users[person].username,
+        streak=users[person].streak,
+        highestStreak=users[person].highestStreak,
+        correct=users[person].dayscorrect,
+        incorrect=users[person].daysincorrect,
+        per=round(correct/(correct+incorrect)*100,2)
+        a = {'rank':rank,'username':username,'streak':streak,'highestStreak':highestStreak,'per':per}
+        table.update(a)
+    context = {'players':table}
     
-    return render(request, 'pages/games/history.html', context)
+    return render(request, 'pages/games/fame.html', context)
 
 def help_menu(request):
     return render(request=request,template_name='word/help.html')
