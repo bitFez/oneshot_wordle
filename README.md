@@ -9,7 +9,7 @@ A version of wordle where you only have one chance to guess the day's word!
 - [x] Limit a user from taking a guess if they have one already in the Guessle_Attempt model
 - [x] Create league table of users who are most successful
 - [x] create modal for rules
-- [ ] Create modal for displaying a user's streak data
+- [x] Create modal for displaying a user's streak data
 - [x] Remove the warning card after success / failure and instead add to user's streak modal
 - [x] Hide Nav bar using burger menu
 - [x] check if the word wordle is copyrighted
@@ -67,7 +67,11 @@ Moved to [Live reloading and SASS compilation](https://cookiecutter-django.readt
 ## Deployment
 
 The following details how to deploy this application.
-1. build the 
+1. build the app using `docker-compose -f local.yml build`
+2. make the migrations for the app `docker-compose -f local.yml run --rm django python manage.py makemigrations`
+3. Create a Superuser `docker-compose -f local.yml run --rm django python manage.py createsuperuser`
+4. Run the server `docker-compose -f local.yml up`
+5. At this point it will probably error because you need to load the words DB. in the browser address bar run `localhost:8000/load_words`
 
 ### Docker
 

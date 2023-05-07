@@ -19,8 +19,7 @@ from django.contrib.staticfiles.finders import find
 from django.templatetags.static import static
 from django.contrib.staticfiles.storage import staticfiles_storage
 
-from plotly import express as px
-import pandas as pd
+import plotly.graph_objects as go
 
 User = get_user_model()
 
@@ -426,19 +425,13 @@ def help_menu(request):
     return render(request=request,template_name='pages/games/help.html')
 
 def results(request):
+    user = get_object_or_404(User, pk=request.user.id)
     context = {}
-    results = request.session.get('results',None)
-    if results:
-        df = pd.DataFrame.from_dict(results, orient='index')
-    else:
-        results = {'1':0,'2':0,'3':0,'4':0,'5':0,'6':0}
-        df = pd.DataFrame.from_dict([results], orient='index')
-
-    df.reset_index(inplace=True)
-    df.columns = ['attempts','count']
-
-    fig = px.bar(df, x="count", y="attempts", width=350, height=500, labels={'count':'Count','attempts':'Attempts'})
-    fig.update_layout(autosize=True, margin_autoexpand=False, template='simple_white')
-
-    context['result'] = fig.to_html(config= {'displaylogo': False, 'displayModeBar':False}, include_plotlyjs=False)
-    return render(request=request, template_name='word/results.html',context=context)
+    
+    
+    results = {'streak':user.streak,'highestStreak':user.highestStreak,'correct':user.dayscorrect,
+            'incorrect':user.daysincorrect,'days':user.dayscorrect+user.daysincorrect,
+            'per':round((user.dayscorrect/user.daysincorrect)*100,2)}
+                
+    context['result'] = results
+    return render(request=request, template_name='pages/games/results.html',context=context)
