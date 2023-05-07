@@ -1,4 +1,4 @@
-# Oneshot Wordle
+# Oneshot Guessle
 
 A version of wordle where you only have one chance to guess the day's word!
 
@@ -7,7 +7,7 @@ A version of wordle where you only have one chance to guess the day's word!
 - [ ] Colour the alphabet according to the letters in the guess and clues
 - [x] Create page of previous words
 - [x] Add each guess to the Wordle_Attempt model
-- [ ] Limit a user from taking a guess if they have one already in the Wordle_Attempt model
+- [x] Limit a user from taking a guess if they have one already in the Wordle_Attempt model
 - [ ] Create league table of users who are most successful
 - [ ] create modal for rules
 - [ ] Create modal for displaying a user's streak data
@@ -68,6 +68,7 @@ Moved to [Live reloading and SASS compilation](https://cookiecutter-django.readt
 ## Deployment
 
 The following details how to deploy this application.
+1. build the 
 
 ### Docker
 

@@ -147,20 +147,8 @@ def wordle(request):
     else:
         # get a new word for today if one doesn't exist
         todaysword = get_random_word()
-        a = OneshotWord.objects.update_or_create(word = todaysword)
-        b = Word.objects.get(word=todaysword)
-        b.frequency += 1
-        b.save()
-    todaysGuessle = OneshotWord.objects.all().last()
-    
-    TARGET_WORD = todaysGuessle.word
-    # get the clues for the day
-    if OneshotClues.objects.filter(date__range=(start_date, end_date)).exists():
-        todayclues = OneshotClues.objects.filter(date__range=(start_date, end_date))[0]
-        clues = [todayclues.clue1,todayclues.clue2,todayclues.clue3,todayclues.clue4,todayclues.clue5]
-    else:
-        # get a new word for today if one doesn't exist
-        todayclues = get_random_clues(TARGET_WORD)
+        # get todays random clues
+        todayclues = get_random_clues(todaysword.word)
         a = OneshotClues.objects.update_or_create(
             clue1 = todayclues[0],
             clue2 = todayclues[1],
@@ -170,7 +158,19 @@ def wordle(request):
         )
         todayclues = OneshotClues.objects.filter(date__range=(start_date, end_date))[0]
         clues = [todayclues.clue1,todayclues.clue2,todayclues.clue3,todayclues.clue4,todayclues.clue5]
-    
+        a = OneshotWord.objects.update_or_create(
+            word = todaysword,
+            clues = todayclues
+            )
+        b = Word.objects.get(word=todaysword)
+        b.frequency += 1
+        b.save()
+    todaysGuessle = OneshotWord.objects.all().last()
+    todayclues = todaysGuessle.clues #OneshotClues.objects.filter(date__range=(start_date, end_date))[0]
+    TARGET_WORD = todaysGuessle.word
+
+    clues = [todayclues.clue1,todayclues.clue2,todayclues.clue3,todayclues.clue4,todayclues.clue5]
+
     # This section will add each clue to the wordle rows with the correct colour for each letter.
     cluesRow = []
     for clue in range(0,5):
@@ -273,7 +273,8 @@ def wordle(request):
                 att = Wordle_Attempt.objects.update_or_create(
                         user=request.user,
                         date=current_dateTime,
-                        word=todaysGuessle
+                        word=todaysGuessle,
+                        guess=guess
                     )
             else:
                 messages.add_message(request=request, level=messages.ERROR, message=guess+' is not a valid english word')
@@ -296,31 +297,41 @@ def wordle(request):
             print(alphabet_formset.non_form_errors())
     
     
-    else:        
-        if (attempts.exists() == True) & (attempts[0].guess == todaysGuessle.word):
-            messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's Guessle")
-            form = WordleForm()
-            form.fields['attempts_left'].initial= 0
-            form.fields['attempt_number'].initial = 0
-            attempt_number = 0
-            row=guess_result(attempts[0].guess, todaysGuessle.word)
-            cluesRow.append(row)
-            context['cluesRow'] = cluesRow
-            context['attempts'] = attempts
-        elif (attempts.exists() == True) & (attempts[0].guess != todaysGuessle.word):
-            messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's Guessle")
-            form = WordleForm()
-            form.fields['attempts_left'].initial= 0
-            attempt_number = 0
-            row=guess_result(attempts[0].guess, todaysGuessle.word)
-            cluesRow.append(row)
-            context['cluesRow'] = cluesRow
-            context['attempts'] = attempts
-        else:
-            #initiate the forms
-            attempt_number = 1
-            form = WordleForm(initial={})
-            form.fields['attempts_left'].initial= 1
+    else:
+        try:
+            # print("Not a post request")
+            if (attempts.exists() == True) & (attempts[0].guess == todaysGuessle.word):
+                # print(f"\n todays word {todaysGuessle.word} - The guess {attempts[0].guess} \nattempt exists and is equal to todays word")
+                messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's Guessle")
+                form = WordleForm()
+                form.fields['attempts_left'].initial= 0
+                form.fields['attempt_number'].initial = 0
+                attempt_number = 0
+                row=guess_result(attempts[0].guess, todaysGuessle.word)
+                cluesRow.append(row)
+                context['cluesRow'] = cluesRow
+                context['attempts'] = attempts
+            elif (attempts.exists() == True) & (attempts[0].guess != todaysGuessle.word):
+                # print(f"\n todays word {todaysGuessle.word} - The guess {attempts[0].guess} \nattempt exists and is not equal to todays word")
+                messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's Guessle")
+                form = WordleForm()
+                form.fields['attempts_left'].initial= 0
+                attempt_number = 0
+                row=guess_result(attempts[0].guess, todaysGuessle.word)
+                cluesRow.append(row)
+                context['cluesRow'] = cluesRow
+                context['attempts'] = attempts
+            # else:
+                # print(f"We do this if there is no attempt!")
+                # initiate the forms
+                
+                # form = WordleForm(initial={})
+                # form.fields['attempts_left'].initial= 1
+        except:
+            pass
+        attempt_number = 1
+        form = WordleForm(initial={})
+        form.fields['attempts_left'].initial= 1
         form.fields['attempt_number'].initial = 1
         guess_formset = GuessFormSet(prefix='guess')
         alphabet_formset = AlphabetFormSet(prefix='alphabet')
@@ -354,19 +365,19 @@ def wordle(request):
     return render(request, 'pages/games/wordle.html', context)
 
 def history(request):
-    guesses = OneshotWord.objects.all()
-    clues = OneshotClues.objects.all()
+    dailyOsW = OneshotWord.objects.all()
+    # clues = OneshotClues.objects.all()
 
     guessles = {}
     # Loops through all words excluding today's date or last word
-    for i in range(0,len(guesses)-1):
+    for i in range(0,len(dailyOsW)-1):
         # if percentage correct for the day is 0 stops division by 0 error
         try:
-            per=round((guesses[i].correctAnswers/guesses[i].attempts)*100,2)
+            per=round((dailyOsW[i].correctAnswers/dailyOsW[i].attempts)*100,2)
         except:
             per=0
-        a = {i:{'id':guesses[i].id, 'word':guesses[i].word, 'clue1':clues[i].clue1, 'clue2':clues[i].clue2,
-             'clue3':clues[i].clue3,'clue4':clues[i].clue4,'clue5':clues[i].clue5,'per':per, 'date':guesses[i].date}}
+        a = {i:{'id':dailyOsW[i].id, 'word':dailyOsW[i].word, 'clue1':dailyOsW[i].clues.clue1, 'clue2':dailyOsW[i].clues.clue2,
+             'clue3':dailyOsW[i].clues.clue3,'clue4':dailyOsW[i].clues.clue4,'clue5':dailyOsW[i].clues.clue5,'per':per, 'date':dailyOsW[i].date}}
         # adds each item in the guesses and clues tables to a dict
         guessles.update(a)
     context = {'guessles':guessles}
