@@ -10,7 +10,7 @@ from django.http import HttpResponse
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, RedirectView, UpdateView
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 import json
 from django.forms.formsets import formset_factory
 from django.contrib import messages
@@ -123,7 +123,7 @@ def get_random_clues(oneshotWord):
 @login_required(login_url="/accounts/login/")
 def wordle(request):
     #get user
-    user = User.objects.get(username=request.user)
+    user = get_object_or_404(User, pk=request.user.id)
     
     #initiate array for alphabet colors
     AlphabetFormSet = formset_factory(AlphabetForm, extra=26, max_num=26)
@@ -259,6 +259,7 @@ def wordle(request):
                     todaysGuessle.attempts+=1
                     todaysGuessle.correctAnswers+=1
                     todaysGuessle.save()
+                    print(f"Days correct {user.dayscorrect}")
                     user.dayscorrect+=1
                     yesterday = datetime.now() - timedelta(1)
                     userrun = Wordle_Attempt.objects.filter(date=yesterday)
@@ -374,7 +375,7 @@ def wordle(request):
         context['alphabet_formset'] = alphabet_formset
 
     #send back the html template
-    
+    user.save()
     return render(request, 'pages/games/wordle.html', context)
 
 def history(request):
@@ -398,17 +399,22 @@ def history(request):
     return render(request, 'pages/games/history.html', context)
 
 def halloffame(request):
-    users = User.objects.order_by("-highestStreak", "-streak")
+    users = User.objects.all().order_by("-highestStreak", "-streak", "-dayscorrect")
     table = {}
     for person in range(0,len(users)):
-        rank=person+1,
-        username=users[person].username,
-        streak=users[person].streak,
-        highestStreak=users[person].highestStreak,
-        correct=users[person].dayscorrect,
-        incorrect=users[person].daysincorrect,
-        per=round(correct/(correct+incorrect)*100,2)
-        a = {'rank':rank,'username':username,'streak':streak,'highestStreak':highestStreak,'per':per}
+        rank=person+1
+        username=users[person].username
+        streak=users[person].streak
+        highestStreak=users[person].highestStreak
+        correct=users[person].dayscorrect
+        incorrect=users[person].daysincorrect
+        days=correct+incorrect
+        try:
+            per=round((correct/days)*100,2)
+        except:
+            per=0
+        a = {rank:{'username':username,'streak':streak,'highestStreak':highestStreak,
+                   'correct':correct,'days':days,'per':per}}
         table.update(a)
     context = {'players':table}
     

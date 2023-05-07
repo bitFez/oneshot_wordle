@@ -3,12 +3,11 @@
 A version of wordle where you only have one chance to guess the day's word!
 
 ## TODO
-- [ ] Use HTMX to only partially load the last row of the guess form
 - [ ] Colour the alphabet according to the letters in the guess and clues
 - [x] Create page of previous words
 - [x] Add each guess to the Wordle_Attempt model
 - [x] Limit a user from taking a guess if they have one already in the Wordle_Attempt model
-- [ ] Create league table of users who are most successful
+- [x] Create league table of users who are most successful
 - [ ] create modal for rules
 - [ ] Create modal for displaying a user's streak data
 - [x] Remove the warning card after success / failure and instead add to user's streak modal

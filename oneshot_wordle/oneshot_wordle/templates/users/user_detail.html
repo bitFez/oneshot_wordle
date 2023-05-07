@@ -10,9 +10,15 @@
     <div class="col-sm-12">
 
       <h2>{{ object.username }}</h2>
+      <img src="{{object.image.url}}" height="200px" alt="">
       {% if object.name %}
         <p>{{ object.name }}</p>
       {% endif %}
+      <p>Correct Guesses: {{object.dayscorrect}}</p>
+      <p>Incorrect Guesses: {{object.daysincorrect}}</p>
+      <p>Current Streak: {{object.streak}}</p>
+      <p>Highest Streak: {{object.highestStreak}}</p>
+      <p>Correct Guesses: {{object.dayscorrect}}</p>
     </div>
   </div>
 
