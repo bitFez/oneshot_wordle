@@ -5,10 +5,10 @@ A version of wordle where you only have one chance to guess the day's word!
 ## TODO
 - [ ] Colour the alphabet according to the letters in the guess and clues
 - [x] Create page of previous words
-- [x] Add each guess to the Wordle_Attempt model
-- [x] Limit a user from taking a guess if they have one already in the Wordle_Attempt model
+- [x] Add each guess to the Guessle_Attempt model
+- [x] Limit a user from taking a guess if they have one already in the Guessle_Attempt model
 - [x] Create league table of users who are most successful
-- [ ] create modal for rules
+- [x] create modal for rules
 - [ ] Create modal for displaying a user's streak data
 - [x] Remove the warning card after success / failure and instead add to user's streak modal
 - [x] Hide Nav bar using burger menu
@@ -46,7 +46,7 @@ For convenience, you can keep your normal user logged in on Chrome and your supe
 
 Running type checks with mypy:
 
-    $ mypy oneshot_wordle
+    $ mypy oneshot_guessle
 
 ### Test coverage
 
