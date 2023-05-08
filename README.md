@@ -16,7 +16,24 @@ A version of wordle where you only have one chance to guess the day's word!
     It seems likes it is :-( https://www.gamerevolution.com/news/703678-wordle-archive-removed-new-york-times-trademark-clone
 - [x] Come up with a new name for the site
 - [x] need to centre the heading without a linebreak
-
+- [ ] Dark / light modes
+- [ ] Easy game mode (2 greens, 2 yellows)
+- [ ] Bonus (Hard) game mode (6 letter words 2 greens, 3 yellows)
+- [ ] Daily Stars
+    - 1 star for guessing the main word
+    - 1 star for guessing the main word in under 1 min
+    - 1 star for guessing easy word
+    - 1 star for guessing easy word in under 30 seconds
+    - 1 star for guesing bonus / hard word
+- [ ] Ko-fi Page - 
+    - for monthly donators:
+        - ad-free experience
+        - unlock bonus / hard daily word
+        - special role on discord
+    - Members are able to suggest special theme days (star trek etc)
+- [ ] Create word definitions to results
+- [ ] Ads on page
+- [ ] Countdown to next guessle
 
 [![Built with Cookiecutter Django](https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg?logo=cookiecutter)](https://github.com/cookiecutter/cookiecutter-django/)
 [![Black code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
