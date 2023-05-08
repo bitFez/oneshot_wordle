@@ -431,7 +431,7 @@ def results(request):
     
     results = {'streak':user.streak,'highestStreak':user.highestStreak,'correct':user.dayscorrect,
             'incorrect':user.daysincorrect,'days':user.dayscorrect+user.daysincorrect,
-            'per':round((user.dayscorrect/user.daysincorrect)*100,2)}
+            'per':round((user.dayscorrect/(user.daysincorrect+user.dayscorrect))*100,2)}
                 
     context['result'] = results
     return render(request=request, template_name='pages/games/results.html',context=context)

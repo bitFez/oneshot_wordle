@@ -18,6 +18,7 @@
     <!-- Your stuff: Third-party CSS libraries go here -->
     {% block css %} {% endblock %}
     <!-- This file stores project-specific CSS -->
+    
     <link href="{% static 'css/project.css' %}" rel="stylesheet">
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://unpkg.com/htmx.org@1.6.1"></script>
@@ -39,9 +40,8 @@
 
       <!-- place project specific Javascript in this file -->
       <script defer src="{% static 'js/project.js' %}"></script>
-
+      
     {% endblock javascript %}
-
   </head>
 
   <body style="position:fixed;height:100%;width:100%" class="bg-dark">
