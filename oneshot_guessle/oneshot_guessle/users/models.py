@@ -20,6 +20,10 @@ class User(AbstractUser):
     misseddays = IntegerField(default=0)
     streak = IntegerField(default=0)
     highestStreak = IntegerField(default=0)
+    # easystreak = IntegerField(default=0)
+    # easyhighestStreak = IntegerField(default=0)
+    # hardstreak = IntegerField(default=0)
+    # hardhighestStreak = IntegerField(default=0)
     image = ImageField(upload_to='images/profile_pics', null=True, blank=True, default="images/avatar.png", help_text=('Choose your avatar'), verbose_name=('Profile Picture'))
 
 
