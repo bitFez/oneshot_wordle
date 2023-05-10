@@ -33,6 +33,12 @@ class EasyGuessle_AttemptAdmin(admin.ModelAdmin):
     list_filter =('date','user', 'word',)
     list_display = ('date','user', 'word', 'guess')
 
+class Guessle_AttemptAdmin(admin.ModelAdmin):
+    model = Guessle_Attempt
+    search_fields = ('user', 'date','word',)
+    list_filter =('date','user', 'word',)
+    list_display = ('date','user', 'word', 'guess')
+
 class Daily_StarsAdmin(admin.ModelAdmin):
     model = Daily_Stars
     search_fields = ('user', 'date','stars',)
@@ -45,4 +51,5 @@ admin.site.register(OneshotWord, OneshotWordAdmin)
 admin.site.register(OneshotWordEasy, OneshotWordEasyAdmin)
 admin.site.register(OneshotClues, OneshotCluesAdmin)
 admin.site.register(Guessle_Attempt, Guessle_AttemptAdmin)
+admin.site.register(EasyGuessle_Attempt, EasyGuessle_AttemptAdmin)
 admin.site.register(Daily_Stars, Daily_StarsAdmin)

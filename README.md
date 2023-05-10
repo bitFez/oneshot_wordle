@@ -19,12 +19,10 @@ A version of wordle where you only have one chance to guess the day's word!
 - [ ] Dark / light modes
 - [ ] Easy game mode (2 greens, 2 yellows)
 - [ ] Bonus (Hard) game mode (6 letter words 2 greens, 3 yellows)
-- [ ] Daily Stars
-    - 1 star for guessing the main word
-    - 1 star for guessing the main word in under 1 min
-    - 1 star for guessing easy word
-    - 1 star for guessing easy word in under 30 seconds
-    - 1 star for guesing bonus / hard word
+- Daily Stars
+    - [x] 1 star for guessing the main word
+    - [x] 1 star for guessing easy word
+    - [ ] 1 star for guesing bonus / hard word
 - [ ] Ko-fi Page - 
     - for monthly donators:
         - ad-free experience

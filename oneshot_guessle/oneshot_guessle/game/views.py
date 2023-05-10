@@ -26,7 +26,7 @@ User = get_user_model()
 from django.core.mail import send_mail
 
 from .forms import GuessleForm, GuessForm, AlphabetForm
-from .models import Word, OneshotWord, OneshotClues, Guessle_Attempt, EasyGuessle_Attempt, OneshotWordEasy, OneshotCluesEasy
+from .models import Word, OneshotWord, OneshotClues, Guessle_Attempt, EasyGuessle_Attempt, OneshotWordEasy, OneshotCluesEasy, Daily_Stars
 from .functions import guess_result, get_random_clues, get_clues_rows
 # from .forms import MessageForm
 
@@ -80,6 +80,9 @@ def guessle(request):
     
     start_date = datetime(year=current_year, month=current_month, day=current_day, hour=0, minute=0, second=0) # represents 00:00:00
     end_date = datetime(year=current_year, month=current_month, day=current_day, hour=23, minute=59, second=59) # represents 23:59:59
+
+    # Check for number of daily stars
+    stars = Daily_Stars.objects.filter(date__range=(start_date, end_date), user=user)
 
     # Check for previous attempts
     attempts = Guessle_Attempt.objects.filter(date__range=(start_date, end_date), user=user)
@@ -177,6 +180,7 @@ def guessle(request):
                     todaysGuessle.attempts+=1
                     todaysGuessle.correctAnswers+=1
                     todaysGuessle.save()
+                    stars.stars += 1
                     print(f"Days correct {user.dayscorrect}")
                     user.dayscorrect+=1
                     yesterday = datetime.now() - timedelta(1)
@@ -192,7 +196,7 @@ def guessle(request):
                     else:
                         results = {'1':0,'2':0,'3':0,'4':0,'5':0,'6':0}
                         results[str(attempt_number)] = 1
-
+                    context['stars'] = stars
                     request.session['results'] = results
                     
                 elif attempts_left == 1:
@@ -275,22 +279,11 @@ def guessle(request):
             guess_form.fields['guess'].widget.attrs.update({'x-ref':x_ref,'x-model':x_ref+'_xmodel'})
             i=i+1
 
-        #see if the word is in the link, else get a new word encrypt and store in form
-        # if request.GET.get('target_word',None) == None:
-        #     target_word = todaysword
-        #     encrypted_word = target_word
-        #     form.fields['target_word'].initial = encrypted_word
-            
-        # else:
-        #     request.GET._mutable = True
-        #     encrypted_word = request.GET.get('target_word')
-        #     form.fields['target_word'].initial = encrypted_word
-        #     request.GET['target_word'] = None
-
         #initiate the variables to send to the template
         context['form'] = form
         context['guess_formset'] = guess_formset
         context['alphabet_formset'] = alphabet_formset
+        context['stars'] = stars
 
     #send back the html template
     user.save()
@@ -314,6 +307,9 @@ def guessle_easy(request):
     current_month=current_dateTime.month
     current_day=current_dateTime.day
     
+    # Check for number of daily stars
+    stars = Daily_Stars.objects.filter(date__range=(start_date, end_date), user=user)
+
     start_date = datetime(year=current_year, month=current_month, day=current_day, hour=0, minute=0, second=0) # represents 00:00:00
     end_date = datetime(year=current_year, month=current_month, day=current_day, hour=23, minute=59, second=59) # represents 23:59:59
 
@@ -413,6 +409,7 @@ def guessle_easy(request):
                     todaysGuessle.attempts+=1
                     todaysGuessle.correctAnswers+=1
                     todaysGuessle.save()
+                    stars.stars += 1
                     # print(f"Days correct {user.dayscorrect}")
                     user.dayscorrect+=1
                     yesterday = datetime.now() - timedelta(1)
@@ -430,7 +427,7 @@ def guessle_easy(request):
                         results[str(attempt_number)] = 1
 
                     request.session['results'] = results
-                    
+                    context['stars'] = stars
                 elif attempts_left == 1:
                     messages.add_message(request=request, level=messages.ERROR, message = 'Chances are over. word is '+TARGET_WORD)
                     todaysGuessle.attempts+=1
@@ -515,6 +512,7 @@ def guessle_easy(request):
         context['form'] = form
         context['guess_formset'] = guess_formset
         context['alphabet_formset'] = alphabet_formset
+        context['stars'] = stars
 
     #send back the html template
     user.save()
