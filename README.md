@@ -17,6 +17,7 @@ A version of wordle where you only have one chance to guess the day's word!
 - [x] Come up with a new name for the site
 - [x] need to centre the heading without a linebreak
 - [ ] Dark / light modes
+- [x] Support modal page
 - [x] Easy game mode (2 greens, 2 yellows)
 - [ ] Bonus (Hard) game mode (6 letter words 2 greens, 3 yellows)
 - [x] Get a list of 6 letter words for the hard mode game
@@ -24,12 +25,12 @@ A version of wordle where you only have one chance to guess the day's word!
     - [x] 1 star for guessing the main word
     - [x] 1 star for guessing easy word
     - [ ] 1 star for guesing bonus / hard word
-- [ ] Ko-fi Page - 
+- Ko-fi Page - 
     - for monthly donators:
-        - ad-free experience
-        - unlock bonus / hard daily word
-        - special role on discord
-    - Members are able to suggest special theme days (star trek etc)
+        - [ ] ad-free experience
+        - [ ] unlock bonus / hard daily word
+        - [ ] special role on discord
+        - [ ] Members are able to suggest special theme days (star trek etc)
 - [ ] Create word definitions to results
 - [ ] Ads on page
 - [ ] Countdown to next guessle

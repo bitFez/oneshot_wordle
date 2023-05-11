@@ -587,6 +587,9 @@ def halloffame(request):
 def help_menu(request):
     return render(request=request,template_name='pages/games/help.html')
 
+def support_menu(request):
+    return render(request=request,template_name='pages/games/support.html')
+
 def results(request):
     user = get_object_or_404(User, pk=request.user.id)
     context = {}

@@ -1,29 +1,19 @@
 {% load static i18n %}
-<div id="modal" class="modal bg-dark" x-ref="resultsdiv" tabindex="-1">
+<div id="modal" class="modal" x-ref="resultsdiv" tabindex="-1">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <div class="d-flex justify-content-between">
-            <div class="p-2 flex-fill">
-              <i class="bi bi-bar-chart-line-fill" style="font-size: 2rem;"></i>
-            </div>
-            <div class="p-2 flex-fill text-center">
-              <h4 class="modal-title text-center text-uppercase">Your Statistics</h4>
-            </div>
-            <div class="p-2 flex-fill text-end">
-              <a class="" data-bs-dismiss="modal" aria-label="Close">
+          
+          <h4 class="modal-title text-center text-uppercase">Your Statistics</h4>
+          <a class="" data-bs-dismiss="modal" aria-label="Close">
                 <i class="bi bi-x-square" style="font-size: 2rem;"></i>
-              </a>
-              
-            </div>
-          </div>
-          
-          
+          </a>
+
         </div>
         <div class="modal-body">
           <div class="container m-0 p-0">
 
-            <table class="table table-hover">
+            <table class="table table-hover table-striped-columns">
               <tr class="table-dark d-flex">
                 <td class="table-dark text-end text-uppercase col-6 flex-fill">Correct Guessles</td>
                 <td class="table-dark text-start col-6 flex-fill">{{result.correct}}</td>

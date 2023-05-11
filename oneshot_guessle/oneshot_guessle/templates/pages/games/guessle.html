@@ -10,14 +10,19 @@
 <div class="container d-flex flex-column align-items-center justify-content-between h-100 w-100" x-data="{ guess_xmodel: '', guess_1_xmodel:'{{guess_formset.0.guess.value|default_if_none:""}}', guess_2_xmodel:'{{guess_formset.1.guess.value |default_if_none:""}}', guess_3_xmodel:'{{guess_formset.2.guess.value|default_if_none:""}}', guess_4_xmodel:'{{guess_formset.3.guess.value|default_if_none:""}}',guess_5_xmodel:'{{guess_formset.4.guess.value|default_if_none:""}}', guess_6_xmodel:'{{guess_formset.5.guess.value|default_if_none:""}}', attempts_left_xmodel:'{{form.attempts_left.value|default_if_none:0}}', attempt_number_xmodel:'{{form.attempt_number.value|default_if_none:0}}', show_error: false, my_modal:''}">
     <div id="modal_placeholder"></div>
     <div class="row my-2 py-2 align-items-center no-gutters justify-content-center border-bottom w-100">
-        <div class="col-2"></div>
+        <!-- Site title & top bar -->
+        <div class="col-2">
+            <!-- Left side icons -->
+            <a class="btn btn-link mx-0 px-0 text-danger" hx-get='{% url "game:support" %}' hx-target="#modal_placeholder" hx-trigger="click" @htmx:after-on-load.camel="setTimeout(function() { my_modal=new bootstrap.Modal($refs.modaldiv);my_modal.show()},100)"> <i class="bi bi-heart-fill" style="font-size: 2rem;"></i></a>
+        </div>
         <div class="col-6">
+            <!-- Title -->
             <div class="d-flex flex-row justify-content-center text-light"><span class="h1 text-uppercase">{{ request.site.name }} #{{guessleNo}}</span></div>
         </div>
         <div class="col-2 d-flex m-0 p-0 flex-row-reverse">
+            <!-- Right side icons -->
             <a class="btn btn-link mx-0 px-0" hx-get='{% url "game:help" %}' hx-target="#modal_placeholder" hx-trigger="click" @htmx:after-on-load.camel="setTimeout(function() { my_modal=new bootstrap.Modal($refs.modaldiv);my_modal.show()},100)"> <i class="bi bi-question-circle" style="font-size: 2rem;"></i></a>
             <a class="btn btn-link" hx-get='{% url "game:results" %}' hx-target="#modal_placeholder" hx-trigger="click" @htmx:after-on-load.camel="setTimeout(function() {results_modal=new bootstrap.Modal($refs.resultsdiv);results_modal.show()},100)"><i class="bi bi-bar-chart-line-fill"  style="font-size: 2rem;"></i></a>
-            <!--  -->
         </div>
     </div>
     <div class="row flex-grow-1 justify-content-center align-items-center">
@@ -64,18 +69,7 @@
             {% endif %}    
         </div>
     </div>
-    <div class="row">
-        {% if stars.0.stars == 0 %}
-        <p class="text-center fs-1"><i class="bi bi-star text-warning "></i><i class="bi bi-star text-warning"></i><i class="bi bi-star text-warning" ></i></p>
-        {% elif stars.0.stars == 1 %}
-        <p class="text-center fs-1"><i class="bi bi-star-fill text-warning " ></i><i class="bi bi-star text-warning " ></i><i class="bi bi-star text-warning " ></i></p>
-        {% elif stars.0.stars == 2 %}
-        <p class="text-center fs-1"><i class="bi bi-star-fill text-warning "></i><i class="bi bi-star-fill text-warning " ></i><i class="bi bi-star text-warning " ></i></p>
-        {% elif stars.0.stars == 3 %}
-        <p class="text-center fs-1"><i class="bi bi-star-fill text-warning " ></i><i class="bi bi-star-fill text-warning " ></i><i class="bi bi-star-fill text-warning " ></i></p>
-        {% endif %}
-    </div>
-   
+       
     <div class="row my-2 py-2 flex-grow-1 w-100">
         <div class="col border-bottom"></div>
     </div>
