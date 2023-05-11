@@ -72,6 +72,18 @@ class Word(models.Model):
     def __str__(self):
         return self.word
 
+class WordsHard(models.Model):
+    class Meta: 
+        verbose_name = "Hard Word"
+        verbose_name_plural = "Hard Words"
+
+    word = models.CharField(max_length=6)
+    frequency = models.PositiveBigIntegerField(default=0)
+    lastOccurance = models.DateTimeField(auto_now=True, null=True)
+
+    def __str__(self):
+        return self.word
+
 class Guessle_Attempt(models.Model):
     class Meta: 
         verbose_name = "Word Attempt"
@@ -81,12 +93,24 @@ class Guessle_Attempt(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now=True, null=True)
 
+    def __str__(self):
+        return self.word
+
 class EasyGuessle_Attempt(models.Model):
     class Meta: 
         verbose_name = "Easy Word Attempt"
-        verbose_name_plural = "Easy Word Attempts"
+        verbose_name_plural = "Easy Words Attempts"
     word = models.ForeignKey(OneshotWord, on_delete=models.CASCADE)
     guess = models.CharField(max_length=5)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now=True, null=True)
+
+class HardGuessle_Attempt(models.Model):
+    class Meta: 
+        verbose_name = "Hard Word Attempt"
+        verbose_name_plural = "Hard Words Attempts"
+    word = models.ForeignKey(OneshotWord, on_delete=models.CASCADE)
+    guess = models.CharField(max_length=6)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now=True, null=True)
 
@@ -98,3 +122,6 @@ class Daily_Stars(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now=True, null=True)
     stars = models.PositiveBigIntegerField(default=0)
+
+    def __str__(self):
+        return self.user.username

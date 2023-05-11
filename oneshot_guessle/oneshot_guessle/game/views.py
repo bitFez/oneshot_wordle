@@ -26,7 +26,7 @@ User = get_user_model()
 from django.core.mail import send_mail
 
 from .forms import GuessleForm, GuessForm, AlphabetForm
-from .models import Word, OneshotWord, OneshotClues, Guessle_Attempt, EasyGuessle_Attempt, OneshotWordEasy, OneshotCluesEasy, Daily_Stars
+from .models import Word, WordsHard, OneshotWord, OneshotClues, Guessle_Attempt, EasyGuessle_Attempt, OneshotWordEasy, OneshotCluesEasy, Daily_Stars
 from .functions import guess_result, get_random_clues, get_clues_rows
 # from .forms import MessageForm
 
@@ -52,10 +52,29 @@ def load_words(request):
                 word = wd
             )
             newWords += 1
-        print(f"{round((item/lenOfData)*100,2)}%")
-    msg = f"Added {newWords} new words."
+        print(f"Adding 5 Letter Words {round((item/lenOfData)*100,2)}%")
+    
+    if settings.DEBUG:
+        file_ = find('dicts/6-letter-words.txt')
+    else:
+        file_ = static('dicts/6-letter-words.txt')
+    with open(file_, "r") as f:
+        data = f.readlines() # json.load(f)
+
+    new6Words = 0
+    lenOfData = len(data)
+    for item in range(0, len(data)):
+        wd = data[item].rstrip('\n')  
+        if not WordsHard.objects.filter(word=wd).exists():
+            obj = WordsHard.objects.update_or_create(
+                word = wd
+            )
+            new6Words += 1
+        print(f"Adding 6 Letter Words {round((item/lenOfData)*100,2)}%")
+    msg = f"Added {newWords} new 5 letter words and {new6Words} new 6 letter words."
     context = {'msg':msg}
-    return render(request, 'pages/games/words_loaded.html', context)# HttpResponse(msg, content_type='text/plain')
+    return render(request, 'pages/games/words_loaded.html', context)
+
 
 def get_random_word():
     return Word.objects.filter(Q(lastOccurance__lte=datetime.now() - timedelta(days=730)) | Q(frequency=0)).order_by('?')[0]
@@ -82,8 +101,9 @@ def guessle(request):
     end_date = datetime(year=current_year, month=current_month, day=current_day, hour=23, minute=59, second=59) # represents 23:59:59
 
     # Check for number of daily stars
-    stars = Daily_Stars.objects.filter(date__range=(start_date, end_date), user=user)
-
+    # stars = Daily_Stars.objects.filter(date__range=(start_date, end_date), user=user)
+    stars = Daily_Stars.objects.update_or_create(date__range=(start_date, end_date), user=user)
+    
     # Check for previous attempts
     attempts = Guessle_Attempt.objects.filter(date__range=(start_date, end_date), user=user)
     # print(f"\nAttempt is: {attempts[0].guess}\n")
@@ -180,7 +200,7 @@ def guessle(request):
                     todaysGuessle.attempts+=1
                     todaysGuessle.correctAnswers+=1
                     todaysGuessle.save()
-                    stars.stars += 1
+                    stars += 1
                     print(f"Days correct {user.dayscorrect}")
                     user.dayscorrect+=1
                     yesterday = datetime.now() - timedelta(1)
@@ -205,6 +225,7 @@ def guessle(request):
                     todaysGuessle.save()
                     user.daysincorrect+=1
                     user.streak = 0
+                    stars =0
                 
                 att = Guessle_Attempt.objects.update_or_create(
                         user=user,
@@ -284,6 +305,7 @@ def guessle(request):
         context['guess_formset'] = guess_formset
         context['alphabet_formset'] = alphabet_formset
         context['stars'] = stars
+        
 
     #send back the html template
     user.save()
@@ -308,8 +330,8 @@ def guessle_easy(request):
     current_day=current_dateTime.day
     
     # Check for number of daily stars
-    stars = Daily_Stars.objects.filter(date__range=(start_date, end_date), user=user)
-
+    stars = Daily_Stars.objects.filter(date__range=(start_date, end_date), user=user)[0]
+    print(stars)
     start_date = datetime(year=current_year, month=current_month, day=current_day, hour=0, minute=0, second=0) # represents 00:00:00
     end_date = datetime(year=current_year, month=current_month, day=current_day, hour=23, minute=59, second=59) # represents 23:59:59
 
@@ -409,7 +431,7 @@ def guessle_easy(request):
                     todaysGuessle.attempts+=1
                     todaysGuessle.correctAnswers+=1
                     todaysGuessle.save()
-                    stars.stars += 1
+                    stars += 1
                     # print(f"Days correct {user.dayscorrect}")
                     user.dayscorrect+=1
                     yesterday = datetime.now() - timedelta(1)
@@ -513,6 +535,7 @@ def guessle_easy(request):
         context['guess_formset'] = guess_formset
         context['alphabet_formset'] = alphabet_formset
         context['stars'] = stars
+        print(stars)
 
     #send back the html template
     user.save()
@@ -567,11 +590,14 @@ def help_menu(request):
 def results(request):
     user = get_object_or_404(User, pk=request.user.id)
     context = {}
-    
+    try:
+        per=round((user.dayscorrect/(user.daysincorrect+user.dayscorrect))*100,2)
+    except:
+        per=0
     
     results = {'streak':user.streak,'highestStreak':user.highestStreak,'correct':user.dayscorrect,
             'incorrect':user.daysincorrect,'days':user.dayscorrect+user.daysincorrect,
-            'per':round((user.dayscorrect/(user.daysincorrect+user.dayscorrect))*100,2)}
+            'per':per}
                 
     context['result'] = results
     return render(request=request, template_name='pages/games/results.html',context=context)

@@ -1,5 +1,5 @@
 from django.contrib.auth.models import AbstractUser
-from django.db.models import CharField, IntegerField,ImageField
+from django.db.models import CharField, IntegerField,ImageField,BooleanField
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
@@ -20,6 +20,7 @@ class User(AbstractUser):
     misseddays = IntegerField(default=0)
     streak = IntegerField(default=0)
     highestStreak = IntegerField(default=0)
+    supporter = BooleanField(default=False)
     # easystreak = IntegerField(default=0)
     # easyhighestStreak = IntegerField(default=0)
     # hardstreak = IntegerField(default=0)
