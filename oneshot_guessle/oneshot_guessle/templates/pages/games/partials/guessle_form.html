@@ -24,7 +24,7 @@
         <input style="height:60px;width:60px;" class="form-control fw-bold text-center {% if i|slugify  != form.attempt_number.value|slugify  %}text-light{%endif%} fs-5 {{guess_form.l5_color.value}}" readonly type="text", size="1" x-bind:value="{% if i|slugify == form.attempt_number.value|slugify %} guess_xmodel.substring(4,5).toUpperCase() {%else%} {{l5}} {%endif%}">
         {%endwith%}
         {% with "guess_"|concat:i|concat:"_xmodel.substring(5,6).toUpperCase()" as l6 %}
-        <input style="height:60px;width:60px;" class="form-control fw-bold text-center {% if i|slugify  != form.attempt_number.value|slugify  %}text-light{%endif%} fs-5 {{guess_form.l5_color.value}}" readonly type="text", size="1" x-bind:value="{% if i|slugify == form.attempt_number.value|slugify %} guess_xmodel.substring(4,5).toUpperCase() {%else%} {{l5}} {%endif%}">
+        <input style="height:60px;width:60px;" class="form-control fw-bold text-center {% if i|slugify  != form.attempt_number.value|slugify  %}text-light{%endif%} fs-5 {{guess_form.l6_color.value}}" readonly type="text", size="1" x-bind:value="{% if i|slugify == form.attempt_number.value|slugify %} guess_xmodel.substring(5,6).toUpperCase() {%else%} {{l6}} {%endif%}">
         {%endwith%}
         {%endwith%}
     </div>

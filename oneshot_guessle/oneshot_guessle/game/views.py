@@ -600,12 +600,17 @@ def guessle_hard(request):
         
         #load the 5-words scrabble dictionary
         if settings.DEBUG:
-            six_letter_words = find('dicts/5-letter-words.json')
+            six_letter_words = find('dicts/6-letter-words.txt')
         else:
-            six_letter_words = static('dicts/5-letter-words.json')
-        en_dict = json.load(open(six_letter_words))
-        en_list = [en['word'] for en in en_dict]
-
+            six_letter_words = static('dicts/6-letter-words.txt')
+        with open(six_letter_words, "r") as f:
+            data = f.readlines() # json.load(f)
+        
+        en_list = []
+        for item in range(0, len(data)):
+            wd = data[item].rstrip('\n')
+            en_list.append(wd)
+             
         #initiate array for alphabet colors
         AlphabetFormSet = formset_factory(AlphabetForm, extra=26, max_num=26)
         
@@ -739,7 +744,7 @@ def guessle_hard(request):
 
     #send back the html template
     user.save()
-    return render(request, 'pages/games/guessle.html', context)
+    return render(request, 'pages/games/guessle_hard.html', context)
 
 
 def history(request):
