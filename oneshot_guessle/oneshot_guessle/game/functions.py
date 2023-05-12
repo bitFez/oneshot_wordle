@@ -1,4 +1,4 @@
-from .models import Word
+from .models import Word,WordsHard
 
 def guess_result(guess, target_word):
     # Display the result of the guess
@@ -72,7 +72,10 @@ def get_random_clues(oneshotWord, difficulty):
     bulls_list = len(bulls)
     while not(bulls_list == bulls_diff and cows_list ==cows_diff):
         cows,bulls = [], []
-        clues = Word.objects.order_by('?')
+        if difficulty=="hard":
+            clues = WordsHard.objects.order_by('?')
+        else:
+            clues = Word.objects.order_by('?')
         
         clue1,clue2,clue3,clue4,clue5 = clues[0],clues[1],clues[2],clues[3],clues[4]
         

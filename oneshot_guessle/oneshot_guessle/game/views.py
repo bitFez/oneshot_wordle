@@ -25,7 +25,7 @@ User = get_user_model()
 
 from django.core.mail import send_mail
 
-from .forms import GuessleForm, GuessForm, AlphabetForm
+from .forms import GuessleForm, GuessForm, GuessleFormHard, GuessFormHard, AlphabetForm
 from .models import *
 from .functions import guess_result, get_random_clues, get_clues_rows
 # from .forms import MessageForm
@@ -538,7 +538,7 @@ def guessle_hard(request):
     AlphabetFormSet = formset_factory(AlphabetForm, extra=26, max_num=26)
     alphabet_formset = AlphabetFormSet(form_kwargs={'empty_permitted': False}, prefix='alphabet')
     #initiate formset for guesslist
-    GuessFormSet = formset_factory(GuessForm, extra=1, max_num=1)
+    GuessFormSet = formset_factory(GuessFormHard, extra=1, max_num=1)
 
     context = {}
     # Get today's todays date
@@ -563,7 +563,7 @@ def guessle_hard(request):
         # get a new word for today if one doesn't exist
         todaysword = get_random_word(difficulty = "hard")
         # get todays random clues
-        todayclues = get_random_clues(todaysword.word, "hard")
+        todayclues = get_random_clues(todaysword.word, difficulty="hard")
         a = OneshotCluesHard.objects.update_or_create(
             clue1 = todayclues[0],
             clue2 = todayclues[1],
@@ -610,11 +610,11 @@ def guessle_hard(request):
         AlphabetFormSet = formset_factory(AlphabetForm, extra=26, max_num=26)
         
         #initiate formset for guesslist
-        GuessFormSet = formset_factory(GuessForm, extra=1, max_num=1)
+        GuessFormSet = formset_factory(GuessFormHard, extra=1, max_num=1)
         #read the forms from copy of request.POST to make them mutable
         guess_formset = GuessFormSet(request.POST.copy(), form_kwargs={'empty_permitted': False}, prefix='guess')
         alphabet_formset = AlphabetFormSet(request.POST.copy(), form_kwargs={'empty_permitted': False}, prefix='alphabet')
-        form = GuessleForm(request.POST.copy())
+        form = GuessleFormHard(request.POST.copy())
 
         if guess_formset.is_valid() & form.is_valid() & alphabet_formset.is_valid():
             
@@ -658,7 +658,7 @@ def guessle_hard(request):
                     todaysGuessle.attempts+=1
                     todaysGuessle.save()
                 
-                att = EasyGuessle_Attempt.objects.update_or_create(
+                att = HardGuessle_Attempt.objects.update_or_create(
                         user=user,
                         date=current_dateTime,
                         word=todaysGuessle,
@@ -666,7 +666,7 @@ def guessle_hard(request):
                     )
             else:
                 messages.add_message(request=request, level=messages.ERROR, message=guess+' is not a valid english word')
-                context['guess_formset'] = guess_formset
+                context['guess_formset_hard'] = guess_formset
                 context['form'] = form
                 context['alphabet_formset'] = alphabet_formset
 
@@ -691,7 +691,7 @@ def guessle_hard(request):
             if (attempts.exists() == True) & (attempts[0].guess == todaysGuessle.word):
                 # print(f"\n todays word {todaysGuessle.word} - The guess {attempts[0].guess} \nattempt exists and is equal to todays word")
                 messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's Guessle")
-                form = GuessleForm()
+                form = GuessleFormHard()
                 form.fields['attempts_left'].initial= 0
                 form.fields['attempt_number'].initial = 0
                 attempt_number = 0
@@ -702,7 +702,7 @@ def guessle_hard(request):
             elif (attempts.exists() == True) & (attempts[0].guess != todaysGuessle.word):
                 # print(f"\n todays word {todaysGuessle.word} - The guess {attempts[0].guess} \nattempt exists and is not equal to todays word")
                 messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's Guessle")
-                form = GuessleForm()
+                form = GuessleFormHard()
                 form.fields['attempts_left'].initial= 0
                 attempt_number = 0
                 row=guess_result(attempts[0].guess, todaysGuessle.word)
@@ -718,7 +718,7 @@ def guessle_hard(request):
         except:
             pass
         attempt_number = 1
-        form = GuessleForm(initial={})
+        form = GuessleFormHard(initial={})
         form.fields['attempts_left'].initial= 1
         form.fields['attempt_number'].initial = 1
         guess_formset = GuessFormSet(prefix='guess')
@@ -733,7 +733,7 @@ def guessle_hard(request):
 
         #initiate the variables to send to the template
         context['form'] = form
-        context['guess_formset'] = guess_formset
+        context['guess_formset_hard'] = guess_formset
         context['alphabet_formset'] = alphabet_formset
         context['stars'] = stars
 
