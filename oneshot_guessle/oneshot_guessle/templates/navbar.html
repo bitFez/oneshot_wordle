@@ -13,7 +13,13 @@
         <div class="offcanvas-body">
           <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'game:home' %}">Home</a>
+              <a class="nav-link" href="{% url 'game:home' %}">Home / Daily Main challenge</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'game:easy' %}">Daily Easy Guessle</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'game:home' %}">Daily Hard Guessle <br>(for supporters)</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'about' %}">About</a>

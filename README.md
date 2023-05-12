@@ -24,7 +24,7 @@ A version of wordle where you only have one chance to guess the day's word!
 - Daily Stars
     - [x] 1 star for guessing the main word
     - [x] 1 star for guessing easy word
-    - [ ] 1 star for guesing bonus / hard word
+    - [x] 1 star for guesing bonus / hard word
 - Ko-fi Page - 
     - for monthly donators:
         - [ ] ad-free experience
@@ -34,6 +34,7 @@ A version of wordle where you only have one chance to guess the day's word!
 - [ ] Create word definitions to results
 - [ ] Ads on page
 - [ ] Countdown to next guessle
+- [ ] Add shadow to bottom of tiles
 
 [![Built with Cookiecutter Django](https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg?logo=cookiecutter)](https://github.com/cookiecutter/cookiecutter-django/)
 [![Black code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)

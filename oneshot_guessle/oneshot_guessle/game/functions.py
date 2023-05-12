@@ -21,13 +21,18 @@ def guess_result(guess, target_word):
     
     return row
 
-def get_clues_rows(clues, TARGET_WORD):
+def get_clues_rows(clues, TARGET_WORD, **kwargs):
+    difficulty= kwargs.get('difficulty', None)
+    if difficulty=="hard":
+        rowLen = 6
+    else:
+        rowLen = 5
     cluesRow = []
     for clue in range(0,5):
         cows,bulls=[],[]
         row='<div class="btn-group">'
         guess = clues[clue]                
-        for j in range(0,5):
+        for j in range(0,rowLen):
             letter_color = 'l'+str(j+1)+'_color'
             if guess[j] == TARGET_WORD[j]:
                 letter= '<button style="height:60px;width:60px;" class="form-control btn btn-success fw-bold text-center text-light fs-5 disabled" type="text", size="1">'+guess[j].upper()+'</button>'
@@ -44,6 +49,7 @@ def get_clues_rows(clues, TARGET_WORD):
                 # alphabet_formset[ord(guess[j])-97].data['l_color'] = 'btn-secondary'
                 row+=letter
         row+='</div><br>'
+
         cluesRow.append(row)
     return cluesRow
 
@@ -51,6 +57,9 @@ def get_random_clues(oneshotWord, difficulty):
     if difficulty=="easy":
         bulls_diff = 2
         cows_diff = 2
+    elif difficulty=="hard":
+        bulls_diff = 2
+        cows_diff = 3
     else:
         bulls_diff = 1
         cows_diff = 3
@@ -114,3 +123,4 @@ def get_random_clues(oneshotWord, difficulty):
         
         # print(f"Cows: {cows_list} -- Bulls: {bulls_list}")
     return clues_list
+

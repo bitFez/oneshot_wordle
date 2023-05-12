@@ -31,6 +31,20 @@ class OneshotCluesEasy(models.Model):
     def __str__(self):
         return str(self.date)
 
+class OneshotCluesHard(models.Model):
+    class Meta: 
+        verbose_name = "Hard Clue"
+        verbose_name_plural = "Hard Clues"
+    clue1 = models.CharField(max_length=6)
+    clue2 = models.CharField(max_length=6)
+    clue3 = models.CharField(max_length=6)
+    clue4 = models.CharField(max_length=6)
+    clue5 = models.CharField(max_length=6)
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.date)
+
 class OneshotWord(models.Model):
     class Meta: 
         verbose_name = "Oneshot Daily Word"
@@ -54,7 +68,21 @@ class OneshotWordEasy(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     attempts = models.PositiveIntegerField(default=0)
     correctAnswers = models.PositiveIntegerField(default=0)
-    clues = models.ForeignKey(OneshotClues, on_delete=models.CASCADE)
+    clues = models.ForeignKey(OneshotCluesEasy, on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return self.word
+
+class OneshotWordHard(models.Model):
+    class Meta: 
+        verbose_name = "Oneshot Hard Daily Word"
+        verbose_name_plural = "Oneshot Hard Daily Words"
+
+    word = models.CharField(max_length=6)
+    date = models.DateTimeField(auto_now_add=True)
+    attempts = models.PositiveIntegerField(default=0)
+    correctAnswers = models.PositiveIntegerField(default=0)
+    clues = models.ForeignKey(OneshotCluesHard, on_delete=models.CASCADE)
     
     def __str__(self):
         return self.word
@@ -93,14 +121,14 @@ class Guessle_Attempt(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now=True, null=True)
 
-    def __str__(self):
-        return self.word
+    # def __str__(self):
+    #     return self.word
 
 class EasyGuessle_Attempt(models.Model):
     class Meta: 
         verbose_name = "Easy Word Attempt"
         verbose_name_plural = "Easy Words Attempts"
-    word = models.ForeignKey(OneshotWord, on_delete=models.CASCADE)
+    word = models.ForeignKey(OneshotWordEasy, on_delete=models.CASCADE)
     guess = models.CharField(max_length=5)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now=True, null=True)
@@ -109,7 +137,7 @@ class HardGuessle_Attempt(models.Model):
     class Meta: 
         verbose_name = "Hard Word Attempt"
         verbose_name_plural = "Hard Words Attempts"
-    word = models.ForeignKey(OneshotWord, on_delete=models.CASCADE)
+    word = models.ForeignKey(OneshotWordHard, on_delete=models.CASCADE)
     guess = models.CharField(max_length=6)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now=True, null=True)
