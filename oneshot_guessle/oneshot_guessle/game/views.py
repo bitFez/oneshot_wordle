@@ -150,7 +150,7 @@ def guessle(request):
     context['cluesRow'] = cluesRow
     context['guessleNo'] = todaysGuessle.id
     context['stars'] = stars
-
+    
     # Dealing with the post of a guess
     if request.method == 'POST':   
         #load the 5-words scrabble dictionary
@@ -381,7 +381,7 @@ def guessle_easy(request):
     context['cluesRow'] = cluesRow
     context['guessleNo'] = todaysGuessle.id
     context['stars'] = stars
-    
+    context['difficulty'] = 'easy'
     # Dealing with the post of a guess
     if request.method == 'POST':   
         

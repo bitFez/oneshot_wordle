@@ -4,32 +4,6 @@
     {%load word_tags%}
 {% endblock %}
 
-{% if guess_formset_hard %}
-    {% for guess_form in guess_formset_hard %}
-    <div class="my-0 py-0 d-flex d-grid justify-content-center">
-        {% with forloop.counter|define as i%}
-        {% with "guess_"|concat:i|concat:"_xmodel.substring(0,1).toUpperCase()" as l1 %}
-        <input style="height:60px;width:60px;" class="form-control fw-bold text-center {% if i|slugify  != form.attempt_number.value|slugify  %}text-light{%endif%} fs-5 {{guess_form.l1_color.value}}" readonly type="text", size="1" x-bind:value="{% if i|slugify  == form.attempt_number.value|slugify  %} guess_xmodel.substring(0,1).toUpperCase() {%else%} {{l1}} {%endif%}">
-        {%endwith%}
-        {% with "guess_"|concat:i|concat:"_xmodel.substring(1,2).toUpperCase()" as l2 %}
-        <input style="height:60px;width:60px;" class="form-control fw-bold text-center {% if i|slugify  != form.attempt_number.value|slugify  %}text-light{%endif%} fs-5 {{guess_form.l2_color.value}}" readonly type="text", size="1" x-bind:value="{% if i|slugify == form.attempt_number.value|slugify %} guess_xmodel.substring(1,2).toUpperCase() {%else%} {{l2}} {%endif%}">
-        {%endwith%}
-        {% with "guess_"|concat:i|concat:"_xmodel.substring(2,3).toUpperCase()" as l3 %}
-        <input style="height:60px;width:60px;" class="form-control fw-bold text-center {% if i|slugify  != form.attempt_number.value|slugify  %}text-light{%endif%} fs-5 {{guess_form.l3_color.value}}" readonly type="text", size="1" x-bind:value="{% if i|slugify == form.attempt_number.value|slugify %} guess_xmodel.substring(2,3).toUpperCase() {%else%} {{l3}} {%endif%}">
-        {%endwith%}
-        {% with "guess_"|concat:i|concat:"_xmodel.substring(3,4).toUpperCase()" as l4 %}
-        <input style="height:60px;width:60px;" class="form-control fw-bold text-center {% if i|slugify  != form.attempt_number.value|slugify  %}text-light{%endif%} fs-5 {{guess_form.l4_color.value}}" readonly type="text", size="1" x-bind:value="{% if i|slugify == form.attempt_number.value|slugify %} guess_xmodel.substring(3,4).toUpperCase() {%else%} {{l4}} {%endif%}">
-        {%endwith%}
-        {% with "guess_"|concat:i|concat:"_xmodel.substring(4,5).toUpperCase()" as l5 %}
-        <input style="height:60px;width:60px;" class="form-control fw-bold text-center {% if i|slugify  != form.attempt_number.value|slugify  %}text-light{%endif%} fs-5 {{guess_form.l5_color.value}}" readonly type="text", size="1" x-bind:value="{% if i|slugify == form.attempt_number.value|slugify %} guess_xmodel.substring(4,5).toUpperCase() {%else%} {{l5}} {%endif%}">
-        {%endwith%}
-        {% with "guess_"|concat:i|concat:"_xmodel.substring(5,6).toUpperCase()" as l6 %}
-        <input style="height:60px;width:60px;" class="form-control fw-bold text-center {% if i|slugify  != form.attempt_number.value|slugify  %}text-light{%endif%} fs-5 {{guess_form.l6_color.value}}" readonly type="text", size="1" x-bind:value="{% if i|slugify == form.attempt_number.value|slugify %} guess_xmodel.substring(5,6).toUpperCase() {%else%} {{l6}} {%endif%}">
-        {%endwith%}
-        {%endwith%}
-    </div>
-    {% endfor %}
-{% else %}
 {% for guess_form in guess_formset %}
     <div class="my-0 py-0 d-flex d-grid justify-content-center">
         {% with forloop.counter|define as i%}
@@ -51,7 +25,7 @@
         {%endwith%}
     </div>
 {% endfor %}
-{% endif %}
+
 
 {% if stars %}
     <div class="row">
@@ -65,4 +39,5 @@
         <p class="text-center fs-1"><i class="bi bi-star-fill text-warning " ></i><i class="bi bi-star-fill text-warning " ></i><i class="bi bi-star-fill text-warning " ></i></p>
         {% endif %}
     </div>
+    
 {% endif %}

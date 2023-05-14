@@ -17,7 +17,7 @@
         </div>
         <div class="col-6">
             <!-- Title -->
-            <div class="d-flex flex-row justify-content-center text-light"><span class="h1 text-uppercase">{{ request.site.name }} #{{guessleNo}}</span></div>
+            <div class="d-flex flex-row justify-content-center text-light"><span class="h1 text-uppercase">{{ request.site.name }} {% if difficulty %}{{difficulty}}{% endif %} #{{guessleNo}}</span></div>
         </div>
         <div class="col-2 d-flex m-0 p-0 flex-row-reverse">
             <!-- Right side icons -->
@@ -74,6 +74,7 @@
         <div class="col border-bottom"></div>
     </div>
     <div class="row">
+        
         <div class="col">
             {% if guess_formset_hard %}
             <div class="w-100 my-1 py-1 d-flex d-grid gap-1 justify-content-between" style="height:60px;">
@@ -147,6 +148,7 @@
             </div>
             {% endif %}
         </div>
+        
     </div>
 </div>
 

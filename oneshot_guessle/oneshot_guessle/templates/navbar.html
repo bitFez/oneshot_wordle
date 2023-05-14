@@ -13,13 +13,19 @@
         <div class="offcanvas-body">
           <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'game:home' %}">Home / Daily Main challenge</a>
+              <a class="nav-link" href="{% url 'game:home' %}">
+                <button class="btn btn-warning">Home / Daily Main challenge</button>
+              </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'game:easy' %}">Daily Easy Guessle</a>
+              <a class="nav-link" href="{% url 'game:easy' %}">
+                <button class="btn btn-primary">Daily Easy Guessle</button>
+              </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'game:home' %}">Daily Hard Guessle <br>(for supporters)</a>
+              <a class="nav-link" href="{% url 'game:home' %}">
+                <button class="btn btn-danger">Daily Hard Guessle <br>(for supporters)</button>
+              </a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'about' %}">About</a>
@@ -51,7 +57,12 @@
                 <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">{% translate "Sign In" %}</a>
             </li>
             {% endif %}
-            <li><i class="bi bi-twitter"></i></li>
+            <li>
+              <a href="https://twitter.com/oneshotguessle" target="_blank"><i class="bi bi-twitter" style="font-size: 2rem;"></i></a>
+            </li>
+            <li>
+              <a href="https://ko-fi.com/oneshotguessle" target="_blank" > <img src="https://storage.ko-fi.com/cdn/brandasset/kofi_s_tag_dark.png" height="50px" alt=""> </a>
+            </li>
           </ul>
         </div>
       </div>
