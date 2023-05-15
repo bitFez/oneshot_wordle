@@ -610,7 +610,7 @@ def guessle_hard(request):
         for item in range(0, len(data)):
             wd = data[item].rstrip('\n')
             en_list.append(wd)
-             
+           
         #initiate array for alphabet colors
         AlphabetFormSet = formset_factory(AlphabetForm, extra=26, max_num=26)
         
@@ -744,7 +744,7 @@ def guessle_hard(request):
 
     #send back the html template
     user.save()
-    return render(request, 'pages/games/guessle_hard.html', context)
+    return render(request, 'pages/games/guessle.html', context)
 
 
 def history(request):
