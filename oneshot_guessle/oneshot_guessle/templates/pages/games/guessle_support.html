@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'css/guessle.css' %}">
+    {%load word_tags%}
+{% endblock %}
+{% block content %}
+
+<div class="container d-flex flex-column align-items-center justify-content-between h-100 w-100" x-data="{ guess_xmodel: '', guess_1_xmodel:'{{guess_formset.0.guess.value|default_if_none:""}}', guess_2_xmodel:'{{guess_formset.1.guess.value |default_if_none:""}}', guess_3_xmodel:'{{guess_formset.2.guess.value|default_if_none:""}}', guess_4_xmodel:'{{guess_formset.3.guess.value|default_if_none:""}}',guess_5_xmodel:'{{guess_formset.4.guess.value|default_if_none:""}}', guess_6_xmodel:'{{guess_formset.5.guess.value|default_if_none:""}}', attempts_left_xmodel:'{{form.attempts_left.value|default_if_none:0}}', attempt_number_xmodel:'{{form.attempt_number.value|default_if_none:0}}', show_error: false, my_modal:''}">
+    <div id="modal_placeholder"></div>
+    <div class="row my-2 py-2 align-items-center no-gutters justify-content-center border-bottom w-100">
+        <!-- Site title & top bar -->
+        <div class="col-2">
+            <!-- Left side icons -->
+            
+        </div>
+        <div class="col-6">
+            <!-- Title -->
+            <div class="d-flex flex-row justify-content-center text-light">
+                <span class="h1 text-uppercase">
+                    Support {{ request.site.name }} 
+                </span>
+            </div>
+        </div>
+        <div class="col-2 d-flex m-0 p-0 flex-row-reverse">
+            <!-- Right side icons -->
+            
+        </div>
+    </div>
+    <div class="row flex-grow-1 justify-content-center align-items-center">
+        <div class="container">
+            <p>{{request.site.name}} has been put together just for fun. <br> 
+              As a developer I <i class="text-danger bi bi-suit-heart-fill"></i> 
+              to play these games and wanted to create something challenging that others may like to try.
+              <br>
+              The site will mainly be funded by your donations. 
+              <br> 
+              If you <i class="bi bi-suit-heart-fill text-danger"></i> the site,
+              please consider supporting me by buying me a 
+              <img src="https://storage.ko-fi.com/cdn/brandasset/kofi_s_logo_nolabel.png" width="32" height="32" alt=""> on 
+                <a href="https://ko-fi.com/oneshotguessle" target="_blank">ko-fi.com</a>.
+            </p>
+            <h5>Supporters get:</h5>
+              <ol class="list-group list-group-numbered list-group-flush">
+                  <li class="border-0 list-group-item d-flex align-items-start">
+                    <div class="container">
+                      <div class="row">
+                        <div class="col-2">
+  
+                        </div>
+                        <div class="col-10">
+                          <strong>The extra daily hard puzzle to complete your 3 daily stars!</strong>
+                          <p>Have the bragging rights of being able to complete all 3 daily stars</p>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="border-0 list-group-item d-flex align-items-start">
+                    <div class="container">
+                      <div class="row">
+                        <div class="col-2">
+  
+                        </div>
+                        <div class="col-10">
+                          <strong>Suggest special theme days</strong>
+                          <p>Supporters get the chance to suggest special puzzles for theme days🖖</p>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="border-0 list-group-item d-flex align-items-start">
+                    <div class="container">
+                      <div class="row">
+                        <div class="col-2">
+  
+                        </div>
+                        <div class="col-10">
+                          <strong>An Ad free experience</strong>
+                          <p>No ads on any page for {{request.site.name}} supporters</p>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                        
+              </ol>
+          </div>
+    </div>
+       
+    <div class="row my-2 py-2 flex-grow-1 w-100">
+        <div class="col border-bottom"></div>
+    </div>
+    <div class="row">
+        
+        
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block javascript %}
+    
+{% endblock javascript %}

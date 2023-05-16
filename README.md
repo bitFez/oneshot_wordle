@@ -28,7 +28,7 @@ A version of wordle where you only have one chance to guess the day's word!
 - Ko-fi Page - 
     - for monthly donators:
         - [ ] ad-free experience
-        - [ ] unlock bonus / hard daily word
+        - [x] unlock bonus / hard daily word
         - [ ] special role on discord
         - [ ] Members are able to suggest special theme days (star trek etc)
 - [ ] Create word definitions to results

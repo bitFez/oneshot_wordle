@@ -204,7 +204,7 @@ def guessle(request):
                     context['cluesRow'] = cluesRow
 
                     if guess == TARGET_WORD:
-                        messages.add_message(request=request, level=messages.SUCCESS, message='You Guessled in one Shot!! Challenge your friend by clicking '+'<a href='+request.path+'?target_word='+form.cleaned_data['target_word']+'>here</a>', extra_tags='safe')
+                        messages.add_message(request=request, level=messages.SUCCESS, message='You Guessled in one Shot!! \n have you tried the daily Easy or hard challenge? \n Also, why not challenge your friend by clicking '+'<a href='+request.path+'?target_word='+form.cleaned_data['target_word']+'>here</a>', extra_tags='safe')
                         results = request.session.get('results',None)
                         todaysGuessle.attempts+=1
                         todaysGuessle.correctAnswers+=1
@@ -532,224 +532,230 @@ def guessle_easy(request):
     user.save()
     return render(request, 'pages/games/guessle.html', context)
 
+def supporter(request):
+    return render(request=request,template_name='pages/games/guessle_support.html')
 
 @login_required(login_url="/accounts/login/")
 def guessle_hard(request):
     #get user
     user = get_object_or_404(User, pk=request.user.id)
-    
-    #initiate array for alphabet colors
-    AlphabetFormSet = formset_factory(AlphabetForm, extra=26, max_num=26)
-    alphabet_formset = AlphabetFormSet(form_kwargs={'empty_permitted': False}, prefix='alphabet')
-    #initiate formset for guesslist
-    GuessFormSet = formset_factory(GuessFormHard, extra=1, max_num=1)
-
-    context = {}
-    # Get today's todays date
-    current_dateTime =datetime.now(tz=timezone.utc)
-    current_year=current_dateTime.year
-    current_month=current_dateTime.month
-    current_day=current_dateTime.day
-    
-    start_date = datetime(year=current_year, month=current_month, day=current_day, hour=0, minute=0, second=0) # represents 00:00:00
-    end_date = datetime(year=current_year, month=current_month, day=current_day, hour=23, minute=59, second=59) # represents 23:59:59
-
-    # Check for number of daily stars
-    stars = Daily_Stars.objects.update_or_create(date__range=(start_date, end_date), user=user)
-    stars = Daily_Stars.objects.filter(date__range=(start_date, end_date), user=user)[0]
-    # Check for previous attempts
-    attempts = HardGuessle_Attempt.objects.filter(date__range=(start_date, end_date), user=user)
-    # print(f"\nAttempt is: {attempts[0].guess}\n")
-    # query if a word has been created already today in the DB.
-    if OneshotWordHard.objects.filter(date__range=(start_date, end_date)).exists():
-        todaysword = OneshotWordHard.objects.filter(date__range=(start_date, end_date))[0] 
+    print(f"User support: {user.supporter}")
+    if user.supporter == False:
+        return HttpResponseRedirect(reverse("game:supporterredirect"))
     else:
-        # get a new word for today if one doesn't exist
-        todaysword = get_random_word(difficulty = "hard")
-        # get todays random clues
-        todayclues = get_random_clues(todaysword.word, difficulty="hard")
-        a = OneshotCluesHard.objects.update_or_create(
-            clue1 = todayclues[0],
-            clue2 = todayclues[1],
-            clue3 = todayclues[2],
-            clue4 = todayclues[3],
-            clue5 = todayclues[4]
-        )
-        todayclues = OneshotCluesHard.objects.filter(date__range=(start_date, end_date))[0]
-        clues = [todayclues.clue1,todayclues.clue2,todayclues.clue3,todayclues.clue4,todayclues.clue5]
-        a = OneshotWordHard.objects.update_or_create(
-            word = todaysword,
-            clues = todayclues
-            )
-        b = WordsHard.objects.get(word=todaysword)
-        b.frequency += 1
-        b.save()
-    todaysGuessle = OneshotWordHard.objects.all().last()
-    todayclues = todaysGuessle.clues #OneshotClues.objects.filter(date__range=(start_date, end_date))[0]
-    TARGET_WORD = todaysGuessle.word
-    print(f"Todays word is : {TARGET_WORD}")
-    clues = [todayclues.clue1,todayclues.clue2,todayclues.clue3,todayclues.clue4,todayclues.clue5]
 
-    # This section will add each clue to the guessle rows with the correct colour for each letter.
-    cluesRow = get_clues_rows(clues, TARGET_WORD, difficulty="hard")
-    
-    new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.data,prefix='alphabet')
-    context['alphabet_formset'] = new_alphabet_formset
-    context['cluesRow'] = cluesRow
-    context['guessleNo'] = todaysGuessle.id
-    context['stars'] = stars
-    context['difficulty'] = 'hard'
-    # Dealing with the post of a guess
-    if request.method == 'POST':   
-        
-        #load the 5-words scrabble dictionary
-        if settings.DEBUG:
-            six_letter_words = find('dicts/6-letter-words.txt')
-        else:
-            six_letter_words = static('dicts/6-letter-words.txt')
-        with open(six_letter_words, "r") as f:
-            data = f.readlines() # json.load(f)
-        
-        en_list = []
-        for item in range(0, len(data)):
-            wd = data[item].rstrip('\n')
-            en_list.append(wd)
-           
         #initiate array for alphabet colors
         AlphabetFormSet = formset_factory(AlphabetForm, extra=26, max_num=26)
-        
+        alphabet_formset = AlphabetFormSet(form_kwargs={'empty_permitted': False}, prefix='alphabet')
         #initiate formset for guesslist
         GuessFormSet = formset_factory(GuessFormHard, extra=1, max_num=1)
-        #read the forms from copy of request.POST to make them mutable
-        guess_formset = GuessFormSet(request.POST.copy(), form_kwargs={'empty_permitted': False}, prefix='guess')
-        print(f"guess formset : {guess_formset}")
-        alphabet_formset = AlphabetFormSet(request.POST.copy(), form_kwargs={'empty_permitted': False}, prefix='alphabet')
-        form = GuessleFormHard(request.POST.copy())
-        print("Before checkinf if forms are valid")
-        if guess_formset.is_valid() & form.is_valid() & alphabet_formset.is_valid():
-            print("forms are valid")    
-            # Get form data
-            guess = form.cleaned_data['guess'].lower()
-            attempts_left = form.cleaned_data['attempts_left']
-            attempt_number = form.cleaned_data['attempt_number']
-            
-            #check if entered word is in dictionary
-            if guess in en_list:
-                #valid attempt to increment
-                form.data['attempt_number'] = attempt_number+ 1
-                form.data['attempts_left'] = attempts_left - 1
 
-                #get the latest word
-                guess_form = guess_formset[attempt_number-1]
-                guess_form.cleaned_data['guess'] = guess
-                
-                # Display the result of the guess
-                row=guess_result(guess, TARGET_WORD)     
-                cluesRow.append(row)   
-                # new_guess_formset = GuessFormSet(initial = guess_formset.cleaned_data, prefix='guess')
-                new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.cleaned_data,prefix='alphabet')
+        context = {}
+        # Get today's todays date
+        current_dateTime =datetime.now(tz=timezone.utc)
+        current_year=current_dateTime.year
+        current_month=current_dateTime.month
+        current_day=current_dateTime.day
+        
+        start_date = datetime(year=current_year, month=current_month, day=current_day, hour=0, minute=0, second=0) # represents 00:00:00
+        end_date = datetime(year=current_year, month=current_month, day=current_day, hour=23, minute=59, second=59) # represents 23:59:59
 
-                context['form'] = form
-                # context['guess_formset'] = new_guess_formset
-                context['alphabet_formset'] = new_alphabet_formset
-                context['cluesRow'] = cluesRow
-
-                if guess == TARGET_WORD:
-                    messages.add_message(request=request, level=messages.SUCCESS, message='You Guessled in one Shot!! Challenge your friend by clicking '+'<a href='+request.path+'?target_word='+form.cleaned_data['target_word']+'>here</a>', extra_tags='safe')
-                    results = request.session.get('results',None)
-                    todaysGuessle.attempts+=1
-                    todaysGuessle.correctAnswers+=1
-                    todaysGuessle.save()
-                    stars.stars += 1
-                    stars.save()
-                    context['stars'] = stars
-                elif attempts_left == 1:
-                    messages.add_message(request=request, level=messages.ERROR, message = 'Chances are over. word is '+TARGET_WORD)
-                    todaysGuessle.attempts+=1
-                    todaysGuessle.save()
-                
-                att = HardGuessle_Attempt.objects.update_or_create(
-                        user=user,
-                        date=current_dateTime,
-                        word=todaysGuessle,
-                        guess=guess
-                    )
-            else:
-                messages.add_message(request=request, level=messages.ERROR, message=guess+' is not a valid english word')
-                context['guess_formset_hard'] = guess_formset
-                context['form'] = form
-                context['alphabet_formset'] = alphabet_formset
-
-            # else:
-            #     messages.add_message(request=request, level=messages.ERROR, message = 'Chances over. word is '+TARGET_WORD)
-            #     context['guess_formset'] = guess_formset
-            #     context['form'] = form
-            #     context['alphabet_formset'] = alphabet_formset
-
+        # Check for number of daily stars
+        stars = Daily_Stars.objects.update_or_create(date__range=(start_date, end_date), user=user)
+        stars = Daily_Stars.objects.filter(date__range=(start_date, end_date), user=user)[0]
+        # Check for previous attempts
+        attempts = HardGuessle_Attempt.objects.filter(date__range=(start_date, end_date), user=user)
+        # print(f"\nAttempt is: {attempts[0].guess}\n")
+        # query if a word has been created already today in the DB.
+        if OneshotWordHard.objects.filter(date__range=(start_date, end_date)).exists():
+            todaysword = OneshotWordHard.objects.filter(date__range=(start_date, end_date))[0] 
         else:
-            print(form.errors)
-            print(form.non_field_errors)
-            print(guess_formset.errors)
-            print(guess_formset.non_form_errors())
-            print(alphabet_formset.errors)
-            print(alphabet_formset.non_form_errors())
-    
-    
-    else:
-        try:
-            # print("Not a post request")
-            if (attempts.exists() == True) & (attempts[0].guess == todaysGuessle.word):
-                # print(f"\n todays word {todaysGuessle.word} - The guess {attempts[0].guess} \nattempt exists and is equal to todays word")
-                messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's hard Guessle")
-                form = GuessleFormHard()
-                form.fields['attempts_left'].initial= 0
-                form.fields['attempt_number'].initial = 0
-                attempt_number = 0
-                row=guess_result(attempts[0].guess, todaysGuessle.word)
-                cluesRow.append(row)
-                context['cluesRow'] = cluesRow
-                context['attempts'] = attempts
-            elif (attempts.exists() == True) & (attempts[0].guess != todaysGuessle.word):
-                # print(f"\n todays word {todaysGuessle.word} - The guess {attempts[0].guess} \nattempt exists and is not equal to todays word")
-                messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's hard Guessle")
-                form = GuessleFormHard()
-                form.fields['attempts_left'].initial= 0
-                attempt_number = 0
-                row=guess_result(attempts[0].guess, todaysGuessle.word)
-                cluesRow.append(row)
-                context['cluesRow'] = cluesRow
-                context['attempts'] = attempts
-            # else:
-                # print(f"We do this if there is no attempt!")
-                # initiate the forms
-                
-                # form = GuessleForm(initial={})
-                # form.fields['attempts_left'].initial= 1
-        except:
-            pass
-        attempt_number = 1
-        form = GuessleFormHard(initial={})
-        form.fields['attempts_left'].initial= 1
-        form.fields['attempt_number'].initial = 1
-        guess_formset = GuessFormSet(prefix='guess')
-        alphabet_formset = AlphabetFormSet(prefix='alphabet')
-        guess_form = guess_formset[attempt_number-1]
+            # get a new word for today if one doesn't exist
+            todaysword = get_random_word(difficulty = "hard")
+            # get todays random clues
+            todayclues = get_random_clues(todaysword.word, difficulty="hard")
+            a = OneshotCluesHard.objects.update_or_create(
+                clue1 = todayclues[0],
+                clue2 = todayclues[1],
+                clue3 = todayclues[2],
+                clue4 = todayclues[3],
+                clue5 = todayclues[4]
+            )
+            todayclues = OneshotCluesHard.objects.filter(date__range=(start_date, end_date))[0]
+            clues = [todayclues.clue1,todayclues.clue2,todayclues.clue3,todayclues.clue4,todayclues.clue5]
+            a = OneshotWordHard.objects.update_or_create(
+                word = todaysword,
+                clues = todayclues
+                )
+            b = WordsHard.objects.get(word=todaysword)
+            b.frequency += 1
+            b.save()
+        todaysGuessle = OneshotWordHard.objects.all().last()
+        todayclues = todaysGuessle.clues #OneshotClues.objects.filter(date__range=(start_date, end_date))[0]
+        TARGET_WORD = todaysGuessle.word
+        print(f"Todays word is : {TARGET_WORD}")
+        clues = [todayclues.clue1,todayclues.clue2,todayclues.clue3,todayclues.clue4,todayclues.clue5]
 
-        i=1
-        for guess_form in guess_formset:
-            x_ref = 'guess_'+str(i)
-            guess_form.fields['guess'].widget.attrs.update({'x-ref':x_ref,'x-model':x_ref+'_xmodel'})
-            i=i+1
-
-        #initiate the variables to send to the template
-        context['form'] = form
-        context['guess_formset_hard'] = guess_formset
-        context['alphabet_formset'] = alphabet_formset
+        # This section will add each clue to the guessle rows with the correct colour for each letter.
+        cluesRow = get_clues_rows(clues, TARGET_WORD, difficulty="hard")
+        
+        new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.data,prefix='alphabet')
+        context['alphabet_formset'] = new_alphabet_formset
+        context['cluesRow'] = cluesRow
+        context['guessleNo'] = todaysGuessle.id
         context['stars'] = stars
+        context['difficulty'] = 'hard'
+        # Dealing with the post of a guess
+        if request.method == 'POST':   
+            
+            #load the 5-words scrabble dictionary
+            if settings.DEBUG:
+                six_letter_words = find('dicts/6-letter-words.txt')
+            else:
+                six_letter_words = static('dicts/6-letter-words.txt')
+            with open(six_letter_words, "r") as f:
+                data = f.readlines() # json.load(f)
+            
+            en_list = []
+            for item in range(0, len(data)):
+                wd = data[item].rstrip('\n')
+                en_list.append(wd)
+            
+            #initiate array for alphabet colors
+            AlphabetFormSet = formset_factory(AlphabetForm, extra=26, max_num=26)
+            
+            #initiate formset for guesslist
+            GuessFormSet = formset_factory(GuessFormHard, extra=1, max_num=1)
+            #read the forms from copy of request.POST to make them mutable
+            guess_formset = GuessFormSet(request.POST.copy(), form_kwargs={'empty_permitted': False}, prefix='guess')
+            print(f"guess formset : {guess_formset}")
+            alphabet_formset = AlphabetFormSet(request.POST.copy(), form_kwargs={'empty_permitted': False}, prefix='alphabet')
+            form = GuessleFormHard(request.POST.copy())
+            print("Before checkinf if forms are valid")
+            if guess_formset.is_valid() & form.is_valid() & alphabet_formset.is_valid():
+                print("forms are valid")    
+                # Get form data
+                guess = form.cleaned_data['guess'].lower()
+                attempts_left = form.cleaned_data['attempts_left']
+                attempt_number = form.cleaned_data['attempt_number']
+                
+                #check if entered word is in dictionary
+                if guess in en_list:
+                    #valid attempt to increment
+                    form.data['attempt_number'] = attempt_number+ 1
+                    form.data['attempts_left'] = attempts_left - 1
 
-    #send back the html template
-    user.save()
-    return render(request, 'pages/games/guessle.html', context)
+                    #get the latest word
+                    guess_form = guess_formset[attempt_number-1]
+                    guess_form.cleaned_data['guess'] = guess
+                    
+                    # Display the result of the guess
+                    row=guess_result(guess, TARGET_WORD)     
+                    cluesRow.append(row)   
+                    # new_guess_formset = GuessFormSet(initial = guess_formset.cleaned_data, prefix='guess')
+                    new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.cleaned_data,prefix='alphabet')
+
+                    context['form'] = form
+                    # context['guess_formset'] = new_guess_formset
+                    context['alphabet_formset'] = new_alphabet_formset
+                    context['cluesRow'] = cluesRow
+
+                    if guess == TARGET_WORD:
+                        messages.add_message(request=request, level=messages.SUCCESS, message='You Guessled in one Shot!! Challenge your friend by clicking '+'<a href='+request.path+'?target_word='+form.cleaned_data['target_word']+'>here</a>', extra_tags='safe')
+                        results = request.session.get('results',None)
+                        todaysGuessle.attempts+=1
+                        todaysGuessle.correctAnswers+=1
+                        todaysGuessle.save()
+                        stars.stars += 1
+                        stars.save()
+                        context['stars'] = stars
+                    elif attempts_left == 1:
+                        messages.add_message(request=request, level=messages.ERROR, message = 'Chances are over. word is '+TARGET_WORD)
+                        todaysGuessle.attempts+=1
+                        todaysGuessle.save()
+                    
+                    att = HardGuessle_Attempt.objects.update_or_create(
+                            user=user,
+                            date=current_dateTime,
+                            word=todaysGuessle,
+                            guess=guess
+                        )
+                else:
+                    messages.add_message(request=request, level=messages.ERROR, message=guess+' is not a valid english word')
+                    context['guess_formset_hard'] = guess_formset
+                    context['form'] = form
+                    context['alphabet_formset'] = alphabet_formset
+
+                # else:
+                #     messages.add_message(request=request, level=messages.ERROR, message = 'Chances over. word is '+TARGET_WORD)
+                #     context['guess_formset'] = guess_formset
+                #     context['form'] = form
+                #     context['alphabet_formset'] = alphabet_formset
+
+            else:
+                print(form.errors)
+                print(form.non_field_errors)
+                print(guess_formset.errors)
+                print(guess_formset.non_form_errors())
+                print(alphabet_formset.errors)
+                print(alphabet_formset.non_form_errors())
+        
+        
+        else:
+            try:
+                # print("Not a post request")
+                if (attempts.exists() == True) & (attempts[0].guess == todaysGuessle.word):
+                    # print(f"\n todays word {todaysGuessle.word} - The guess {attempts[0].guess} \nattempt exists and is equal to todays word")
+                    messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's hard Guessle")
+                    form = GuessleFormHard()
+                    form.fields['attempts_left'].initial= 0
+                    form.fields['attempt_number'].initial = 0
+                    attempt_number = 0
+                    row=guess_result(attempts[0].guess, todaysGuessle.word)
+                    cluesRow.append(row)
+                    context['cluesRow'] = cluesRow
+                    context['attempts'] = attempts
+                elif (attempts.exists() == True) & (attempts[0].guess != todaysGuessle.word):
+                    # print(f"\n todays word {todaysGuessle.word} - The guess {attempts[0].guess} \nattempt exists and is not equal to todays word")
+                    messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's hard Guessle")
+                    form = GuessleFormHard()
+                    form.fields['attempts_left'].initial= 0
+                    attempt_number = 0
+                    row=guess_result(attempts[0].guess, todaysGuessle.word)
+                    cluesRow.append(row)
+                    context['cluesRow'] = cluesRow
+                    context['attempts'] = attempts
+                # else:
+                    # print(f"We do this if there is no attempt!")
+                    # initiate the forms
+                    
+                    # form = GuessleForm(initial={})
+                    # form.fields['attempts_left'].initial= 1
+            except:
+                pass
+            attempt_number = 1
+            form = GuessleFormHard(initial={})
+            form.fields['attempts_left'].initial= 1
+            form.fields['attempt_number'].initial = 1
+            guess_formset = GuessFormSet(prefix='guess')
+            alphabet_formset = AlphabetFormSet(prefix='alphabet')
+            guess_form = guess_formset[attempt_number-1]
+
+            i=1
+            for guess_form in guess_formset:
+                x_ref = 'guess_'+str(i)
+                guess_form.fields['guess'].widget.attrs.update({'x-ref':x_ref,'x-model':x_ref+'_xmodel'})
+                i=i+1
+
+            #initiate the variables to send to the template
+            context['form'] = form
+            context['guess_formset_hard'] = guess_formset
+            context['alphabet_formset'] = alphabet_formset
+            context['stars'] = stars
+
+        #send back the html template
+        user.save()
+        return render(request, 'pages/games/guessle.html', context)
 
 
 def history(request):
