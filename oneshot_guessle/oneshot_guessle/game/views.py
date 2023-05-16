@@ -6,7 +6,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.utils import timezone
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, RedirectView, UpdateView
@@ -83,11 +83,8 @@ def get_random_word(**kwargs):
     else:
         return Word.objects.filter(Q(lastOccurance__lte=datetime.now() - timedelta(days=730)) | Q(frequency=0)).order_by('?')[0]
 
-@login_required(login_url="/accounts/login/")
-def guessle(request):
-    #get user
-    user = get_object_or_404(User, pk=request.user.id)
-    
+
+def guessle(request):   
     #initiate array for alphabet colors
     AlphabetFormSet = formset_factory(AlphabetForm, extra=26, max_num=26)
     alphabet_formset = AlphabetFormSet(form_kwargs={'empty_permitted': False}, prefix='alphabet')
@@ -104,13 +101,15 @@ def guessle(request):
     start_date = datetime(year=current_year, month=current_month, day=current_day, hour=0, minute=0, second=0) # represents 00:00:00
     end_date = datetime(year=current_year, month=current_month, day=current_day, hour=23, minute=59, second=59) # represents 23:59:59
 
-    # Check for number of daily stars
-    stars = Daily_Stars.objects.update_or_create(date__range=(start_date, end_date), user=user)
-    
-    stars = Daily_Stars.objects.filter(date__range=(start_date, end_date), user=user)[0]
-    
-    # Check for previous attempts
-    attempts = Guessle_Attempt.objects.filter(date__range=(start_date, end_date), user=user)
+    if request.user.is_authenticated:
+        #get user
+        user = get_object_or_404(User, pk=request.user.id)
+        # Check for number of daily stars
+        stars = Daily_Stars.objects.update_or_create(date__range=(start_date, end_date), user=user)
+        stars = Daily_Stars.objects.filter(date__range=(start_date, end_date), user=user)[0]
+        context['stars'] = stars
+        # Check for previous attempts
+        attempts = Guessle_Attempt.objects.filter(date__range=(start_date, end_date), user=user)
     
     # query if a word has been created already today in the DB.
     if OneshotWord.objects.filter(date__range=(start_date, end_date)).exists():
@@ -149,114 +148,120 @@ def guessle(request):
     context['alphabet_formset'] = new_alphabet_formset
     context['cluesRow'] = cluesRow
     context['guessleNo'] = todaysGuessle.id
-    context['stars'] = stars
+    
     
     # Dealing with the post of a guess
-    if request.method == 'POST':   
-        #load the 5-words scrabble dictionary
-        if settings.DEBUG:
-            five_letter_words = find('dicts/5-letter-words.json')
+    if request.method == 'POST':
+        if not request.user.is_authenticated:
+            return HttpResponseRedirect(reverse(settings.LOGIN_REDIRECT_URL))
         else:
-            five_letter_words = static('dicts/5-letter-words.json')
-        en_dict = json.load(open(five_letter_words))
-        en_list = [en['word'] for en in en_dict]
-
-        #initiate array for alphabet colors
-        AlphabetFormSet = formset_factory(AlphabetForm, extra=26, max_num=26)
-        
-        #initiate formset for guesslist
-        GuessFormSet = formset_factory(GuessForm, extra=1, max_num=1)
-        #read the forms from copy of request.POST to make them mutable
-        guess_formset = GuessFormSet(request.POST.copy(), form_kwargs={'empty_permitted': False}, prefix='guess')
-        alphabet_formset = AlphabetFormSet(request.POST.copy(), form_kwargs={'empty_permitted': False}, prefix='alphabet')
-        form = GuessleForm(request.POST.copy())
-
-        if guess_formset.is_valid() & form.is_valid() & alphabet_formset.is_valid():
-            
-            # Get form data
-            guess = form.cleaned_data['guess'].lower()
-            attempts_left = form.cleaned_data['attempts_left']
-            attempt_number = form.cleaned_data['attempt_number']
-            
-            #check if entered word is in dictionary
-            if guess in en_list:
-                #valid attempt to increment
-                form.data['attempt_number'] = attempt_number+ 1
-                form.data['attempts_left'] = attempts_left - 1
-
-                #get the latest word
-                guess_form = guess_formset[attempt_number-1]
-                guess_form.cleaned_data['guess'] = guess
-                
-                # Display the result of the guess
-                row=guess_result(guess, TARGET_WORD)     
-                cluesRow.append(row)   
-                # new_guess_formset = GuessFormSet(initial = guess_formset.cleaned_data, prefix='guess')
-                new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.cleaned_data,prefix='alphabet')
-
-                context['form'] = form
-                # context['guess_formset'] = new_guess_formset
-                context['alphabet_formset'] = new_alphabet_formset
-                context['cluesRow'] = cluesRow
-
-                if guess == TARGET_WORD:
-                    messages.add_message(request=request, level=messages.SUCCESS, message='You Guessled in one Shot!! Challenge your friend by clicking '+'<a href='+request.path+'?target_word='+form.cleaned_data['target_word']+'>here</a>', extra_tags='safe')
-                    results = request.session.get('results',None)
-                    todaysGuessle.attempts+=1
-                    todaysGuessle.correctAnswers+=1
-                    todaysGuessle.save()
-                    stars.stars += 1
-                    stars.save()
-                    
-                    user.dayscorrect+=1
-                    yesterday = datetime.now() - timedelta(1)
-                    userrun = Guessle_Attempt.objects.filter(date=yesterday)
-                    if userrun.exists():
-                        user.streak +=1
-                        if user.streak > user.highestStreak:
-                            user.highestStreak = user.streak
-                    else:
-                        user.streak = 0
-                    if results:
-                        results[str(attempt_number)] = results[str(attempt_number)]+1
-                    else:
-                        results = {'1':0,'2':0,'3':0,'4':0,'5':0,'6':0}
-                        results[str(attempt_number)] = 1
-                    context['stars'] = stars
-                    request.session['results'] = results
-                    
-                elif attempts_left == 1:
-                    messages.add_message(request=request, level=messages.ERROR, message = 'Chances are over. word is '+TARGET_WORD)
-                    todaysGuessle.attempts+=1
-                    todaysGuessle.save()
-                    user.daysincorrect+=1
-                    user.streak = 0
-                
-                att = Guessle_Attempt.objects.update_or_create(
-                        user=user,
-                        date=current_dateTime,
-                        word=todaysGuessle,
-                        guess=guess
-                    )
+            #get user
+            user = get_object_or_404(User, pk=request.user.id)
+            #load the 5-words scrabble dictionary
+            if settings.DEBUG:
+                five_letter_words = find('dicts/5-letter-words.json')
             else:
-                messages.add_message(request=request, level=messages.ERROR, message=guess+' is not a valid english word')
-                context['guess_formset'] = guess_formset
-                context['form'] = form
-                context['alphabet_formset'] = alphabet_formset
+                five_letter_words = static('dicts/5-letter-words.json')
+            en_dict = json.load(open(five_letter_words))
+            en_list = [en['word'] for en in en_dict]
 
-            # else:
-            #     messages.add_message(request=request, level=messages.ERROR, message = 'Chances over. word is '+TARGET_WORD)
-            #     context['guess_formset'] = guess_formset
-            #     context['form'] = form
-            #     context['alphabet_formset'] = alphabet_formset
+            #initiate array for alphabet colors
+            AlphabetFormSet = formset_factory(AlphabetForm, extra=26, max_num=26)
+            
+            #initiate formset for guesslist
+            GuessFormSet = formset_factory(GuessForm, extra=1, max_num=1)
+            #read the forms from copy of request.POST to make them mutable
+            guess_formset = GuessFormSet(request.POST.copy(), form_kwargs={'empty_permitted': False}, prefix='guess')
+            alphabet_formset = AlphabetFormSet(request.POST.copy(), form_kwargs={'empty_permitted': False}, prefix='alphabet')
+            form = GuessleForm(request.POST.copy())
 
-        else:
-            print(form.errors)
-            print(form.non_field_errors)
-            print(guess_formset.errors)
-            print(guess_formset.non_form_errors())
-            print(alphabet_formset.errors)
-            print(alphabet_formset.non_form_errors())
+            if guess_formset.is_valid() & form.is_valid() & alphabet_formset.is_valid():
+                
+                # Get form data
+                guess = form.cleaned_data['guess'].lower()
+                attempts_left = form.cleaned_data['attempts_left']
+                attempt_number = form.cleaned_data['attempt_number']
+                
+                #check if entered word is in dictionary
+                if guess in en_list:
+                    #valid attempt to increment
+                    form.data['attempt_number'] = attempt_number+ 1
+                    form.data['attempts_left'] = attempts_left - 1
+
+                    #get the latest word
+                    guess_form = guess_formset[attempt_number-1]
+                    guess_form.cleaned_data['guess'] = guess
+                    
+                    # Display the result of the guess
+                    row=guess_result(guess, TARGET_WORD)     
+                    cluesRow.append(row)   
+                    # new_guess_formset = GuessFormSet(initial = guess_formset.cleaned_data, prefix='guess')
+                    new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.cleaned_data,prefix='alphabet')
+
+                    context['form'] = form
+                    # context['guess_formset'] = new_guess_formset
+                    context['alphabet_formset'] = new_alphabet_formset
+                    context['cluesRow'] = cluesRow
+
+                    if guess == TARGET_WORD:
+                        messages.add_message(request=request, level=messages.SUCCESS, message='You Guessled in one Shot!! Challenge your friend by clicking '+'<a href='+request.path+'?target_word='+form.cleaned_data['target_word']+'>here</a>', extra_tags='safe')
+                        results = request.session.get('results',None)
+                        todaysGuessle.attempts+=1
+                        todaysGuessle.correctAnswers+=1
+                        todaysGuessle.save()
+                        stars.stars += 1
+                        stars.save()
+                        
+                        user.dayscorrect+=1
+                        yesterday = datetime.now() - timedelta(1)
+                        userrun = Guessle_Attempt.objects.filter(date=yesterday)
+                        if userrun.exists():
+                            user.streak +=1
+                            if user.streak > user.highestStreak:
+                                user.highestStreak = user.streak
+                        else:
+                            user.streak = 0
+                        if results:
+                            results[str(attempt_number)] = results[str(attempt_number)]+1
+                        else:
+                            results = {'1':0,'2':0,'3':0,'4':0,'5':0,'6':0}
+                            results[str(attempt_number)] = 1
+                        context['stars'] = stars
+                        request.session['results'] = results
+                        
+                    elif attempts_left == 1:
+                        messages.add_message(request=request, level=messages.ERROR, message = 'Chances are over. word is '+TARGET_WORD)
+                        todaysGuessle.attempts+=1
+                        todaysGuessle.save()
+                        user.daysincorrect+=1
+                        user.streak = 0
+                    
+                    att = Guessle_Attempt.objects.update_or_create(
+                            user=user,
+                            date=current_dateTime,
+                            word=todaysGuessle,
+                            guess=guess
+                        )
+                    user.save()
+                else:
+                    messages.add_message(request=request, level=messages.ERROR, message=guess+' is not a valid english word')
+                    context['guess_formset'] = guess_formset
+                    context['form'] = form
+                    context['alphabet_formset'] = alphabet_formset
+
+                # else:
+                #     messages.add_message(request=request, level=messages.ERROR, message = 'Chances over. word is '+TARGET_WORD)
+                #     context['guess_formset'] = guess_formset
+                #     context['form'] = form
+                #     context['alphabet_formset'] = alphabet_formset
+
+            else:
+                print(form.errors)
+                print(form.non_field_errors)
+                print(guess_formset.errors)
+                print(guess_formset.non_form_errors())
+                print(alphabet_formset.errors)
+                print(alphabet_formset.non_form_errors())
     
     
     else:
@@ -309,11 +314,10 @@ def guessle(request):
         context['form'] = form
         context['guess_formset'] = guess_formset
         context['alphabet_formset'] = alphabet_formset
-        context['stars'] = stars
+        
         
 
     #send back the html template
-    user.save()
     return render(request, 'pages/games/guessle.html', context)
 
 @login_required(login_url="/accounts/login/")
