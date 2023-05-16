@@ -19,7 +19,7 @@ A version of wordle where you only have one chance to guess the day's word!
 - [ ] Dark / light modes
 - [x] Support modal page
 - [x] Easy game mode (2 greens, 2 yellows)
-- [ ] Bonus (Hard) game mode (6 letter words 2 greens, 3 yellows)
+- [x] Bonus (Hard) game mode (6 letter words 2 greens, 3 yellows)
 - [x] Get a list of 6 letter words for the hard mode game
 - Daily Stars
     - [x] 1 star for guessing the main word

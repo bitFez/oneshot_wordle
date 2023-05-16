@@ -4,7 +4,7 @@ def guess_result(guess, target_word):
     # Display the result of the guess
     row='<div class="btn-group">'
                     
-    for j in range(0,5):
+    for j in range(0,len(target_word)):
         letter_color = 'l'+str(j+1)+'_color'
         if guess[j] in target_word:
             letter= '<button style="height:60px;width:60px;" class="form-control btn btn-warning fw-bold text-center text-light fs-5 disabled" type="text", size="1">'+guess[j].upper()+'</button>'
@@ -53,7 +53,8 @@ def get_clues_rows(clues, TARGET_WORD, **kwargs):
         cluesRow.append(row)
     return cluesRow
 
-def get_random_clues(oneshotWord, difficulty):
+def get_random_clues(oneshotWord, **kwargs):
+    difficulty= kwargs.get('difficulty', None)
     if difficulty=="easy":
         bulls_diff = 2
         cows_diff = 2

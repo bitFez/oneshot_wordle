@@ -264,7 +264,7 @@ def guessle(request):
             # print("Not a post request")
             if (attempts.exists() == True) & (attempts[0].guess == todaysGuessle.word):
                 # print(f"\n todays word {todaysGuessle.word} - The guess {attempts[0].guess} \nattempt exists and is equal to todays word")
-                messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's Guessle")
+                messages.add_message(request=request, level=messages.ERROR, message=f"You have already attempted today's Guessle")
                 form = GuessleForm()
                 form.fields['attempts_left'].initial= 0
                 form.fields['attempt_number'].initial = 0
@@ -350,7 +350,7 @@ def guessle_easy(request):
         # get a new word for today if one doesn't exist
         todaysword = get_random_word()
         # get todays random clues
-        todayclues = get_random_clues(todaysword.word, "easy")
+        todayclues = get_random_clues(todaysword.word, difficulty="easy")
         a = OneshotCluesEasy.objects.update_or_create(
             clue1 = todayclues[0],
             clue2 = todayclues[1],
@@ -374,7 +374,7 @@ def guessle_easy(request):
     clues = [todayclues.clue1,todayclues.clue2,todayclues.clue3,todayclues.clue4,todayclues.clue5]
 
     # This section will add each clue to the guessle rows with the correct colour for each letter.
-    cluesRow = get_clues_rows(clues, TARGET_WORD)
+    cluesRow = get_clues_rows(clues, TARGET_WORD, difficulty="easy")
     
     new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.data,prefix='alphabet')
     context['alphabet_formset'] = new_alphabet_formset
@@ -477,7 +477,7 @@ def guessle_easy(request):
             # print("Not a post request")
             if (attempts.exists() == True) & (attempts[0].guess == todaysGuessle.word):
                 # print(f"\n todays word {todaysGuessle.word} - The guess {attempts[0].guess} \nattempt exists and is equal to todays word")
-                messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's Guessle")
+                messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's easy Guessle")
                 form = GuessleForm()
                 form.fields['attempts_left'].initial= 0
                 form.fields['attempt_number'].initial = 0
@@ -488,7 +488,7 @@ def guessle_easy(request):
                 context['attempts'] = attempts
             elif (attempts.exists() == True) & (attempts[0].guess != todaysGuessle.word):
                 # print(f"\n todays word {todaysGuessle.word} - The guess {attempts[0].guess} \nattempt exists and is not equal to todays word")
-                messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's Guessle")
+                messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's easy Guessle")
                 form = GuessleForm()
                 form.fields['attempts_left'].initial= 0
                 attempt_number = 0
@@ -583,7 +583,7 @@ def guessle_hard(request):
     todaysGuessle = OneshotWordHard.objects.all().last()
     todayclues = todaysGuessle.clues #OneshotClues.objects.filter(date__range=(start_date, end_date))[0]
     TARGET_WORD = todaysGuessle.word
-
+    print(f"Todays word is : {TARGET_WORD}")
     clues = [todayclues.clue1,todayclues.clue2,todayclues.clue3,todayclues.clue4,todayclues.clue5]
 
     # This section will add each clue to the guessle rows with the correct colour for each letter.
@@ -594,7 +594,7 @@ def guessle_hard(request):
     context['cluesRow'] = cluesRow
     context['guessleNo'] = todaysGuessle.id
     context['stars'] = stars
-    
+    context['difficulty'] = 'hard'
     # Dealing with the post of a guess
     if request.method == 'POST':   
         
@@ -618,11 +618,12 @@ def guessle_hard(request):
         GuessFormSet = formset_factory(GuessFormHard, extra=1, max_num=1)
         #read the forms from copy of request.POST to make them mutable
         guess_formset = GuessFormSet(request.POST.copy(), form_kwargs={'empty_permitted': False}, prefix='guess')
+        print(f"guess formset : {guess_formset}")
         alphabet_formset = AlphabetFormSet(request.POST.copy(), form_kwargs={'empty_permitted': False}, prefix='alphabet')
         form = GuessleFormHard(request.POST.copy())
-
+        print("Before checkinf if forms are valid")
         if guess_formset.is_valid() & form.is_valid() & alphabet_formset.is_valid():
-            
+            print("forms are valid")    
             # Get form data
             guess = form.cleaned_data['guess'].lower()
             attempts_left = form.cleaned_data['attempts_left']
@@ -695,7 +696,7 @@ def guessle_hard(request):
             # print("Not a post request")
             if (attempts.exists() == True) & (attempts[0].guess == todaysGuessle.word):
                 # print(f"\n todays word {todaysGuessle.word} - The guess {attempts[0].guess} \nattempt exists and is equal to todays word")
-                messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's Guessle")
+                messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's hard Guessle")
                 form = GuessleFormHard()
                 form.fields['attempts_left'].initial= 0
                 form.fields['attempt_number'].initial = 0
@@ -706,7 +707,7 @@ def guessle_hard(request):
                 context['attempts'] = attempts
             elif (attempts.exists() == True) & (attempts[0].guess != todaysGuessle.word):
                 # print(f"\n todays word {todaysGuessle.word} - The guess {attempts[0].guess} \nattempt exists and is not equal to todays word")
-                messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's Guessle")
+                messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's hard Guessle")
                 form = GuessleFormHard()
                 form.fields['attempts_left'].initial= 0
                 attempt_number = 0
