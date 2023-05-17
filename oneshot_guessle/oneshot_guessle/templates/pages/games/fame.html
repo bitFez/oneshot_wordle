@@ -12,6 +12,7 @@
         <th scope="col">Highest Streak</th>
         <th scope="col">correct guessles/out of #days</th>
         <th scope="col">% of correct guesses</th>
+        <th scope="col"># alltime stars</th>
       </tr>
     </thead>
         <tbody>
@@ -22,7 +23,8 @@
               <td class="table-dark">{{player.1.streak}}</td>
               <td class="table-dark">{{player.1.highestStreak}}</td>
               <td class="table-dark">{{player.1.correct}}/{{player.1.days}}</td>
-              <td class="table-dark">{{player.1.per}}%</td>                
+              <td class="table-dark">{{player.1.per}}%</td>   
+              <td class="table-dark">{{player.1.stars}}</td>               
             </tr>            
         {% endfor %}
         </tbody>

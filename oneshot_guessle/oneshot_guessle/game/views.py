@@ -118,7 +118,7 @@ def guessle(request):
         # get a new word for today if one doesn't exist
         todaysword = get_random_word()
         # get todays random clues
-        todayclues = get_random_clues(todaysword.word, "regular")
+        todayclues = get_random_clues(todaysword.word, difficulty="regular")
         a = OneshotClues.objects.update_or_create(
             clue1 = todayclues[0],
             clue2 = todayclues[1],
@@ -204,7 +204,7 @@ def guessle(request):
                     context['cluesRow'] = cluesRow
 
                     if guess == TARGET_WORD:
-                        messages.add_message(request=request, level=messages.SUCCESS, message='You Guessled in one Shot!! \n have you tried the daily Easy or hard challenge? \n Also, why not challenge your friend by clicking '+'<a href='+request.path+'?target_word='+form.cleaned_data['target_word']+'>here</a>', extra_tags='safe')
+                        messages.add_message(request=request, level=messages.SUCCESS, message='You Guessled in one Shot!!'+'<br>'+'H    ave you tried the daily Easy or hard challenge?'+'<br>'+'Also, why not challenge your friend by clicking '+'<a href='+request.path+'?target_word='+form.cleaned_data['target_word']+'>here</a>', extra_tags='safe')
                         results = request.session.get('results',None)
                         todaysGuessle.attempts+=1
                         todaysGuessle.correctAnswers+=1
@@ -779,7 +779,7 @@ def history(request):
     return render(request, 'pages/games/history.html', context)
 
 def halloffame(request):
-    users = User.objects.all().order_by("-highestStreak", "-streak", "-dayscorrect")
+    users = User.objects.all().order_by("-stars","-highestStreak", "-streak", "-dayscorrect")
     table = {}
     for person in range(0,len(users)):
         rank=person+1
@@ -789,12 +789,13 @@ def halloffame(request):
         correct=users[person].dayscorrect
         incorrect=users[person].daysincorrect
         days=correct+incorrect
+        stars=users[person].stars
         try:
             per=round((correct/days)*100,2)
         except:
             per=0
         a = {rank:{'username':username,'streak':streak,'highestStreak':highestStreak,
-                   'correct':correct,'days':days,'per':per}}
+                   'correct':correct,'days':days,'per':per, 'stars':stars}}
         table.update(a)
     context = {'players':table}
     
@@ -816,7 +817,7 @@ def results(request):
     
     results = {'streak':user.streak,'highestStreak':user.highestStreak,'correct':user.dayscorrect,
             'incorrect':user.daysincorrect,'days':user.dayscorrect+user.daysincorrect,
-            'per':per}
+            'per':per, 'stars':user.stars}
                 
     context['result'] = results
     return render(request=request, template_name='pages/games/results.html',context=context)
