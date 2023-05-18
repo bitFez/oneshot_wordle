@@ -21,6 +21,7 @@ class User(AbstractUser):
     streak = IntegerField(default=0)
     highestStreak = IntegerField(default=0)
     supporter = BooleanField(default=False)
+    no_ads = BooleanField(default=False)
     stars = IntegerField(default=0)
     colourTone = BooleanField(default=False) # True == High Vis 
     colourMode = BooleanField(default=False) # True == Dark mode

@@ -1,7 +1,8 @@
 {% load static i18n %}
   <nav class="navbar navbar-dark bg-dark" aria-label="Dark offcanvas navbar">
-    <div class="container-fluid">
+    <div class="container-fluid" style="max-height:100px;overflow:auto;">
       <a class="navbar-brand" href="{% url 'game:home' %}"> <img src="{% static 'images/logo.svg' %}" width="80" height="80" alt=""> </a>
+      {% if user.no_ads == False %} SHOW ADS PLEASE {% endif %}
       <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbarDark" aria-controls="offcanvasNavbarDark" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
