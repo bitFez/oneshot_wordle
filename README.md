@@ -57,6 +57,7 @@ For convenience, you can keep your normal user logged in on Chrome and your supe
 ### make migrations
 
 - docker-compose -f local.yml run --rm django python manage.py makemigrations
+or docker-compose -f production.yml run --rm django python manage.py makemigrations
 - docker-compose -f local.yml run --rm django python manage.py migrate
 
 ### Type checks
