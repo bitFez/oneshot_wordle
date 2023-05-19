@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.files import File
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
@@ -38,8 +39,10 @@ def load_words(request):
         file_ = find('dicts/words.txt')
     else:
         file_ = static('dicts/words.txt')
-    with open(file_, "r") as f:
-        data = f.readlines() # json.load(f)
+    f= open(file_, "r")
+    if f.mode == 'r':
+       data =f.read()
+    # data = f.readlines() # json.load(f)
 
     newWords = 0
     lenOfData = len(data)
