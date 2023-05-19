@@ -18,6 +18,7 @@ from datetime import timedelta, datetime
 from django.contrib.staticfiles.finders import find
 from django.templatetags.static import static
 from django.contrib.staticfiles.storage import staticfiles_storage
+from django.contrib.staticfiles.storage import ManifestStaticFilesStorage
 
 User = get_user_model()
 
@@ -38,7 +39,8 @@ def load_words(request):
         file_ = find('dicts/words.txt')
     else:
         file_ = staticfiles_storage.url('dicts/words.txt')
-    with open(file_, "r") as f:
+    storage = ManifestStaticFilesStorage()
+    with storage.open(file_, "r") as f:
         data =f.read()
     # data = f.readlines() # json.load(f)
 
