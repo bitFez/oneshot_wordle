@@ -39,10 +39,8 @@ def load_words(request):
         file_ = find('dicts/words.txt')
     else:
         file_ = static('dicts/words.txt')
-    thefile = File(file_)
-    f= open(thefile, "r")
-    if f.mode == 'r':
-       data =f.read()
+    with open(file_, "r") as f:
+        data =f.read()
     # data = f.readlines() # json.load(f)
 
     newWords = 0
