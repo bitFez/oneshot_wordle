@@ -37,7 +37,7 @@ def load_words(request):
     if settings.DEBUG:
         file_ = find('dicts/words.txt')
     else:
-        file_ = static('dicts/words.txt')
+        file_ = staticfiles_storage.url('dicts/words.txt')
     with open(file_, "r") as f:
         data =f.read()
     # data = f.readlines() # json.load(f)
