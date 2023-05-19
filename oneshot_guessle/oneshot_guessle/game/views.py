@@ -19,8 +19,6 @@ from django.contrib.staticfiles.finders import find
 from django.templatetags.static import static
 from django.contrib.staticfiles.storage import staticfiles_storage
 
-import plotly.graph_objects as go
-
 User = get_user_model()
 
 from django.core.mail import send_mail
