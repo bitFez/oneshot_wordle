@@ -1,5 +1,4 @@
 # Oneshot Guessle
-
 A version of wordle where you only have one chance to guess the day's word!
 
 ## TODO
