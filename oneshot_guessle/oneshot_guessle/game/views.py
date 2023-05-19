@@ -39,8 +39,9 @@ def load_words(request):
         file_ = find('dicts/words.txt')
     else:
         file_ = staticfiles_storage.url('dicts/words.txt')
-    storage = ManifestStaticFilesStorage()
-    with storage.open(file_, "r") as f:
+    # storage = ManifestStaticFilesStorage()
+    # with storage.open(file_, "r") as f:
+    with open(r'game\words.txt') as f:
         data =f.read()
     # data = f.readlines() # json.load(f)
 
