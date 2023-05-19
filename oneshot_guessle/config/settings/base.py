@@ -2,7 +2,6 @@
 Base settings to build other settings files upon.
 """
 from pathlib import Path
-import os
 import environ
 import mimetypes
 
@@ -146,7 +145,7 @@ STATIC_ROOT = str(BASE_DIR / "staticfiles")
 # https://docs.djangoproject.com/en/dev/ref/settings/#static-url
 STATIC_URL = "/static/"
 # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static'),str(APPS_DIR / "static"),] #[str(APPS_DIR / "static")]
+STATICFILES_DIRS = [str(APPS_DIR / "static"),]
 # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
 STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.FileSystemFinder",
