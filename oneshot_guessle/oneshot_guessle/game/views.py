@@ -59,7 +59,7 @@ def load_words(request):
     if settings.DEBUG:
         file_ = find('dicts/6-letter-words.txt')
     else:
-        file_ = static('dicts/6-letter-words.txt')
+        file_ = static('game/static/dicts/6-letter-words.txt')
     with open(file_, "r") as f:
         data = f.readlines() # json.load(f)
 
@@ -163,7 +163,7 @@ def guessle(request):
             if settings.DEBUG:
                 five_letter_words = find('dicts/5-letter-words.json')
             else:
-                five_letter_words = static('dicts/5-letter-words.json')
+                five_letter_words = static('game/static/dicts/5-letter-words.json')
             en_dict = json.load(open(five_letter_words))
             en_list = [en['word'] for en in en_dict]
 
@@ -395,7 +395,7 @@ def guessle_easy(request):
         if settings.DEBUG:
             five_letter_words = find('dicts/5-letter-words.json')
         else:
-            five_letter_words = static('dicts/5-letter-words.json')
+            five_letter_words = static('game/static/dicts/5-letter-words.json')
         en_dict = json.load(open(five_letter_words))
         en_list = [en['word'] for en in en_dict]
 
