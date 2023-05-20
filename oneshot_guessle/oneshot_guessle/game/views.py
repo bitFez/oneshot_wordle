@@ -37,12 +37,16 @@ def load_words(request):
     # file_ = staticfiles_storage.url('dicts/words.json') #static('dicts/words.json')
     if settings.DEBUG:
         file_ = find('dicts/words.txt')
+        with open(file_) as f:
+            data =f.read()
     else:
-        file_ = staticfiles_storage.url('dicts/words.txt')
+        # file_ = staticfiles_storage.url('dicts/words.txt')
+        with open(r'oneshot_guessle/game/dicts/words.txt') as f:
+            data =f.read()
     # storage = ManifestStaticFilesStorage()
     # with storage.open(file_, "r") as f:
-    with open(r'oneshot_guessle/game/words.txt') as f:
-        data =f.read()
+    # with open(r'oneshot_guessle/game/words.txt') as f:
+    #     data =f.read()
     # data = f.readlines() # json.load(f)
 
     newWords = 0
@@ -58,11 +62,12 @@ def load_words(request):
     
     if settings.DEBUG:
         file_ = find('dicts/6-letter-words.txt')
+        with open(file_) as f:
+            data =f.read()
     else:
-        file_ = static('game/static/dicts/6-letter-words.txt')
-    with open(file_, "r") as f:
-        data = f.readlines() # json.load(f)
-
+        with open(r'oneshot_guessle/game/dicts/6-letter-words.txt') as f:
+            data = f.read() # json.load(f)
+    
     new6Words = 0
     lenOfData = len(data)
     for item in range(0, len(data)):
@@ -163,7 +168,7 @@ def guessle(request):
             if settings.DEBUG:
                 five_letter_words = find('dicts/5-letter-words.json')
             else:
-                five_letter_words = static('game/static/dicts/5-letter-words.json')
+                five_letter_words = static(r'oneshot_guessle/game/dicts/5-letter-words.json')
             en_dict = json.load(open(five_letter_words))
             en_list = [en['word'] for en in en_dict]
 
@@ -395,7 +400,7 @@ def guessle_easy(request):
         if settings.DEBUG:
             five_letter_words = find('dicts/5-letter-words.json')
         else:
-            five_letter_words = static('game/static/dicts/5-letter-words.json')
+            five_letter_words = static("r'oneshot_guessle/game/dicts/5-letter-words.json")
         en_dict = json.load(open(five_letter_words))
         en_list = [en['word'] for en in en_dict]
 
@@ -613,11 +618,11 @@ def guessle_hard(request):
             #load the 5-words scrabble dictionary
             if settings.DEBUG:
                 six_letter_words = find('dicts/6-letter-words.txt')
+                with open(six_letter_words, "r") as f:
+                    data = f.readlines() # json.load(f)
             else:
-                six_letter_words = static('dicts/6-letter-words.txt')
-            with open(six_letter_words, "r") as f:
-                data = f.readlines() # json.load(f)
-            
+                with open(r'oneshot_guessle/game/dicts/6-letter-words.txt') as f:
+                    data =f.read()
             en_list = []
             for item in range(0, len(data)):
                 wd = data[item].rstrip('\n')
