@@ -66,7 +66,7 @@ def load_words(request):
             data =f.read()
     else:
         with open(r'oneshot_guessle/game/dicts/6-letter-words.txt') as f:
-            data = f.read() # json.load(f)
+            data = f.readlines() # json.load(f)
     
     new6Words = 0
     lenOfData = len(data)
@@ -168,7 +168,7 @@ def guessle(request):
             if settings.DEBUG:
                 five_letter_words = find('dicts/5-letter-words.json')
             else:
-                five_letter_words = static(r'oneshot_guessle/game/dicts/5-letter-words.json')
+                five_letter_words = open(r'oneshot_guessle/game/dicts/5-letter-words.json')
             en_dict = json.load(open(five_letter_words))
             en_list = [en['word'] for en in en_dict]
 
@@ -622,7 +622,7 @@ def guessle_hard(request):
                     data = f.readlines() # json.load(f)
             else:
                 with open(r'oneshot_guessle/game/dicts/6-letter-words.txt') as f:
-                    data =f.read()
+                    data =f.readlines()
             en_list = []
             for item in range(0, len(data)):
                 wd = data[item].rstrip('\n')
