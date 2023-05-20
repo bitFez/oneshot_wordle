@@ -42,7 +42,7 @@ def load_words(request):
     else:
         # file_ = staticfiles_storage.url('dicts/words.txt')
         with open(r'oneshot_guessle/game/dicts/words.txt') as f:
-            data =f.read()
+            data =f.readlines()
     # storage = ManifestStaticFilesStorage()
     # with storage.open(file_, "r") as f:
     # with open(r'oneshot_guessle/game/words.txt') as f:
