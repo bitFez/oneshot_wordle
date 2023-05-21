@@ -1,0 +1,71 @@
+{% load static i18n %}
+
+<nav class="navbar bg-body-tertiary fixed-top">
+  <div class="container-fluid">
+    <a class="navbar-brand mx-1" href="{% url 'game:home' %}"> <img class="navbar-logo" src="{% static 'images/logo.svg' %}" alt=""> </a>
+    <button class="navbar-toggler mx-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbarDark" aria-controls="offcanvasNavbarDark" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon nav-icon"></span>
+    </button>
+    <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="offcanvasNavbarDark" aria-labelledby="offcanvasNavbarDarkLabel">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasNavbarDarkLabel">Menu</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+        <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'game:home' %}">
+              <button class="btn btn-warning">Home / Daily Main challenge</button>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'game:easy' %}">
+              <button class="btn btn-primary">Daily Easy Guessle</button>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'game:hard' %}">
+              <button class="btn btn-danger">Daily Hard Guessle <br>(for supporters)</button>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'game:supporterredirect' %}">About</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'game:history' %}">Previous Guessles</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'game:hof' %}">Hall of Fame</a>
+          </li>
+          {% if request.user.is_authenticated %}
+          <li class="nav-item">
+              {# URL provided by django-allauth/account/urls.py #}
+              <a class="nav-link" href="{% url 'users:detail' request.user.username  %}">{% translate "My Profile" %}</a>
+          </li>
+          <li class="nav-item">
+              {# URL provided by django-allauth/account/urls.py #}
+              <a class="nav-link" href="{% url 'account_logout' %}">{% translate "Sign Out" %}</a>
+          </li>
+          {% else %}
+          {% if ACCOUNT_ALLOW_REGISTRATION %}
+          <li class="nav-item">
+          {# URL provided by django-allauth/account/urls.py #}
+          <a id="sign-up-link" class="nav-link" href="{% url 'account_signup' %}">{% translate "Sign Up" %}</a>
+          </li>
+          {% endif %}
+          <li class="nav-item">
+              {# URL provided by django-allauth/account/urls.py #}
+              <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">{% translate "Sign In" %}</a>
+          </li>
+          {% endif %}
+          <li>
+            <a href="https://twitter.com/oneshotguessle" target="_blank"><i class="bi bi-twitter" style="font-size: 2rem;"></i></a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/oneshotguessle" target="_blank" > <img src="https://storage.ko-fi.com/cdn/brandasset/kofi_s_tag_dark.png" height="50px" alt=""> </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
