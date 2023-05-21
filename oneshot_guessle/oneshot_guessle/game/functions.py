@@ -48,7 +48,7 @@ def get_clues_rows(clues, TARGET_WORD, **kwargs):
                 letter= '<button style="height:50px;width:50px;" class="form-control btn btn-secondary fw-bold text-center text-light fs-5 disabled" type="text", size="1">'+guess[j].upper()+'</button>'
                 # alphabet_formset[ord(guess[j])-97].data['l_color'] = 'btn-secondary'
                 row+=letter
-        row+='</div>'
+        row+='</div><br>'
 
         cluesRow.append(row)
     return cluesRow
