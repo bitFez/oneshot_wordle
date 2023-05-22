@@ -168,7 +168,8 @@ def guessle(request):
             if settings.DEBUG:
                 five_letter_words = find('dicts/5-letter-words.json')
             else:
-                five_letter_words = open(r'oneshot_guessle/game/dicts/5-letter-words.json')
+                five_letter_words = find('dicts/5-letter-words.json')
+                # five_letter_words = open(r'oneshot_guessle/game/dicts/5-letter-words.json')
             en_dict = json.load(open(five_letter_words))
             en_list = [en['word'] for en in en_dict]
 
@@ -400,7 +401,8 @@ def guessle_easy(request):
         if settings.DEBUG:
             five_letter_words = find('dicts/5-letter-words.json')
         else:
-            five_letter_words = static("r'oneshot_guessle/game/dicts/5-letter-words.json")
+            five_letter_words = find('dicts/5-letter-words.json')
+            # five_letter_words = static("r'oneshot_guessle/game/dicts/5-letter-words.json")
         en_dict = json.load(open(five_letter_words))
         en_list = [en['word'] for en in en_dict]
 
