@@ -218,6 +218,7 @@ def guessle(request):
                         todaysGuessle.correctAnswers+=1
                         todaysGuessle.save()
                         stars.stars += 1
+                        user.stars += 1
                         stars.save()
                         
                         user.dayscorrect+=1
@@ -451,6 +452,7 @@ def guessle_easy(request):
                     todaysGuessle.correctAnswers+=1
                     todaysGuessle.save()
                     stars.stars += 1
+                    user.stars += 1
                     stars.save()
                     context['stars'] = stars
                 elif attempts_left == 1:
@@ -676,6 +678,7 @@ def guessle_hard(request):
                         todaysGuessle.correctAnswers+=1
                         todaysGuessle.save()
                         stars.stars += 1
+                        user.stars += 1
                         stars.save()
                         context['stars'] = stars
                     elif attempts_left == 1:
