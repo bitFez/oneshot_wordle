@@ -35,12 +35,12 @@
         {% include "navbar.html" %}
       </div>
   
-    <div class="row my-2 py-2 align-items-center no-gutters justify-content-center border-bottom w-100">
+    <div class="row my-1 align-items-start no-gutters justify-content-center border-bottom w-100">
         <!-- Site title & top bar -->
         
         
     </div>
-    <div class="row flex-grow-1 justify-content-center align-items-center">
+    <div class="row flex-grow-1 justify-content-start align-items-center">
         
         <form method="POST">
             {% csrf_token %}            
@@ -72,7 +72,7 @@
             {% endif %}
         </form>
     </div>
-    <div class="row">
+    <div class="row mb-0">
         <div class="col">
             {% for clue in cluesRow %}
                 {{ clue |safe}}
@@ -89,14 +89,14 @@
         </div>
     </div>
        
-    <div class="row my-1 flex-grow-1 w-100">
+    <div class="row my-0 flex-grow-1 w-100">
         <div class="col border-bottom"></div>
     </div>
-    <div class="row">
+    <div class="row align-items-start">
         
         <div class="col">
             {% if guess_formset_hard %}
-            <div class="w-100 my-1 py-1 d-flex d-grid gap-1 justify-content-between" style="height:50px;">
+            <div class="w-100 my-0 py-1 d-flex d-grid gap-1 justify-content-between" style="height:50px;">
                 <button x-on:click="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('q')}" @keyup.q.window="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('q')}" style = "width:35px;"type="button" class="btn border {{alphabet_formset.16.l_color.value}}">Q</button>
                 <button x-on:click="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('w')}" @keyup.w.window="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('w')}" style = "width:35px;"type="button" class="btn border {{alphabet_formset.22.l_color.value}}">W</button>
                 <button x-on:click="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('e')}" @keyup.e.window="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('e')}" style = "width:35px;"type="button" class="btn border {{alphabet_formset.4.l_color.value }}">E</button>
@@ -108,7 +108,7 @@
                 <button x-on:click="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('o')}" @keyup.o.window="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('o')}" style = "width:35px;"type="button" class="btn border {{alphabet_formset.14.l_color.value}}">O</button>
                 <button x-on:click="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('p')}" @keyup.p.window="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('p')}" style = "width:35px;"type="button" class="btn border {{alphabet_formset.15.l_color.value}}">P</button>
             </div>
-            <div class="w-100 my-1 py-1 d-flex d-grid gap-1 justify-content-center" style="height:50px;">
+            <div class="w-100 my-0 py-1 d-flex d-grid gap-1 justify-content-center" style="height:50px;">
                 <button x-on:click="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('a')}" @keyup.a.window="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('a')}" style = "width:35px;" type="button" class="btn border {{alphabet_formset.0.l_color.value }}">A</button>
                 <button x-on:click="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('s')}" @keyup.s.window="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('s')}" style = "width:35px;" type="button" class="btn border {{alphabet_formset.18.l_color.value}}">S</button>
                 <button x-on:click="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('d')}" @keyup.d.window="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('d')}" style = "width:35px;" type="button" class="btn border {{alphabet_formset.3.l_color.value }}">D</button>
@@ -119,7 +119,7 @@
                 <button x-on:click="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('k')}" @keyup.k.window="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('k')}" style = "width:35px;" type="button" class="btn border {{alphabet_formset.10.l_color.value}}">K</button>
                 <button x-on:click="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('l')}" @keyup.l.window="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('l')}" style = "width:35px;" type="button" class="btn border {{alphabet_formset.11.l_color.value}}">L</button>
             </div>
-            <div class="w-100 my-1 py-1 d-flex d-grid gap-1 justify-content-between" style="height:50px;">
+            <div class="w-100 my-0 py-1 d-flex d-grid gap-1 justify-content-between" style="height:50px;">
                 <button x-on:click="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('z')}" @keyup.z.window="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('z')}" style = "width:35px;" type="button" class="btn border {{alphabet_formset.25.l_color.value}}">Z</button>
                 <button x-on:click="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('x')}" @keyup.x.window="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('x')}" style = "width:35px;" type="button" class="btn border {{alphabet_formset.23.l_color.value}}">X</button>
                 <button x-on:click="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('c')}" @keyup.c.window="if ((guess_xmodel.length < 6) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('c')}" style = "width:35px;" type="button" class="btn border {{alphabet_formset.2.l_color.value }}">C</button>
@@ -131,7 +131,7 @@
                 <button x-on:click="if ((guess_xmodel.length == 6)) {$refs.submit_guess_button.click()} else {show_error=true;setTimeout(function(){show_error=false;},1000);}" @keyup.enter.window="if ((guess_xmodel.length == 6)) {$refs.submit_guess_button.click()} else {show_error=true;setTimeout(function(){show_error=false;},1000);}" style = "width:45px;" type="button" class="btn border btn-primary"><i class="bi bi-arrow-return-left"></i></button>
             </div>
             {% else %}
-            <div class="w-100 my-1 py-1 d-flex d-grid gap-1 justify-content-between" style="height:50px;">
+            <div class="w-100 my-0 py-1 d-flex d-grid gap-1 justify-content-between" style="height:50px;">
                 <button x-on:click="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('q')}" @keyup.q.window="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('q')}" style = "width:35px;"type="button" class="btn border {{alphabet_formset.16.l_color.value}}">Q</button>
                 <button x-on:click="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('w')}" @keyup.w.window="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('w')}" style = "width:35px;"type="button" class="btn border {{alphabet_formset.22.l_color.value}}">W</button>
                 <button x-on:click="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('e')}" @keyup.e.window="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('e')}" style = "width:35px;"type="button" class="btn border {{alphabet_formset.4.l_color.value }}">E</button>
@@ -143,7 +143,7 @@
                 <button x-on:click="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('o')}" @keyup.o.window="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('o')}" style = "width:35px;"type="button" class="btn border {{alphabet_formset.14.l_color.value}}">O</button>
                 <button x-on:click="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('p')}" @keyup.p.window="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('p')}" style = "width:35px;"type="button" class="btn border {{alphabet_formset.15.l_color.value}}">P</button>
             </div>
-            <div class="w-100 my-1 py-1 d-flex d-grid gap-1 justify-content-center" style="height:50px;">
+            <div class="w-100 my-0 py-1 d-flex d-grid gap-1 justify-content-center" style="height:50px;">
                 <button x-on:click="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('a')}" @keyup.a.window="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('a')}" style = "width:35px;" type="button" class="btn border {{alphabet_formset.0.l_color.value }}">A</button>
                 <button x-on:click="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('s')}" @keyup.s.window="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('s')}" style = "width:35px;" type="button" class="btn border {{alphabet_formset.18.l_color.value}}">S</button>
                 <button x-on:click="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('d')}" @keyup.d.window="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('d')}" style = "width:35px;" type="button" class="btn border {{alphabet_formset.3.l_color.value }}">D</button>
@@ -154,7 +154,7 @@
                 <button x-on:click="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('k')}" @keyup.k.window="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('k')}" style = "width:35px;" type="button" class="btn border {{alphabet_formset.10.l_color.value}}">K</button>
                 <button x-on:click="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('l')}" @keyup.l.window="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('l')}" style = "width:35px;" type="button" class="btn border {{alphabet_formset.11.l_color.value}}">L</button>
             </div>
-            <div class="w-100 my-1 py-1 d-flex d-grid gap-1 justify-content-between" style="height:50px;">
+            <div class="w-100 my-0 py-1 d-flex d-grid gap-1 justify-content-between" style="height:50px;">
                 <button x-on:click="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('z')}" @keyup.z.window="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('z')}" style = "width:35px;" type="button" class="btn border {{alphabet_formset.25.l_color.value}}">Z</button>
                 <button x-on:click="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('x')}" @keyup.x.window="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('x')}" style = "width:35px;" type="button" class="btn border {{alphabet_formset.23.l_color.value}}">X</button>
                 <button x-on:click="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('c')}" @keyup.c.window="if ((guess_xmodel.length < 5) && (attempts_left_xmodel>0)) {guess_xmodel = guess_xmodel.concat('c')}" style = "width:35px;" type="button" class="btn border {{alphabet_formset.2.l_color.value }}">C</button>

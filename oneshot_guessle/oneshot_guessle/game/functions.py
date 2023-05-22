@@ -35,17 +35,17 @@ def get_clues_rows(clues, TARGET_WORD, **kwargs):
         for j in range(0,rowLen):
             letter_color = 'l'+str(j+1)+'_color'
             if guess[j] == TARGET_WORD[j]:
-                letter= '<button style="height:50px;width:50px;" class="form-control btn btn-success fw-bold text-center text-light fs-5 disabled" type="text", size="1">'+guess[j].upper()+'</button>'
+                letter= '<button class="form-control clue_form_size btn btn-success fw-bold text-center text-light disabled" type="text", size="1">'+guess[j].upper()+'</button>'
                 # alphabet_formset[ord(guess[j])-97].data['l_color'] = 'btn-success'
                 bulls.append(guess[j])
                 row+=letter
             elif guess[j] in TARGET_WORD and guess[j] not in cows and guess[j] not in bulls:
-                letter= '<button style="height:50px;width:50px;" class="form-control btn btn-warning fw-bold text-center text-light fs-5 disabled" type="text", size="1">'+guess[j].upper()+'</button>'
+                letter= '<button class="form-control clue_form_size btn btn-warning fw-bold text-center text-light disabled" type="text", size="1">'+guess[j].upper()+'</button>'
                 # alphabet_formset[ord(guess[j])-97].data['l_color'] = 'btn-warning'
                 row+=letter
                 cows.append(guess[j])
             else:
-                letter= '<button style="height:50px;width:50px;" class="form-control btn btn-secondary fw-bold text-center text-light fs-5 disabled" type="text", size="1">'+guess[j].upper()+'</button>'
+                letter= '<button class="form-control clue_form_size btn btn-secondary fw-bold text-center text-light disabled" type="text", size="1">'+guess[j].upper()+'</button>'
                 # alphabet_formset[ord(guess[j])-97].data['l_color'] = 'btn-secondary'
                 row+=letter
         row+='</div><br>'
