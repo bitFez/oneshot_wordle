@@ -1,5 +1,13 @@
 /* These styles are generated from project.scss. */
-
+.modal-content {
+  background-color: #212529;
+  color: white;
+  padding: 13px;
+}
+.list-group-item {
+  background-color: #212529;
+  color: white;
+}
 .alert-debug {
   color: black;
   background-color: white;
@@ -84,6 +92,19 @@
 .bd-mode-toggle {
   z-index: 1500;
 }
+
+/* raised buttons for the tiles */
+.btn-success.raised {
+	box-shadow: 0 3px 0 0 #1B371B;
+}
+.btn-secodary.raised {
+	box-shadow: 0 3px 0 0 #292B2C;
+}
+.btn-warning.raised {
+	box-shadow: 0 3px 0 0 #483417;
+}
+
+
 
 h1 {
   font-size: 1rem;
