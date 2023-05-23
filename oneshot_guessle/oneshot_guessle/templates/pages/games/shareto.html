@@ -1,0 +1,24 @@
+<div id="modal" class="modal" x-ref="modaldiv" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">Share the {{request.site.name}} fun!</h3>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="container">
+            <p>
+                
+                {% post_to_twitter_url "Try OneShot Guessle. 5 Clues, 1 chance to guess the day's word" {{request.site.name}} <i class="bi bi-twitter"></i> %}
+                {% post_to_facebook_url  <i class="bi bi-facebook"></i> %}
+                {% send_email request.site.name "Try OneShot Guessle. 5 Clues, 1 chance to guess the day's word" {{request.site.name}} "Share via email" %}
+
+            </p>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+  

@@ -160,7 +160,7 @@ def guessle(request):
     # Dealing with the post of a guess
     if request.method == 'POST':
         if not request.user.is_authenticated:
-            return HttpResponseRedirect(reverse(settings.LOGIN_REDIRECT_URL))
+            return HttpResponseRedirect(reverse(settings.LOGIN_URL))
         else:
             #get user
             user = get_object_or_404(User, pk=request.user.id)
@@ -212,7 +212,7 @@ def guessle(request):
                     context['cluesRow'] = cluesRow
 
                     if guess == TARGET_WORD:
-                        messages.add_message(request=request, level=messages.SUCCESS, message='You Guessled in one Shot!!'+'<br>'+'H    ave you tried the daily Easy or hard challenge?'+'<br>'+'Also, why not challenge your friend by clicking '+'<a href='+request.path+'?target_word='+form.cleaned_data['target_word']+'>here</a>', extra_tags='safe')
+                        messages.add_message(request=request, level=messages.SUCCESS, message='You Guessled in one Shot!!'+'<br>'+'Have you tried the daily Easy or hard challenge?'+'<br>'+'Also, why not challenge your friends too? ')
                         results = request.session.get('results',None)
                         todaysGuessle.attempts+=1
                         todaysGuessle.correctAnswers+=1
@@ -818,6 +818,9 @@ def help_menu(request):
 
 def support_menu(request):
     return render(request=request,template_name='pages/games/support.html')
+
+def shareto_modal(request):
+    return render(request=request,template_name='pages/games/shareto.html')
 
 def results(request):
     user = get_object_or_404(User, pk=request.user.id)

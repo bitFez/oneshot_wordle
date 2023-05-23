@@ -71,7 +71,7 @@ THIRD_PARTY_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     # 'fontawesomefree',
-
+    'django_social_share',
 ]
 
 LOCAL_APPS = [
