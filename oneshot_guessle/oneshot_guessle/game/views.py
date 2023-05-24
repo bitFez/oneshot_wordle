@@ -446,7 +446,7 @@ def guessle_easy(request):
                 context['cluesRow'] = cluesRow
 
                 if guess == TARGET_WORD:
-                    messages.add_message(request=request, level=messages.SUCCESS, message='You Guessled in one Shot!! Challenge your friend by clicking '+'<a href='+request.path+'?target_word='+form.cleaned_data['target_word']+'>here</a>', extra_tags='safe')
+                    messages.add_message(request=request, level=messages.SUCCESS, message='You Guessled in one Shot!! Challenge your friend by clicking ')
                     results = request.session.get('results',None)
                     todaysGuessle.attempts+=1
                     todaysGuessle.correctAnswers+=1
@@ -456,7 +456,7 @@ def guessle_easy(request):
                     stars.save()
                     context['stars'] = stars
                 elif attempts_left == 1:
-                    messages.add_message(request=request, level=messages.ERROR, message = 'Chances are over. word is '+TARGET_WORD)
+                    messages.add_message(request=request, level=messages.ERROR, message = 'Chances are over. word is '+ TARGET_WORD)
                     todaysGuessle.attempts+=1
                     todaysGuessle.save()
                 
@@ -672,7 +672,7 @@ def guessle_hard(request):
                     context['cluesRow'] = cluesRow
 
                     if guess == TARGET_WORD:
-                        messages.add_message(request=request, level=messages.SUCCESS, message='You Guessled in one Shot!! Challenge your friend by clicking '+'<a href='+request.path+'?target_word='+form.cleaned_data['target_word']+'>here</a>', extra_tags='safe')
+                        messages.add_message(request=request, level=messages.SUCCESS, message='You Guessled in one Shot!! ')
                         results = request.session.get('results',None)
                         todaysGuessle.attempts+=1
                         todaysGuessle.correctAnswers+=1
