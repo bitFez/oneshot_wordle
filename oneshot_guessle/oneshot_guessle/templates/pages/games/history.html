@@ -2,20 +2,46 @@
 {% load static %}
 
 {% block content %}
-{% include "navbar2.html" %}
-<table class="table table-dark table-striped">
-    <thead>
-      <tr class="table-dark">
-        <th scope="col" >Guessle #</th>
-        <th scope="col">Guessle Word</th>
-        <th scope="col">Clue 1</th>
-        <th scope="col">Clue 2</th>
-        <th scope="col">Clue 3</th>
-        <th scope="col">Clue 4</th>
-        <th scope="col">Clue 5</th>
-        <th scope="col">% of correct guesses</th>
-      </tr>
-    </thead>
+<div class="container d-flex flex-column align-items-center justify-content-between h-100 w-100 navbar navbar-dark bg-dark" aria-label="Dark offcanvas navbar" x-data="{ guess_xmodel: '', guess_1_xmodel:'{{guess_formset.0.guess.value|default_if_none:""}}', guess_2_xmodel:'{{guess_formset.1.guess.value |default_if_none:""}}', guess_3_xmodel:'{{guess_formset.2.guess.value|default_if_none:""}}', guess_4_xmodel:'{{guess_formset.3.guess.value|default_if_none:""}}',guess_5_xmodel:'{{guess_formset.4.guess.value|default_if_none:""}}', guess_6_xmodel:'{{guess_formset.5.guess.value|default_if_none:""}}', attempts_left_xmodel:'{{form.attempts_left.value|default_if_none:0}}', attempt_number_xmodel:'{{form.attempt_number.value|default_if_none:0}}', show_error: false, my_modal:''}">
+  <div id="modal_placeholder"></div>
+  <div class="container-fluid" style="max-height:100px;overflow:auto;">
+      <div class="col-2">
+          <!-- Left side icons -->
+          <a class="navbar-brand mx-1" href="{% url 'game:home' %}"> <img class="navbar-logo" src="{% static 'images/logo.svg' %}" alt=""> </a>
+          <a class="btn btn-link mx-1 px-0 text-danger" hx-get='{% url "game:support" %}' hx-target="#modal_placeholder" hx-trigger="click" @htmx:after-on-load.camel="setTimeout(function() { my_modal=new bootstrap.Modal($refs.modaldiv);my_modal.show()},100)"> <i class="nav-icon bi bi-heart-fill"></i></a>
+      </div>
+      <!-- {% if user.no_ads == False %} SHOW ADS PLEASE {% endif %} -->
+      <div class="col-6">
+          <!-- Title -->
+          <div class="d-flex flex-row justify-content-center text-light">
+              <h1 class="text-uppercase">
+                  {{ request.site.name }} Previous {% if difficulty %}{{difficulty}} {% endif %} Guessles
+              </h1>
+          </div>
+      </div>
+      <div class="col-2 d-flex m-0 p-0 flex-row-reverse">
+          <!-- Right side icons -->
+          <button class="navbar-toggler mx-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbarDark" aria-controls="offcanvasNavbarDark" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon nav-icon"></span>
+          </button>
+          
+      </div>
+      {% include "navbar.html" %}
+    </div>
+
+    <table class="table table-dark table-striped">
+      <thead>
+        <tr class="table-dark">
+          <th scope="col" >Guessle #</th>
+          <th scope="col">Guessle Word</th>
+          <th scope="col">Clue 1</th>
+          <th scope="col">Clue 2</th>
+          <th scope="col">Clue 3</th>
+          <th scope="col">Clue 4</th>
+          <th scope="col">Clue 5</th>
+          <th scope="col">% of correct guesses</th>
+        </tr>
+      </thead>
         <tbody>
         {% for guessle in guessles.items reversed %}
             <tr>
@@ -30,6 +56,6 @@
             </tr>            
         {% endfor %}
         </tbody>
-    </table>
-
+      </table>
+  </div>
 {% endblock content %}
