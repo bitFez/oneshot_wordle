@@ -3,6 +3,10 @@ A version of wordle where you only have one chance to guess the day's word!
 
 ## TODO
 - [ ] Colour the alphabet according to the letters in the guess and clues
+- [ ] Check for word validity front-end in order to reduce server requests
+- [x] Allow trying the game if not logged in
+- [ ] Scale the page based on page height
+- [ ] Share streak and correct percentage to clipboard
 - [x] Re size log in form for mobiles
 - [x] Re size sign up form for mobiles
 - [x] Create page of previous words
