@@ -225,7 +225,6 @@ def guessle(request):
                 # Add stats if the user is logged in
                 if guess == TARGET_WORD:
                     messages.add_message(request=request, level=messages.SUCCESS, message='You Guessled in one Shot!!'+'<br>'+'Have you tried the daily Easy or hard challenge?'+'<br>'+'Also, why not challenge your friends too? ')
-                    results = request.session.get('results',None)
                     todaysGuessle.attempts+=1
                     todaysGuessle.correctAnswers+=1
                     todaysGuessle.save()
@@ -246,13 +245,8 @@ def guessle(request):
                     except:
                         user.streak = 0
                     
-                    if results:
-                        results[str(attempt_number)] = results[str(attempt_number)]+1
-                    else:
-                        results = {'1':0,'2':0,'3':0,'4':0,'5':0,'6':0}
-                        results[str(attempt_number)] = 1
                     context['stars'] = stars
-                    request.session['results'] = results
+                    
                     
                 elif attempts_left == 1:
                     messages.add_message(request=request, level=messages.ERROR, message = 'Chances are over. word is '+TARGET_WORD)
@@ -463,7 +457,6 @@ def guessle_easy(request):
 
                 if guess == TARGET_WORD:
                     messages.add_message(request=request, level=messages.SUCCESS, message='You Guessled in one Shot!! Challenge your friend by clicking ')
-                    results = request.session.get('results',None)
                     todaysGuessle.attempts+=1
                     todaysGuessle.correctAnswers+=1
                     todaysGuessle.save()
@@ -689,7 +682,6 @@ def guessle_hard(request):
 
                     if guess == TARGET_WORD:
                         messages.add_message(request=request, level=messages.SUCCESS, message='You Guessled in one Shot!! ')
-                        results = request.session.get('results',None)
                         todaysGuessle.attempts+=1
                         todaysGuessle.correctAnswers+=1
                         todaysGuessle.save()
