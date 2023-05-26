@@ -62,7 +62,6 @@ def get_clues_rows(clues, TARGET_WORD, **kwargs):
         for j in range(0,rowLen):
             if word[j] == TARGET_WORD[j]:
                 letter= '<button class="form-control clue_form_size btn btn-success fw-bold text-center text-light disabled" type="text", size="1">'+word[j].upper()+'</button>'
-                print(alphabet[ord(word[j])-97])
                 alphabet[ord(word[j])-97]["colour"]="success"
                 bulls.append(word[j])
                 row+=letter
