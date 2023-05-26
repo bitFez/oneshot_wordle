@@ -71,7 +71,6 @@ THIRD_PARTY_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     # 'fontawesomefree',
-
 ]
 
 LOCAL_APPS = [
