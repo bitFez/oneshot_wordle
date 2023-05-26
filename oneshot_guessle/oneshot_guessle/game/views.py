@@ -153,7 +153,7 @@ def guessle(request):
 
     # This will add the correct colour to each letter in the guesslekeyboard on the screen
     for letter in alphabet:
-        print(f"letter: {alphabet[letter]}  - - alphabet_formset: {alphabet_formset[ord(letter)-97]}")
+        print(f"letter: {alphabet[letter]}")
         if letter == "success":
             alphabet_formset[ord(letter)-97].cleaned_data['l_color'] = 'btn-success'
         elif letter == "warning":
@@ -163,7 +163,7 @@ def guessle(request):
     context['alphabet_formset'] = new_alphabet_formset
     context['cluesRow'] = cluesRow
     context['guessleNo'] = todaysGuessle.id
-    context['coloured_alpha'] = alphabet
+    context['coloured_alpha'] = json.dumps(alphabet)
     
     # Dealing with the post of a guess
     if request.method == 'POST':
@@ -669,7 +669,7 @@ def guessle_hard(request):
                     guess_form.cleaned_data['guess'] = guess
                     
                     # Display the result of the guess
-                    row=guess_result(guess, TARGET_WORD)     
+                    row, alphabet=guess_result(guess, TARGET_WORD)     
                     cluesRow.append(row)   
                     # new_guess_formset = GuessFormSet(initial = guess_formset.cleaned_data, prefix='guess')
                     new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.cleaned_data,prefix='alphabet')
@@ -678,7 +678,8 @@ def guessle_hard(request):
                     # context['guess_formset'] = new_guess_formset
                     context['alphabet_formset'] = new_alphabet_formset
                     context['cluesRow'] = cluesRow
-
+                    context['alphabet'] = alphabet
+                    print(alphabet)
                     if guess == TARGET_WORD:
                         messages.add_message(request=request, level=messages.SUCCESS, message='You Guessled in one Shot!! Challenge your friend by clicking '+'<a href='+request.path+'?target_word='+form.cleaned_data['target_word']+'>here</a>', extra_tags='safe')
                         results = request.session.get('results',None)

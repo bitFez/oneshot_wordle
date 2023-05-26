@@ -9,12 +9,12 @@ def guess_result(guess, target_word, alphabet):
         letter_color = 'l'+str(j+1)+'_color'
         if guess[j] in target_word:
             letter= '<button class="form-control clue_form_size btn btn-warning fw-bold text-center text-light disabled" type="text", size="1">'+guess[j].upper()+'</button>'
-            if alphabet[f'{guess[j]}']=="secondary":
-                alphabet[f'{guess[j]}']="warning"
+            if alphabet[j]["colour"]=="secondary":
+                alphabet[j]["colour"]="warning"
             #alphabet_formset[ord(clues[clue][j])-97].cleaned_data['l_color'] = 'btn-warning'
             if guess[j] == target_word[j]:
                 letter= '<button class="form-control clue_form_size btn btn-success fw-bold text-center text-light disabled" type="text", size="1">'+guess[j].upper()+'</button>'
-                alphabet[f'{guess[j]}']="success"
+                alphabet[j]["colour"]="success"
                 #alphabet_formset[ord(clues[clue][j])-97].cleaned_data['l_color'] = 'btn-success'
             row+=letter
         else:
@@ -31,42 +31,55 @@ def get_clues_rows(clues, TARGET_WORD, **kwargs):
         rowLen = 6
     else:
         rowLen = 5
-    alphabet = {'id_alphabet-0-l_color':{'colour':'secondary', 'letter':'a'}, 'id_alphabet-1-l_color':{'colour':'secondary', 'letter':'b'},
-                'id_alphabet-2-l_color':{'colour':'secondary', 'letter':'c'},'id_alphabet-3-l_color':{'colour':'secondary', 'letter':'d'},
-                'id_alphabet-4-l_color':{'colour':'secondary', 'letter':'e'},'id_alphabet-5-l_color':{'colour':'secondary', 'letter':'f'},
-                'id_alphabet-6-l_color':{'colour':'secondary', 'letter':'g'},'id_alphabet-7-l_color':{'colour':'secondary', 'letter':'h'},
-                'id_alphabet-8-l_color':{'colour':'secondary', 'letter':'i'},'id_alphabet-9-l_color':{'colour':'secondary', 'letter':'j'},
-                'id_alphabet-10-l_color':{'colour':'secondary', 'letter':'k'},'id_alphabet-11-l_color':{'colour':'secondary', 'letter':'l'},
-                'id_alphabet-12-l_color':{'colour':'secondary', 'letter':'m'},'id_alphabet-13-l_color':{'colour':'secondary', 'letter':'n'},
-                'id_alphabet-14-l_color':{'colour':'secondary', 'letter':'o'},'id_alphabet-15-l_color':{'colour':'secondary', 'letter':'p'},
-                'id_alphabet-16-l_color':{'colour':'secondary', 'letter':'q'},'id_alphabet-17-l_color':{'colour':'secondary', 'letter':'r'},
-                'id_alphabet-18-l_color':{'colour':'secondary', 'letter':'s'},'id_alphabet-19-l_color':{'colour':'secondary', 'letter':'t'},
-                'id_alphabet-20-l_color':{'colour':'secondary', 'letter':'u'},'id_alphabet-21-l_color':{'colour':'secondary', 'letter':'v'},
-                'id_alphabet-22-l_color':{'colour':'secondary', 'letter':'x'},'id_alphabet-23-l_color':{'colour':'secondary', 'letter':'y'},
-                'id_alphabet-24-l_color':{'colour':'secondary', 'letter':'z'}
+    alphabet = {0:{'colour':'secondary', 'letter':'a','id':'id_alphabet-0-l_color'}, 
+                1:{'colour':'secondary', 'letter':'b', 'id':'id_alphabet-1-l_color'},
+                2:{'colour':'secondary', 'letter':'c','id':'id_alphabet-2-l_color'}, 
+                3:{'colour':'secondary', 'letter':'d','id':'id_alphabet-3-l_color'},
+                4:{'colour':'secondary', 'letter':'e','id':'id_alphabet-4-l_color'}, 
+                5:{'colour':'secondary', 'letter':'f', 'id':'id_alphabet-5-l_color'},
+                6:{'colour':'secondary', 'letter':'g','id':'id_alphabet-6-l_color'}, 
+                7:{'colour':'secondary', 'letter':'h','id':'id_alphabet-7-l_color'},
+                8:{'colour':'secondary', 'letter':'i','id':'id_alphabet-8-l_color'}, 
+                9:{'colour':'secondary', 'letter':'j', 'id':'id_alphabet-9-l_color'},
+                10:{'colour':'secondary', 'letter':'k', 'id':'id_alphabet-10-l_color'}, 
+                11:{'colour':'secondary', 'letter':'l', 'id':'id_alphabet-11-l_color'},
+                12:{'colour':'secondary', 'letter':'m', 'id':'id_alphabet-12-l_color'}, 
+                13:{'colour':'secondary', 'letter':'n', 'id':'id_alphabet-13-l_color'},
+                14:{'colour':'secondary', 'letter':'o', 'id':'id_alphabet-14-l_color'}, 
+                15:{'colour':'secondary', 'letter':'p', 'id':'id_alphabet-15-l_color'},
+                16:{'colour':'secondary', 'letter':'q', 'id':'id_alphabet-16-l_color'}, 
+                17:{'colour':'secondary', 'letter':'r','id':'id_alphabet-17-l_color'},
+                18:{'colour':'secondary', 'letter':'s', 'id':'id_alphabet-18-l_color'}, 
+                19:{'colour':'secondary', 'letter':'t', 'id':'id_alphabet-19-l_color'},
+                20:{'colour':'secondary', 'letter':'u', 'id':'id_alphabet-20-l_color'}, 
+                21:{'colour':'secondary', 'letter':'v', 'id':'id_alphabet-21-l_color'},
+                22:{'colour':'secondary', 'letter':'x', 'id':'id_alphabet-22-l_color'}, 
+                23:{'colour':'secondary', 'letter':'y', 'id':'id_alphabet-23-l_color'},
+                24:{'colour':'secondary', 'letter':'z','id':'id_alphabet-24-l_color'}
                 }
     cluesRow = []
     for clue in range(0,5):
         cows,bulls=[],[]
         row='<div class="btn-group">'
-        guess = clues[clue]                
+        word = clues[clue]                
         for j in range(0,rowLen):
-            letter_color = 'l'+str(j+1)+'_color'
-            if guess[j] == TARGET_WORD[j]:
-                letter= '<button class="form-control clue_form_size btn btn-success fw-bold text-center text-light disabled" type="text", size="1">'+guess[j].upper()+'</button>'
-                alphabet[f'[0]{guess[j]}']="success"
+            # letter_color = 'l'+str(j+1)+'_color'
+            if word[j] == TARGET_WORD[j]:
+                letter= '<button class="form-control clue_form_size btn btn-success fw-bold text-center text-light disabled" type="text", size="1">'+word[j].upper()+'</button>'
+                print(alphabet[ord(word[j])-97])
+                alphabet[ord(word[j])-97]["colour"]="success"
                 # alphabet_formset[ord(guess[j])-97].data['l_color'] = 'btn-success'
-                bulls.append(guess[j])
+                bulls.append(word[j])
                 row+=letter
-            elif guess[j] in TARGET_WORD and guess[j] not in cows and guess[j] not in bulls:
-                letter= '<button class="form-control clue_form_size btn btn-warning fw-bold text-center text-light disabled" type="text", size="1">'+guess[j].upper()+'</button>'
-                if alphabet[f'{guess[j]}']=="secondary":
-                    alphabet[f'{guess[j]}']="warning"
+            elif (word[j] in TARGET_WORD) and (word[j] not in cows) and (word[j] not in bulls):
+                letter= '<button class="form-control clue_form_size btn btn-warning fw-bold text-center text-light disabled" type="text", size="1">'+word[j].upper()+'</button>'
+                if alphabet[j]["colour"]=="secondary":
+                    alphabet[j]["colour"]="warning"
                 # alphabet_formset[ord(guess[j])-97].data['l_color'] = 'btn-warning'
                 row+=letter
-                cows.append(guess[j])
+                cows.append(word[j])
             else:
-                letter= '<button class="form-control clue_form_size btn btn-secondary fw-bold text-center text-light disabled" type="text", size="1">'+guess[j].upper()+'</button>'
+                letter= '<button class="form-control clue_form_size btn btn-secondary fw-bold text-center text-light disabled" type="text", size="1">'+word[j].upper()+'</button>'
                 # alphabet_formset[ord(guess[j])-97].data['l_color'] = 'btn-secondary'
                 row+=letter
         row+='</div><br>'
