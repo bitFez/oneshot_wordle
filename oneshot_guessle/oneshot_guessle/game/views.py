@@ -163,7 +163,7 @@ def guessle(request):
     context['alphabet_formset'] = new_alphabet_formset
     context['cluesRow'] = cluesRow
     context['guessleNo'] = todaysGuessle.id
-    context['coloured_alpha'] = json.dumps(alphabet)
+    context['coloured_alpha'] = alphabet
     
     # Dealing with the post of a guess
     if request.method == 'POST':

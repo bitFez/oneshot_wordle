@@ -6,20 +6,16 @@ def guess_result(guess, target_word, alphabet):
     row='<div class="btn-group">'
                     
     for j in range(0,len(target_word)):
-        letter_color = 'l'+str(j+1)+'_color'
         if guess[j] in target_word:
             letter= '<button class="form-control clue_form_size btn btn-warning fw-bold text-center text-light disabled" type="text", size="1">'+guess[j].upper()+'</button>'
-            if alphabet[j]["colour"]=="secondary":
-                alphabet[j]["colour"]="warning"
-            #alphabet_formset[ord(clues[clue][j])-97].cleaned_data['l_color'] = 'btn-warning'
+            if alphabet[ord(guess[j])-97]["colour"]=="secondary":
+                alphabet[ord(guess[j])-97]["colour"]="warning"
             if guess[j] == target_word[j]:
                 letter= '<button class="form-control clue_form_size btn btn-success fw-bold text-center text-light disabled" type="text", size="1">'+guess[j].upper()+'</button>'
-                alphabet[j]["colour"]="success"
-                #alphabet_formset[ord(clues[clue][j])-97].cleaned_data['l_color'] = 'btn-success'
+                alphabet[ord(guess[j])-97]["colour"]="success"
             row+=letter
         else:
             letter= '<button class="form-control clue_form_size btn btn-secondary fw-bold text-center text-light disabled" type="text", size="1">'+guess[j].upper()+'</button>'
-            #alphabet_formset[ord(clues[clue][j])-97].cleaned_data['l_color'] = 'btn-secondary'
             row+=letter
     row+='</div>'      
     
@@ -53,9 +49,10 @@ def get_clues_rows(clues, TARGET_WORD, **kwargs):
                 19:{'colour':'secondary', 'letter':'t', 'id':'id_alphabet-19-l_color'},
                 20:{'colour':'secondary', 'letter':'u', 'id':'id_alphabet-20-l_color'}, 
                 21:{'colour':'secondary', 'letter':'v', 'id':'id_alphabet-21-l_color'},
-                22:{'colour':'secondary', 'letter':'x', 'id':'id_alphabet-22-l_color'}, 
-                23:{'colour':'secondary', 'letter':'y', 'id':'id_alphabet-23-l_color'},
-                24:{'colour':'secondary', 'letter':'z','id':'id_alphabet-24-l_color'}
+                22:{'colour':'secondary', 'letter':'w', 'id':'id_alphabet-22-l_color'},
+                23:{'colour':'secondary', 'letter':'x', 'id':'id_alphabet-23-l_color'}, 
+                24:{'colour':'secondary', 'letter':'y', 'id':'id_alphabet-24-l_color'},
+                25:{'colour':'secondary', 'letter':'z','id':'id_alphabet-25-l_color'}
                 }
     cluesRow = []
     for clue in range(0,5):
@@ -63,24 +60,20 @@ def get_clues_rows(clues, TARGET_WORD, **kwargs):
         row='<div class="btn-group">'
         word = clues[clue]                
         for j in range(0,rowLen):
-            # letter_color = 'l'+str(j+1)+'_color'
             if word[j] == TARGET_WORD[j]:
                 letter= '<button class="form-control clue_form_size btn btn-success fw-bold text-center text-light disabled" type="text", size="1">'+word[j].upper()+'</button>'
                 print(alphabet[ord(word[j])-97])
                 alphabet[ord(word[j])-97]["colour"]="success"
-                # alphabet_formset[ord(guess[j])-97].data['l_color'] = 'btn-success'
                 bulls.append(word[j])
                 row+=letter
             elif (word[j] in TARGET_WORD) and (word[j] not in cows) and (word[j] not in bulls):
                 letter= '<button class="form-control clue_form_size btn btn-warning fw-bold text-center text-light disabled" type="text", size="1">'+word[j].upper()+'</button>'
-                if alphabet[j]["colour"]=="secondary":
-                    alphabet[j]["colour"]="warning"
-                # alphabet_formset[ord(guess[j])-97].data['l_color'] = 'btn-warning'
+                if alphabet[ord(word[j])-97]["colour"]=="secondary":
+                    alphabet[ord(word[j])-97]["colour"]="warning"
                 row+=letter
                 cows.append(word[j])
             else:
                 letter= '<button class="form-control clue_form_size btn btn-secondary fw-bold text-center text-light disabled" type="text", size="1">'+word[j].upper()+'</button>'
-                # alphabet_formset[ord(guess[j])-97].data['l_color'] = 'btn-secondary'
                 row+=letter
         row+='</div><br>'
 
