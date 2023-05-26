@@ -149,13 +149,21 @@ def guessle(request):
     clues = [todayclues.clue1,todayclues.clue2,todayclues.clue3,todayclues.clue4,todayclues.clue5]
 
     # This section will add each clue to the guessle rows with the correct colour for each letter.
-    cluesRow = get_clues_rows(clues, TARGET_WORD)
+    cluesRow,alphabet = get_clues_rows(clues, TARGET_WORD)
 
+    # This will add the correct colour to each letter in the guesslekeyboard on the screen
+    for letter in alphabet:
+        print(f"letter: {alphabet[letter]}")
+        if letter == "success":
+            alphabet_formset[ord(letter)-97].cleaned_data['l_color'] = 'btn-success'
+        elif letter == "warning":
+            alphabet_formset[ord(letter)-97].cleaned_data['l_color'] = 'btn-warning'
+    
     new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.data,prefix='alphabet')
     context['alphabet_formset'] = new_alphabet_formset
     context['cluesRow'] = cluesRow
     context['guessleNo'] = todaysGuessle.id
-    
+    context['coloured_alpha'] = alphabet
     
     # Dealing with the post of a guess
     if request.method == 'POST':
@@ -670,7 +678,7 @@ def guessle_hard(request):
                     guess_form.cleaned_data['guess'] = guess
                     
                     # Display the result of the guess
-                    row=guess_result(guess, TARGET_WORD)     
+                    row, alphabet=guess_result(guess, TARGET_WORD)     
                     cluesRow.append(row)   
                     # new_guess_formset = GuessFormSet(initial = guess_formset.cleaned_data, prefix='guess')
                     new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.cleaned_data,prefix='alphabet')
@@ -679,7 +687,8 @@ def guessle_hard(request):
                     # context['guess_formset'] = new_guess_formset
                     context['alphabet_formset'] = new_alphabet_formset
                     context['cluesRow'] = cluesRow
-
+                    context['alphabet'] = alphabet
+                    print(alphabet)
                     if guess == TARGET_WORD:
                         messages.add_message(request=request, level=messages.SUCCESS, message='You Guessled in one Shot!! ')
                         todaysGuessle.attempts+=1
