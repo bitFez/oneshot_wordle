@@ -237,13 +237,13 @@ def guessle(request):
                     # check for attempt yesterday
                     yesterday_start = start_date - timedelta(1)
                     yesterday_end = end_date - timedelta(1)
-                    try:
-                        yesterday_attempt = Guessle_Attempt.objects.filter(date__range=(yesterday_start, yesterday_end), user=user)[0]
+                    yesterday_attempt = Guessle_Attempt.objects.filter(date__range=(yesterday_start, yesterday_end), user=user)[0]
+                    if yesterday_attempt.exists():
                         if yesterday_attempt.guess == yesterday_attempt.word:
                             user.streak +=1
                             if user.streak > user.highestStreak:
                                 user.highestStreak = user.streak
-                    except:
+                    else:
                         user.streak = 0
                     
                     context['stars'] = stars

@@ -73,6 +73,8 @@ def get_clues_rows(clues, TARGET_WORD, **kwargs):
                 cows.append(word[j])
             else:
                 letter= '<button class="form-control clue_form_size btn btn-secondary fw-bold text-center text-light disabled" type="text", size="1">'+word[j].upper()+'</button>'
+                if alphabet[ord(word[j])-97]["colour"]=="secondary":
+                    alphabet[ord(word[j])-97]["colour"]="dark"
                 row+=letter
         row+='</div><br>'
 
