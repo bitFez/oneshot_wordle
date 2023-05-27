@@ -151,13 +151,6 @@ def guessle(request):
     # This section will add each clue to the guessle rows with the correct colour for each letter.
     cluesRow,alphabet = get_clues_rows(clues, TARGET_WORD)
 
-    # This will add the correct colour to each letter in the guesslekeyboard on the screen
-    for letter in alphabet:
-        print(f"letter: {alphabet[letter]}")
-        if letter == "success":
-            alphabet_formset[ord(letter)-97].cleaned_data['l_color'] = 'btn-success'
-        elif letter == "warning":
-            alphabet_formset[ord(letter)-97].cleaned_data['l_color'] = 'btn-warning'
     
     new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.data,prefix='alphabet')
     context['alphabet_formset'] = new_alphabet_formset
@@ -205,7 +198,7 @@ def guessle(request):
                 guess_form.cleaned_data['guess'] = guess
                 
                 # Display the result of the guess
-                row=guess_result(guess, TARGET_WORD)     
+                row,alphabet=guess_result(guess, TARGET_WORD, alphabet)     
                 cluesRow.append(row)   
                 # new_guess_formset = GuessFormSet(initial = guess_formset.cleaned_data, prefix='guess')
                 new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.cleaned_data,prefix='alphabet')
@@ -301,7 +294,7 @@ def guessle(request):
                 form.fields['attempts_left'].initial= 0
                 form.fields['attempt_number'].initial = 0
                 attempt_number = 0
-                row=guess_result(attempts[0].guess, todaysGuessle.word)
+                row, alphabet=guess_result(attempts[0].guess, todaysGuessle.word, alphabet)
                 cluesRow.append(row)
                 context['cluesRow'] = cluesRow
                 context['attempts'] = attempts
@@ -311,7 +304,7 @@ def guessle(request):
                 form = GuessleForm()
                 form.fields['attempts_left'].initial= 0
                 attempt_number = 0
-                row=guess_result(attempts[0].guess, todaysGuessle.word)
+                row, alphabet=guess_result(attempts[0].guess, todaysGuessle.word, alphabet)
                 cluesRow.append(row)
                 context['cluesRow'] = cluesRow
                 context['attempts'] = attempts
@@ -405,12 +398,13 @@ def guessle_easy(request):
     clues = [todayclues.clue1,todayclues.clue2,todayclues.clue3,todayclues.clue4,todayclues.clue5]
 
     # This section will add each clue to the guessle rows with the correct colour for each letter.
-    cluesRow = get_clues_rows(clues, TARGET_WORD, difficulty="easy")
+    cluesRow,alphabet = get_clues_rows(clues, TARGET_WORD, difficulty="easy")
     
     new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.data,prefix='alphabet')
     context['alphabet_formset'] = new_alphabet_formset
     context['cluesRow'] = cluesRow
     context['guessleNo'] = todaysGuessle.id
+    context['coloured_alpha'] = alphabet
     context['stars'] = stars
     context['difficulty'] = 'easy'
     # Dealing with the post of a guess
@@ -453,7 +447,7 @@ def guessle_easy(request):
                 guess_form.cleaned_data['guess'] = guess
                 
                 # Display the result of the guess
-                row=guess_result(guess, TARGET_WORD)     
+                row, alphabet=guess_result(guess, TARGET_WORD, alphabet)     
                 cluesRow.append(row)   
                 # new_guess_formset = GuessFormSet(initial = guess_formset.cleaned_data, prefix='guess')
                 new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.cleaned_data,prefix='alphabet')
@@ -514,7 +508,7 @@ def guessle_easy(request):
                 form.fields['attempts_left'].initial= 0
                 form.fields['attempt_number'].initial = 0
                 attempt_number = 0
-                row=guess_result(attempts[0].guess, todaysGuessle.word)
+                row,alphabet=guess_result(attempts[0].guess, todaysGuessle.word,alphabet)
                 cluesRow.append(row)
                 context['cluesRow'] = cluesRow
                 context['attempts'] = attempts
@@ -524,7 +518,7 @@ def guessle_easy(request):
                 form = GuessleForm()
                 form.fields['attempts_left'].initial= 0
                 attempt_number = 0
-                row=guess_result(attempts[0].guess, todaysGuessle.word)
+                row, alphabet=guess_result(attempts[0].guess, todaysGuessle.word, alphabet)
                 cluesRow.append(row)
                 context['cluesRow'] = cluesRow
                 context['attempts'] = attempts
@@ -621,16 +615,17 @@ def guessle_hard(request):
         todaysGuessle = OneshotWordHard.objects.all().last()
         todayclues = todaysGuessle.clues #OneshotClues.objects.filter(date__range=(start_date, end_date))[0]
         TARGET_WORD = todaysGuessle.word
-        print(f"Todays word is : {TARGET_WORD}")
+        # print(f"Todays word is : {TARGET_WORD}")
         clues = [todayclues.clue1,todayclues.clue2,todayclues.clue3,todayclues.clue4,todayclues.clue5]
 
         # This section will add each clue to the guessle rows with the correct colour for each letter.
-        cluesRow = get_clues_rows(clues, TARGET_WORD, difficulty="hard")
+        cluesRow,alphabet = get_clues_rows(clues, TARGET_WORD, difficulty="hard")
         
         new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.data,prefix='alphabet')
         context['alphabet_formset'] = new_alphabet_formset
         context['cluesRow'] = cluesRow
         context['guessleNo'] = todaysGuessle.id
+        context['coloured_alpha'] = alphabet
         context['stars'] = stars
         context['difficulty'] = 'hard'
         # Dealing with the post of a guess
@@ -656,12 +651,12 @@ def guessle_hard(request):
             GuessFormSet = formset_factory(GuessFormHard, extra=1, max_num=1)
             #read the forms from copy of request.POST to make them mutable
             guess_formset = GuessFormSet(request.POST.copy(), form_kwargs={'empty_permitted': False}, prefix='guess')
-            print(f"guess formset : {guess_formset}")
+            
             alphabet_formset = AlphabetFormSet(request.POST.copy(), form_kwargs={'empty_permitted': False}, prefix='alphabet')
             form = GuessleFormHard(request.POST.copy())
-            print("Before checkinf if forms are valid")
+            
             if guess_formset.is_valid() & form.is_valid() & alphabet_formset.is_valid():
-                print("forms are valid")    
+                
                 # Get form data
                 guess = form.cleaned_data['guess'].lower()
                 attempts_left = form.cleaned_data['attempts_left']
@@ -678,7 +673,7 @@ def guessle_hard(request):
                     guess_form.cleaned_data['guess'] = guess
                     
                     # Display the result of the guess
-                    row, alphabet=guess_result(guess, TARGET_WORD)     
+                    row, alphabet=guess_result(guess, TARGET_WORD, alphabet)     
                     cluesRow.append(row)   
                     # new_guess_formset = GuessFormSet(initial = guess_formset.cleaned_data, prefix='guess')
                     new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.cleaned_data,prefix='alphabet')
@@ -740,7 +735,7 @@ def guessle_hard(request):
                     form.fields['attempts_left'].initial= 0
                     form.fields['attempt_number'].initial = 0
                     attempt_number = 0
-                    row=guess_result(attempts[0].guess, todaysGuessle.word)
+                    row, alphabet=guess_result(attempts[0].guess, todaysGuessle.word, alphabet)
                     cluesRow.append(row)
                     context['cluesRow'] = cluesRow
                     context['attempts'] = attempts
@@ -750,7 +745,7 @@ def guessle_hard(request):
                     form = GuessleFormHard()
                     form.fields['attempts_left'].initial= 0
                     attempt_number = 0
-                    row=guess_result(attempts[0].guess, todaysGuessle.word)
+                    row, alphabet=guess_result(attempts[0].guess, todaysGuessle.word, alphabet)
                     cluesRow.append(row)
                     context['cluesRow'] = cluesRow
                     context['attempts'] = attempts
