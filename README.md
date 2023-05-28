@@ -1,47 +1,6 @@
 # Oneshot Guessle
 A version of wordle where you only have one chance to guess the day's word!
 
-## TODO
-- [x] Colour the alphabet according to the letters in the guess and clues
-- [x] Colour used letter darker grey
-- [ ] Check for word validity front-end in order to reduce server requests
-- [x] Allow trying the game if not logged in
-- [ ] Scale the page based on page height
-- [ ] Share streak and correct percentage to clipboard
-- [ ] track progress on device using cookies instead of having to log in
-- [x] Re size log in form for mobiles
-- [x] Re size sign up form for mobiles
-- [x] Create page of previous words
-- [x] Add each guess to the Guessle_Attempt model
-- [x] Limit a user from taking a guess if they have one already in the Guessle_Attempt model
-- [x] Create league table of users who are most successful
-- [x] create modal for rules
-- [x] Create modal for displaying a user's streak data
-- [x] Remove the warning card after success / failure and instead add to user's streak modal
-- [x] Hide Nav bar using burger menu
-- [x] check if the word wordle is copyrighted
-    It seems likes it is :-( https://www.gamerevolution.com/news/703678-wordle-archive-removed-new-york-times-trademark-clone
-- [x] Come up with a new name for the site
-- [x] need to centre the heading without a linebreak
-- [ ] Dark / light modes
-- [x] Support modal page
-- [x] Easy game mode (2 greens, 2 yellows)
-- [x] Bonus (Hard) game mode (6 letter words 2 greens, 3 yellows)
-- [x] Get a list of 6 letter words for the hard mode game
-- Daily Stars
-    - [x] 1 star for guessing the main word
-    - [x] 1 star for guessing easy word
-    - [x] 1 star for guesing bonus / hard word
-- Ko-fi Page - 
-    - for monthly donators:
-        - [x] ad-free experience
-        - [x] unlock bonus / hard daily word
-        - [ ] special role on discord
-        - [ ] Members are able to suggest special theme days (star trek etc)
-- [ ] Create word definitions to results
-- [ ] Ads on page
-- [ ] Countdown to next guessle
-- [ ] Add shadow to bottom of tiles
 
 [![Built with Cookiecutter Django](https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg?logo=cookiecutter)](https://github.com/cookiecutter/cookiecutter-django/)
 [![Black code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)

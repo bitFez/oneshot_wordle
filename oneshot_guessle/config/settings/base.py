@@ -70,6 +70,10 @@ THIRD_PARTY_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
+    "allauth.socialaccount.providers.facebook",
+    "allauth.socialaccount.providers.google",
+    "allauth.socialaccount.providers.twitter",
+    'allauth.socialaccount.providers.reddit',
     # 'fontawesomefree',
 ]
 
@@ -271,6 +275,9 @@ SOCIALACCOUNT_ADAPTER = "oneshot_guessle.users.adapters.SocialAccountAdapter"
 # https://django-allauth.readthedocs.io/en/latest/forms.html
 SOCIALACCOUNT_FORMS = {"signup": "oneshot_guessle.users.forms.UserSocialSignupForm"}
 
+SOCIALACCOUNT_PROVIDERS = {
+    'google', 'facebook', 'reddit', 'twitter'
+}
 
 # Your stuff...
 # ------------------------------------------------------------------------------
