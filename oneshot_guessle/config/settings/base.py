@@ -276,7 +276,7 @@ SOCIALACCOUNT_ADAPTER = "oneshot_guessle.users.adapters.SocialAccountAdapter"
 SOCIALACCOUNT_FORMS = {"signup": "oneshot_guessle.users.forms.UserSocialSignupForm"}
 
 SOCIALACCOUNT_PROVIDERS = {
-    'google', 'facebook', 'reddit', 'twitter'
+    'google':{}, 'facebook':{}, 'reddit':{}, 'twitter':{}
 }
 
 # Your stuff...
