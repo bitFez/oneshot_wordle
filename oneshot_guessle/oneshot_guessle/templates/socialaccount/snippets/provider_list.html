@@ -1,0 +1,29 @@
+
+{% load socialaccount %}
+
+{% get_providers as socialaccount_providers %}
+
+{% block css %}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+{% endblock %}
+
+<div class="btn-group btn-group-lg" role="group" aria-label="Basic example">
+{% for provider in socialaccount_providers %}
+{% if provider.id == "openid" %}
+{% for brand in provider.get_brands %}
+
+  <a title="{{brand.name}}" 
+     class="socialaccount_provider btn btn-outline-warning {{provider.id}} {{brand.id}}" 
+     href="{% provider_login_url provider.id openid=brand.openid_url process=process %}"
+     ></a>
+
+{% endfor %}
+{% endif %}
+
+
+  <a title="{{provider.name}}" class="socialaccount_provider btn btn-outline-warning {{provider.id}}" 
+     href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}">
+     <i class="bi bi-{{provider.name|lower}}"></i></a>
+
+{% endfor %}
+</div>

@@ -830,8 +830,17 @@ def halloffame(request):
 def help_menu(request):
     return render(request=request,template_name='pages/games/help.html')
 
+def privacy_policy(request):
+    return render(request=request,template_name='pages/games/help.html')
+
+def terms_and_conditions(request):
+    return render(request=request,template_name='policies/terms_and_conditions.html')
+
 def support_menu(request):
-    return render(request=request,template_name='pages/games/support.html')
+    return render(request=request,template_name='policies/privacy_policy.html')
+
+def disclaimer(request):
+    return render(request=request,template_name='policies/disclaimer.html')
 
 def shareto_modal(request):
     return render(request=request,template_name='pages/games/shareto.html')

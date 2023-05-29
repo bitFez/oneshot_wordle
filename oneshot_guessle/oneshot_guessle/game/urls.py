@@ -1,7 +1,7 @@
 from django.urls import path
 
 from oneshot_guessle.game.views import (
-    guessle, load_words, supporter,shareto_modal,
+    guessle, load_words, supporter,shareto_modal,privacy_policy,terms_and_conditions,disclaimer,
     help_menu, results, history, halloffame, support_menu, guessle_easy, guessle_hard
 )
 
@@ -19,5 +19,7 @@ urlpatterns = [
     path('results', results, name='results'),
     path('history', history, name='history'),
     path('halloffame', halloffame, name='hof'),
-    
+    path('privacy_policy', privacy_policy, name='privacy_policy'),
+    path('terms', terms_and_conditions, name='tsandcs'),
+    path('dislaimer', disclaimer, name='dislaimer'),
 ]

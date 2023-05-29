@@ -51,6 +51,17 @@
           <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">{% translate "Sign In" %}</a>
       </li>
       {% endif %}
+
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          Policies
+        </a>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="game:disclaimer">Disclaimer</a></li>
+          <li><a class="dropdown-item" href="game:privacy_policy">Privacy Policies</a></li>
+          <li><a class="dropdown-item" href="game:tsandcs">Terms & Conditions</a></li>
+        </ul>
+      </li>
       <li>
         <a href="https://twitter.com/oneshotguessle" target="_blank"><i class="bi bi-twitter" style="font-size: 2rem;"></i></a>
       </li>
