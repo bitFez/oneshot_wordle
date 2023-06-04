@@ -21,5 +21,5 @@ urlpatterns = [
     path('halloffame', halloffame, name='hof'),
     path('privacy_policy', privacy_policy, name='privacy_policy'),
     path('terms', terms_and_conditions, name='tsandcs'),
-    path('dislaimer', disclaimer, name='dislaimer'),
+    path('disclaimer', disclaimer, name='disclaimer'),
 ]

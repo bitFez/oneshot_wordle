@@ -40,16 +40,16 @@
           <a class="nav-link" href="{% url 'account_logout' %}">{% translate "Sign Out" %}</a>
       </li>
       {% else %}
-      {% if ACCOUNT_ALLOW_REGISTRATION %}
-      <li class="nav-item">
-      {# URL provided by django-allauth/account/urls.py #}
-      <a id="sign-up-link" class="nav-link" href="{% url 'account_signup' %}">{% translate "Sign Up" %}</a>
-      </li>
-      {% endif %}
-      <li class="nav-item">
+        {% if ACCOUNT_ALLOW_REGISTRATION %}
+          <li class="nav-item">
           {# URL provided by django-allauth/account/urls.py #}
-          <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">{% translate "Sign In" %}</a>
-      </li>
+          <a id="sign-up-link" class="nav-link" href="{% url 'account_signup' %}">{% translate "Sign Up" %}</a>
+          </li>
+        {% endif %}
+        <li class="nav-item">
+            {# URL provided by django-allauth/account/urls.py #}
+            <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">{% translate "Sign In" %}</a>
+        </li>
       {% endif %}
 
       <li class="nav-item dropdown">
@@ -57,9 +57,9 @@
           Policies
         </a>
         <ul class="dropdown-menu">
-          <li><a class="dropdown-item" href="game:disclaimer">Disclaimer</a></li>
-          <li><a class="dropdown-item" href="game:privacy_policy">Privacy Policies</a></li>
-          <li><a class="dropdown-item" href="game:tsandcs">Terms & Conditions</a></li>
+          <li><a class="dropdown-item" href="{% url 'game:disclaimer' %}">Disclaimer</a></li>
+          <li><a class="dropdown-item" href="{% url 'game:privacy_policy' %}">Privacy Policies</a></li>
+          <li><a class="dropdown-item" href="{% url 'game:tsandcs' %}">Terms & Conditions</a></li>
         </ul>
       </li>
       <li>

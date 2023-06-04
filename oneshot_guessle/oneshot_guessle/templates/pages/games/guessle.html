@@ -33,7 +33,7 @@
             <a class="btn btn-link" hx-get='{% url "game:results" %}' hx-target="#modal_placeholder" hx-trigger="click" @htmx:after-on-load.camel="setTimeout(function() {results_modal=new bootstrap.Modal($refs.resultsdiv);results_modal.show()},100)"><i class="nav-icon bi bi-bar-chart-line-fill" ></i></a>
         </div>
         {% include "navbar.html" %}
-      </div>
+    </div>
   
     <div class="row my-1 align-items-start no-gutters justify-content-center border-bottom w-100">
         <!-- Site title & top bar -->
@@ -57,7 +57,7 @@
                 <a href="navigator.share({{message}})"><i class="bi bi-share"></i></a>
                 {% endif %}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-              </div>
+            </div>
             <!-- <div x-data="{ show: true }" x-show="show" x-transition class="alert p-1 m-1 {% if message.tags == 'safe success'%} alert-success {%else%} alert-danger {%endif%}" {% if message.tags != 'safe success'%}x-init="setTimeout(() => show = false, 10000){%endif%}">
                 {{ message |safe }}
                 {%if message.tags == "safe success"%}
@@ -173,6 +173,4 @@
 
 {% endblock content %}
 
-{% block javascript %}
-    
-{% endblock javascript %}
+{% block javascript %}{% endblock javascript %}
