@@ -1,40 +1,66 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static i18n %}  
 
 {% block title %}User: {{ object.username }}{% endblock %}
 
 {% block content %}
-<div class="container">
-  {% include "navbar2.html" %}
-  <div class="row">
-    <div class="col-sm-12">
-
-      <h2>{{ object.username }}</h2>
-      <img src="{{object.image.url}}" height="200px" alt="">
-      {% if object.name %}
-        <p>{{ object.name }}</p>
-      {% endif %}
-      <p>Correct Guesses: {{object.dayscorrect}}</p>
-      <p>Incorrect Guesses: {{object.daysincorrect}}</p>
-      <p>Current Streak: {{object.streak}}</p>
-      <p>Highest Streak: {{object.highestStreak}}</p>
-      <p>Correct Guesses: {{object.dayscorrect}}</p>
+<div class=" d-flex flex-column align-items-center justify-content-between h-100 w-100 navbar navbar-dark bg-dark" aria-label="Dark offcanvas navbar">
+  <div id="modal_placeholder"></div>
+    <div class="container-fluid" style="max-height:100px;overflow:auto;">
+        <div class="col-2">
+            <!-- Left side icons -->
+            <a class="navbar-brand mx-1" href="{% url 'game:home' %}"> <img class="navbar-logo" src="{% static 'images/logo.svg' %}" alt=""> </a>
+            <!-- <a class="btn btn-link mx-1 px-0 text-danger" hx-get='{% url "game:support" %}' hx-target="#modal_placeholder" hx-trigger="click" @htmx:after-on-load.camel="setTimeout(function() { my_modal=new bootstrap.Modal($refs.modaldiv);my_modal.show()},100)"> <i class="nav-icon bi bi-heart-fill"></i></a> -->
+        </div>
+        
+        <div class="col-6">
+            <!-- Title -->
+            <div class="d-flex flex-row justify-content-center text-light">
+                <h1 class="text-uppercase">
+                  {{ object.username }}'s Profile
+                </h1>
+            </div>
+        </div>
+        <div class="col-2 d-flex m-0 p-0 flex-row-reverse">
+            <!-- Right side icons -->
+            <button class="navbar-toggler mx-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbarDark" aria-controls="offcanvasNavbarDark" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon nav-icon"></span>
+            </button>
+            
+        </div>
+        {% include "navbar.html" %}
     </div>
-  </div>
+  
+  
+    <div class="row">
+      <div class="col-sm-12 text-light">
 
-{% if object == request.user %}
-<!-- Action buttons -->
-<div class="row">
+        <!-- <h2>{{ object.username }}</h2> -->
+        <img src="{{object.image.url}}" height="200px" alt="">
+        {% if object.name %}
+          <p>{{ object.name }}</p>
+        {% endif %}
+        <p>Correct Guesses: {{object.dayscorrect}}</p>
+        <p>Incorrect Guesses: {{object.daysincorrect}}</p>
+        <p>Current Streak: {{object.streak}}</p>
+        <p>Highest Streak: {{object.highestStreak}}</p>
+        <p>Correct Guesses: {{object.dayscorrect}}</p>
+      </div>
+    </div>
 
-  <div class="col-sm-12">
-    <a class="btn btn-primary" href="{% url 'users:update' %}" role="button">My Info</a>
-    <a class="btn btn-primary" href="{% url 'account_email' %}" role="button">E-Mail</a>
-    <!-- Your Stuff: Custom user template urls -->
-  </div>
+    {% if object == request.user %}
+    <!-- Action buttons -->
+    <div class="row">
 
-</div>
-<!-- End Action buttons -->
-{% endif %}
+      <div class="col-sm-12">
+        <a class="btn btn-primary" href="{% url 'users:update' %}" role="button">My Info</a>
+        <a class="btn btn-primary" href="{% url 'account_email' %}" role="button">E-Mail</a>
+        <!-- Your Stuff: Custom user template urls -->
+      </div>
+
+    </div>
+    <!-- End Action buttons -->
+    {% endif %}
 
 </div>
 {% endblock content %}

@@ -258,18 +258,18 @@ def guessle(request):
                     user.daysincorrect+=1
                     user.streak = 0
                 
-                    att = Guessle_Attempt.objects.update_or_create(
-                            user=user,
-                            date=current_dateTime,
-                            word=todaysGuessle,
-                            guess=guess
-                        )
-                    user.save()
-                else:
-                    messages.add_message(request=request, level=messages.ERROR, message=guess+' is not a valid english word')
-                    context['guess_formset'] = guess_formset
-                    context['form'] = form
-                    context['alphabet_formset'] = alphabet_formset
+                att = Guessle_Attempt.objects.update_or_create(
+                        user=user,
+                        date=current_dateTime,
+                        word=todaysGuessle,
+                        guess=guess
+                    )
+                user.save()
+        else:
+            messages.add_message(request=request, level=messages.ERROR, message=guess+' is not a valid english word')
+            context['guess_formset'] = guess_formset
+            context['form'] = form
+            context['alphabet_formset'] = alphabet_formset
 
                 # else:
                 #     messages.add_message(request=request, level=messages.ERROR, message = 'Chances over. word is '+TARGET_WORD)
@@ -277,7 +277,7 @@ def guessle(request):
                 #     context['form'] = form
                 #     context['alphabet_formset'] = alphabet_formset
 
-        else:
+        # else:
             print(form.errors)
             print(form.non_field_errors)
             print(guess_formset.errors)
