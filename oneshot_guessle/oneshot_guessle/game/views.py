@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import Paginator
 from django.db.models import Q
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect
@@ -806,6 +807,7 @@ def history(request):
 
 def halloffame(request):
     users = User.objects.all().order_by("-stars","-highestStreak", "-streak", "-dayscorrect")
+    
     table = {}
     for person in range(0,len(users)):
         rank=person+1
@@ -823,9 +825,17 @@ def halloffame(request):
         a = {rank:{'username':username,'streak':streak,'highestStreak':highestStreak,
                    'correct':correct,'days':days,'per':per, 'stars':stars}}
         table.update(a)
-    context = {'players':table}
+
+    paginator = Paginator(tuple(table.items()), 10)
+    page_number = request.GET.get('page')
+    user_scores = paginator.get_page(page_number)
+    context = {'user_scores':user_scores}
     
-    return render(request, 'pages/games/fame.html', context)
+    if request.htmx:
+        return render(request, "posts/partials/top10users.html", context)
+    else:
+        return render(request, 'pages/games/fame.html', context)
+    
 
 def help_menu(request):
     return render(request=request,template_name='pages/games/help.html')
