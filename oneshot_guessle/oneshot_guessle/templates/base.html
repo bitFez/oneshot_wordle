@@ -44,7 +44,7 @@
       <!--  -->
       
     {% endblock javascript %}
-    {% if user.no_ads == False %}
+    {% if user.no_ads == False or not user.is_authenticated %}
       <!-- Ezoic Code -->
         <script src="//www.ezojs.com/basicads.js?d=oneshotguessle.com" type="text/javascript"></script>
       <!-- Ezoic Code -->
