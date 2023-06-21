@@ -1,6 +1,7 @@
 {% load static i18n %}
 {% block css %}
     <link rel="stylesheet" href="{% static 'css/guessle.css' %}">
+    <script src="{% static 'js/project.js' %}"></script>
     {%load word_tags%}
 {% endblock %}
 
@@ -15,6 +16,18 @@
         {% elif stars.stars == 3 %}
         <p class="text-center daily_stars_text">Daily Stars: <i class="bi bi-star-fill text-warning " ></i><i class="bi bi-star-fill text-warning " ></i><i class="bi bi-star-fill text-warning " ></i></p>
         {% endif %}
+        
+        <p>
+
+        </p>
     </div>
     
 {% endif %}
+
+{% block javasript %}
+<script>
+    window.onload = function() {
+        get_definition("${{word}}");
+    };
+</script>
+{% endblock javasript %}

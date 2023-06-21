@@ -832,7 +832,7 @@ def halloffame(request):
     context = {'user_scores':user_scores}
     
     if request.htmx:
-        return render(request, "posts/partials/top10users.html", context)
+        return render(request, "pages/games/partials/top10users.html", context)
     else:
         return render(request, 'pages/games/fame.html', context)
     

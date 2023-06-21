@@ -1,0 +1,54 @@
+{% load static %}
+<ul class="pagination justify-content-center">
+    <!-- This part creates previous & first buttons. 
+    It also disables the buttons making them unclickable if 
+    there is no prevous pages -->
+    {% if user_scores.has_previous %}
+          <li class="page-item">
+              <button class="page-link" hx-get="?page={{ user_scores.paginator.1 }}" hx-vals="?page=1" hx-target="#page-section" hx-swap="outerHTML">&laquo; first</button>
+          </li>
+          <li class="page-item">
+              <button class="page-link" hx-get="?page={{ user_scores.previous_page_number }}" hx-vals="?page={{ user_scores.previous_page_number }}" hx-target="#page-section" hx-swap="outerHTML">previous</button>
+          </li>
+      {% else %}
+          <li class="page-item disabled">
+              <a class="page-link" href="#">&laquo; first</a>
+          </li>
+          <li class="page-item disabled">
+              <a class="page-link" href="#">previous</a>                    
+          </li>
+      {% endif %}
+
+      <!-- This section is a solution to the middle buttons that differs from
+          The django example. idea from red eyed coder club
+      https://www.youtube.com/watch?v=pyElWFn3XT4  -->
+      {% for n in user_scores.paginator.page_range %}
+          {% if user_scores.number == n %}
+          <li class="page-item active" aria-current="page">
+            <button class="page-link" hx-get="?page={{ n }}" hx-vals="?page={{ n }}" hx-target="#page-section" hx-swap="outerHTML">{{n}}</button>
+          </li>
+          {% elif n > user_scores.number|add:-3 and n < user_scores.number|add:3 %}
+          <li class="page-item">
+              <button class="page-link" hx-get="?page={{ n }}" hx-vals="?page={{ n }}" hx-target="#page-section" hx-swap="outerHTML">{{n}}</button>
+          </li>
+          {% endif %}
+      {% endfor %}
+      
+      <!-- Lastly just like in the first section, this creates next & last buttons -->
+      {% if user_scores.has_next %}
+          <li class="page-item">
+            <button class="page-link" hx-get="?page={{ user_scores.next_page_number }}" hx-vals="?page={{ user_scores.next_page_number }}" hx-target="#page-section" hx-swap="outerHTML">next</button>
+          </li>
+          <li class="page-item">
+              <button class="page-link" hx-get="?page={{ user_scores.paginator.num_pages }}" hx-vals="?page={{ user_scores.paginator.num_pages }}" hx-target="#page-section" hx-swap="outerHTML">last &raquo;</button>
+          </li>
+      {% else %}
+          <li class="page-item disabled">
+              <a class="page-link" href="#">next</a>
+          </li>
+          <li class="page-item disabled">
+              <a class="page-link" href="#">last &raquo;</a>
+          </li>
+      {% endif %}
+    
+</ul>
