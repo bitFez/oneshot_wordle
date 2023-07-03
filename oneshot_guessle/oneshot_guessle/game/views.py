@@ -11,6 +11,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, RedirectView, UpdateView
+from django.views import View
 from django.shortcuts import render, redirect, get_object_or_404
 import json
 from django.forms.formsets import formset_factory
@@ -33,6 +34,14 @@ from .functions import guess_result, get_random_clues, get_clues_rows
 ENCODING_FORMAT='utf8' 
 
 # Create your views here.
+class AdsView(View):
+    """Replace pub-0000000000000000 with your own publisher ID"""
+    line = "google.com, pub-2072226965226950, DIRECT, f08c47fec0942fa0"
+    
+    def get(self, request, *args, **kwargs):
+        return HttpResponse(line)
+
+
 def load_words(request):
     # opening JSON words file
     # file_ = staticfiles_storage.url('dicts/words.json') #static('dicts/words.json')
