@@ -5,7 +5,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Exists, OuterRef
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
@@ -795,8 +795,13 @@ def guessle_hard(request):
 
 
 def history(request):
-    dailyOsW = OneshotWord.objects.all()
-    # clues = OneshotClues.objects.all()
+    #dailyOsW = OneshotWord.objects.all()
+    dailyOsW = OneshotWord.objects.filter(
+        ~Exists(OneshotWord.objects.filter(
+            Q(date__lt=OuterRef('date')) | Q(date=OuterRef('date'), pk__lt=OuterRef('pk')),
+            word=OuterRef('word')
+        ))
+    )
 
     guessles = {}
     # Loops through all words excluding today's date or last word
