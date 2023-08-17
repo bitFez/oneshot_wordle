@@ -800,7 +800,7 @@ def history(request):
     last_action=Subquery(
         OneshotWord.objects.filter(
             word=OuterRef('pk')
-        ).order_by('-date').values('word')[:1]
+        ).order_by('-pk').values('word')[:1]
     )
 )
 
