@@ -799,7 +799,7 @@ def history(request):
     dailyOsW = OneshotWord.objects.filter(
         ~Exists(OneshotWord.objects.filter(
             Q(date__lt=OuterRef('date')) | Q(date=OuterRef('date'), pk__lt=OuterRef('pk')),
-            word=OuterRef('word')
+            date=OuterRef('date')
         ))
     )
 
