@@ -6,26 +6,26 @@ from .models import Word, OneshotWord, OneshotWordEasy, OneshotClues, Guessle_At
 class WordAdmin(admin.ModelAdmin):
     model = Word
     search_fields = ('id', 'word','lastOccurance',)
-    list_filter =('frequency','lastOccurance',)
-    list_display = ('id','word','frequency','lastOccurance', )
+    list_filter =('frequency','lastOccurance','proper_noun', )
+    list_display = ('id','word','frequency','lastOccurance','proper_noun',  )
 
 class HardWordAdmin(admin.ModelAdmin):
     model = WordsHard
     search_fields = ('id', 'word','lastOccurance',)
-    list_filter =('frequency','lastOccurance',)
-    list_display = ('id','word','frequency','lastOccurance', )
+    list_filter =('frequency','lastOccurance','proper_noun','proper_noun', )
+    list_display = ('id','word','frequency','lastOccurance','proper_noun', )
 
 class OneshotWordAdmin(admin.ModelAdmin):
     model = OneshotWord
     search_fields = ('id', 'word','date','attempts','correctAnswers',)
     list_filter =('word','date','attempts','correctAnswers',)
-    list_display = ('id','word','date','attempts','correctAnswers', )
+    list_display = ('id','word','date','attempts','correctAnswers',)
 
 class OneshotWordEasyAdmin(admin.ModelAdmin):
     model = OneshotWordEasy
     search_fields = ('id', 'word','date','attempts','correctAnswers',)
     list_filter =('word','date','attempts','correctAnswers',)
-    list_display = ('id','word','date','attempts','correctAnswers', )
+    list_display = ('id','word','date','attempts','correctAnswers',)
 
 class OneshotCluesAdmin(admin.ModelAdmin):
     model = OneshotClues

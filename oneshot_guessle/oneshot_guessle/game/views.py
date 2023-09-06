@@ -28,7 +28,7 @@ from django.core.mail import send_mail
 
 from .forms import GuessleForm, GuessForm, GuessleFormHard, GuessFormHard, AlphabetForm
 from .models import *
-from .functions import guess_result, get_random_clues, get_clues_rows
+from .functions import guess_result, get_random_clues, get_clues_rows, check_plural
 # from .forms import MessageForm
 
 ENCODING_FORMAT='utf8' 
@@ -100,6 +100,34 @@ def get_random_word(**kwargs):
     else:
         return Word.objects.filter(Q(lastOccurance__lte=datetime.now() - timedelta(days=730)) | Q(frequency=0)).order_by('?')[0]
 
+def scan_for_plurals(request, **kwargs):
+    difficulty = kwargs.get('diff', None)
+    if difficulty == "hard":
+        # return WordsHard.objects.filter(Q(lastOccurance__lte=datetime.now() - timedelta(days=730)) | Q(frequency=0)).order_by('?')[0]
+        words = WordsHard.objects.all()
+        for word in words:
+            if check_plural(word.word) == True:
+                a = WordsHard.objects.get(word = word)
+                a.proper_noun = True
+                a.save()
+            else:
+                word.proper_noun = False
+                a = WordsHard.objects.get(word = word)
+                a.proper_noun = False
+                a.save()
+    elif difficulty == "easy":
+        words = Word.objects.all()
+        for word in words:
+            if check_plural(word.word) == True:
+                a = Word.objects.get(word = word)
+                a.proper_noun = True
+                a.save()
+            else:
+                a = Word.objects.get(word = word)
+                a.proper_noun = False
+                a.save()
+    else:
+        pass
 
 def guessle(request):   
     #initiate array for alphabet colors

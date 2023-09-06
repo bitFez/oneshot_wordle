@@ -2,7 +2,7 @@ from django.urls import path
 
 from oneshot_guessle.game.views import (
     guessle, load_words, supporter,shareto_modal,privacy_policy,terms_and_conditions,disclaimer,
-    help_menu, results, history, halloffame, support_menu, guessle_easy, guessle_hard, AdsView
+    help_menu, results, history, halloffame, support_menu, guessle_easy, guessle_hard, AdsView, scan_for_plurals
 )
 
 app_name = "game"
@@ -22,6 +22,7 @@ urlpatterns = [
     path('privacy_policy', privacy_policy, name='privacy_policy'),
     path('terms', terms_and_conditions, name='tsandcs'),
     path('disclaimer', disclaimer, name='disclaimer'),
+    path('check_plural/<str:diff>', scan_for_plurals, name="sfp"),
 
     # Ads View
     path('ads.txt', AdsView.as_view()),

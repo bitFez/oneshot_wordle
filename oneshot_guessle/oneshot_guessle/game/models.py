@@ -96,6 +96,7 @@ class Word(models.Model):
     word = models.CharField(max_length=5)
     frequency = models.PositiveBigIntegerField(default=0)
     lastOccurance = models.DateTimeField(auto_now=True, null=True)
+    proper_noun = models.BooleanField(default=True)
 
     def __str__(self):
         return self.word
@@ -108,6 +109,7 @@ class WordsHard(models.Model):
     word = models.CharField(max_length=6)
     frequency = models.PositiveBigIntegerField(default=0)
     lastOccurance = models.DateTimeField(auto_now=True, null=True)
+    proper_noun = models.BooleanField(default=True)
 
     def __str__(self):
         return self.word
