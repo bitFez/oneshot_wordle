@@ -183,8 +183,28 @@
         </div>
         
     </div>
-</div>
+    <div id="popup">
 
+    </div>
+</div>
+<script>
+    console.log('hey')
+    const target_word = '{{t_word}}';
+    console.log(target_word)
+    fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${target_word}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('popup').innerHTML = data
+        })
+        .catch(error => console.error(error))
+
+</script>
 {% endblock content %}
 
-{% block javascript %}{% endblock javascript %}
+    {% block javascript %}
+        {% if attempts %}
+        
+        {% else %}
+            
+        {% endif %}
+{% endblock javascript %}

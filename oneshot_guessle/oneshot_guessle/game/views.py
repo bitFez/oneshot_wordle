@@ -374,7 +374,7 @@ def guessle(request):
         context['form'] = form
         context['guess_formset'] = guess_formset
         context['alphabet_formset'] = alphabet_formset
-        
+    context['t_word'] = TARGET_WORD
         
 
     #send back the html template

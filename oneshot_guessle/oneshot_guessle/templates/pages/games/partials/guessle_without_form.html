@@ -4,7 +4,6 @@
     <script src="{% static 'js/project.js' %}"></script>
     {%load word_tags%}
 {% endblock %}
-
 {% if stars %}
     <div class="row mb-0">
         {% if stars.stars == 0 %}
@@ -23,11 +22,3 @@
     </div>
     
 {% endif %}
-
-{% block javasript %}
-<script>
-    window.onload = function() {
-        get_definition("${{word}}");
-    };
-</script>
-{% endblock javasript %}
