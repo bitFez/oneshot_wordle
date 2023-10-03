@@ -16,6 +16,8 @@ if READ_DOT_ENV_FILE:
     # OS environment variables take precedence over variables from .env
     env.read_env(str(BASE_DIR / ".env"))
 
+G_SHEETS_API = env('GOOGLE_SHEETS_API')
+
 # GENERAL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
@@ -82,6 +84,7 @@ LOCAL_APPS = [
     "oneshot_guessle.users",
     # Your stuff: custom apps go here
     "oneshot_guessle.game",
+    "oneshot_guessle.students",
 
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
