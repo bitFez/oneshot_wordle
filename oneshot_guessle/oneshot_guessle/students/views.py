@@ -187,4 +187,4 @@ def student(request):
 
     context = {'tests':table_d, 'analysis':studentX_d, 'mock_table':mock_table, 
                 'student':student, 'chart_data':chart_data, 'labels':labels, 'chart_rank':chart_rank}
-    return render(request, 'profiles/student.html', context)
+    return render(request, 'students/student.html', context)

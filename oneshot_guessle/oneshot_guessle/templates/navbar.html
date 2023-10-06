@@ -31,14 +31,19 @@
         <a class="nav-link" href="{% url 'game:hof' %}">Hall of Fame</a>
       </li>
       {% if request.user.is_authenticated %}
-      <li class="nav-item">
-          {# URL provided by django-allauth/account/urls.py #}
-          <a class="nav-link" href="{% url 'users:detail' request.user.username  %}">{% translate "My Profile" %}</a>
-      </li>
-      <li class="nav-item">
+        <li class="nav-item">
+            {# URL provided by django-allauth/account/urls.py #}
+            <a class="nav-link" href="{% url 'users:detail' request.user.username  %}">{% translate "My Profile" %}</a>
+        </li>
+        {% if request.user.student %}
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'students:student' %}">{% translate "Student Page" %}</a>
+          </li>
+        {% endif %}
+        <li class="nav-item">
           {# URL provided by django-allauth/account/urls.py #}
           <a class="nav-link" href="{% url 'account_logout' %}">{% translate "Sign Out" %}</a>
-      </li>
+        </li>
       {% else %}
         {% if ACCOUNT_ALLOW_REGISTRATION %}
           <li class="nav-item">
