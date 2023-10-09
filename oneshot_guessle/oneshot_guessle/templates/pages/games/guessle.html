@@ -184,17 +184,16 @@
         
     </div>
     <div id="popup">
-
+        <!-- <img src="https://upload.wikimedia.org/wikipedia/commons/d/db/Simple_English_Wiktionary_text_logo.png" alt=""> -->
     </div>
 </div>
 <script>
-    console.log('hey')
     const target_word = '{{t_word}}';
-    console.log(target_word)
     fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${target_word}`)
         .then(response => response.json())
         .then(data => {
             document.getElementById('popup').innerHTML = data
+            console.log(data)
         })
         .catch(error => console.error(error))
 

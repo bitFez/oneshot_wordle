@@ -21,7 +21,9 @@ def g_sheet_API_call(user, page):
     # another Google Sheet document which returns a lookup table with all the desired data to other 
     # GoogleSheet documents 
     if year == 11:
-        sheetID = '1SbilVDhp0o5sJ15j_5yzwq_y1DPlPWdpbOCbHBZyiG4'
+        sheetID = '1jOgSUMeC7bPntFZ7g7ForLs_YVhyTr7HhOtAZG49RgQ'
+    elif year == 10:
+        sheetID = '1GYrLbDSRNewGxHuUuoDq8OEUItB_26JReNAZnjgBlO4'
     else:
         sheetID = '1eKKi6VzHKVZYd0YsAynTNXjo_DWvEldm6OXwJ9WPfPA'
 
