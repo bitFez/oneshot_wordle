@@ -17,6 +17,9 @@ if READ_DOT_ENV_FILE:
     env.read_env(str(BASE_DIR / ".env"))
 
 G_SHEETS_API = env('GOOGLE_SHEETS_API')
+GSHEET_YEAR11 = env('GSHEET_YEAR11')
+GSHEET_YEAR10 = env('GSHEET_YEAR10')
+GSHEET_YEAR9 = env('GSHEET_YEAR9')
 
 # GENERAL
 # ------------------------------------------------------------------------------
