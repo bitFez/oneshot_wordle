@@ -33,7 +33,7 @@ def g_sheet_API_call(user, page):
     # data to return
     data = requests.get(f'https://gsx2json.com/api?id={sheetID}&sheet={pageID}&api_key={SHEETS_API}&columns=false')
     dataJSON = data.json()
-    return dataJSON['rows']
+    return dataJSON["rows"]
 
 # Page for viewing test results
 def fakestudent(request):

@@ -45,43 +45,43 @@
     <br>
     <hr>
     <h3 class="text-light">Analysis of all weekly tests</h3>
-    <table class="table table-dark table-striped">
+    <table class="table table-dark table-striped table-bordered">
         {% if user.user_profile.exam_yr == 13 %}
         <thead class="table-dark">
-            <th scope="col">1.1 Input & Output </th>
-            <th scope="col">1.2 Software & Development</th>
-            <th scope="col">1.3 Exchanging Data</th>
-            <th scope="col">1.4 Datatypes & Algorithms</th>
-            <th scope="col">1.5 legal & moral issues</th>
-            <th scope="col">2.1 Computation Thinking</th>
-            <th scope="col">2.2 Problem Solving</th>
-            <th scope="col">%</th>
-            <th scope="col">Rank in cohort</th>
+            <th scope="col" class="text-center col-small">1.1 Input & Output </th>
+            <th scope="col" class="text-center col-small">1.2 Software & Development</th>
+            <th scope="col" class="text-center col-small">1.3 Exchanging Data</th>
+            <th scope="col" class="text-center col-small">1.4 Datatypes & Algorithms</th>
+            <th scope="col" class="text-center col-small">1.5 legal & moral issues</th>
+            <th scope="col" class="text-center col-small">2.1 Computation Thinking</th>
+            <th scope="col" class="text-center col-small">2.2 Problem Solving</th>
+            <th scope="col" class="text-center col-small">%</th>
+            <th scope="col" class="text-center col-small">Rank in cohort</th>
         </thead>
         {% else %}
         <thead class="table-dark">
-            <th scope="col">1. Algorithms</th>
-            <th scope="col">2. Programming</th>
-            <th scope="col">3. Computer Systems</th>
-            <th scope="col">4. Data rep</th>
-            <th scope="col">5. Security</th>
-            <th scope="col">6. Networks</th>
-            <th scope="col">7. ethics & Leg</th>
-            <th scope="col">%</th>
-            <th scope="col">Rank in cohort</th>
+            <th scope="col" class="text-center col-small">1. Algorithms</th>
+            <th scope="col" class="text-center col-small">2. Programming</th>
+            <th scope="col" class="text-center col-small">3. Computer Systems</th>
+            <th scope="col" class="text-center col-small">4. Data rep</th>
+            <th scope="col" class="text-center col-small">5. Security</th>
+            <th scope="col" class="text-center col-small">6. Networks</th>
+            <th scope="col" class="text-center col-small">7. ethics & Leg</th>
+            <th scope="col" class="text-center col-small">%</th>
+            <th scope="col" class="text-center col-small">Rank in cohort</th>
         </thead>
         {% endif %}
         <tbody>
             <tr>    
-                <td>{{analysis.atopic1}}%</td>
-                <td>{{analysis.atopic2}}%</td>
-                <td>{{analysis.atopic3}}%</td>
-                <td>{{analysis.atopic4}}%</td>
-                <td>{{analysis.atopic5}}%</td>
-                <td>{{analysis.atopic6}}%</td>
-                <td>{{analysis.atopic7}}%</td>
-                <td>{{analysis.aAv}}%</td>
-                <td>{{analysis.aRank}}</td>
+                {% if analysis.atopic1 == "#DIV/0!" %}<td class="text-center">-</td>{% else %}<td class="text-center">{{analysis.atopic1|floatformat}}%</td>{% endif %}
+                {% if analysis.atopic2 == "#DIV/0!" %}<td class="text-center">-</td>{% else %}<td class="text-center">{{analysis.atopic2|floatformat}}%</td>{% endif %}
+                {% if analysis.atopic3 == "#DIV/0!" %}<td class="text-center">-</td>{% else %}<td class="text-center">{{analysis.atopic3|floatformat}}%</td>{% endif %}
+                {% if analysis.atopic4 == "#DIV/0!" %}<td class="text-center">-</td>{% else %}<td class="text-center">{{analysis.atopic4|floatformat}}%</td>{% endif %}
+                {% if analysis.atopic5 == "#DIV/0!" %}<td class="text-center">-</td>{% else %}<td class="text-center">{{analysis.atopic5|floatformat}}%</td>{% endif %}
+                {% if analysis.atopic6 == "#DIV/0!" %}<td class="text-center">-</td>{% else %}<td class="text-center">{{analysis.atopic6|floatformat}}%</td>{% endif %}
+                {% if analysis.atopic7 == "#DIV/0!" %}<td class="text-center">-</td>{% else %}<td class="text-center">{{analysis.atopic7|floatformat}}%</td>{% endif %}
+                <td class="text-center col-small">{{analysis.aAv}}%</td>
+                <td class="text-center col-small">{{analysis.aRank}}</td>
             </tr>
         </tbody>
     </table>
@@ -89,47 +89,47 @@
     <br>
 
     <h3 class="text-light">Results of weekly tests</h3>
-    <table class="table table-dark table-striped">
+    <table class="table table-dark table-striped table-bordered">
         {% if user.user_profile.exam_yr == 13 %}
         <thead class="table-dark">
-            <th scope="col">Test No</th>
-            <th scope="col" class="center col-small">1.1 Input & Output </th>
-            <th scope="col" class="center col-small">1.2 Software & Development</th>
-            <th scope="col" class="center col-small">1.3 Exchanging Data</th>
-            <th scope="col" class="center col-small">1.4 Datatypes & Algorithms</th>
-            <th scope="col" class="center col-small">1.5 Legal & moral issues</th>
-            <th scope="col" class="center col-small">2.1 Computation Thinking</th>
-            <th scope="col" class="center col-small">2.2 Problem Solving</th>
-            <th scope="col" class="center col-small">%</th>
-            <th scope="col">Rank in cohort</th>
+            <th scope="col" class="text-center col-small">Test No</th>
+            <th scope="col" class="text-center col-small">1.1 Input & Output </th>
+            <th scope="col" class="text-center col-small">1.2 Software & Development</th>
+            <th scope="col" class="text-center col-small">1.3 Exchanging Data</th>
+            <th scope="col" class="text-center col-small">1.4 Datatypes & Algorithms</th>
+            <th scope="col" class="text-center col-small">1.5 Legal & moral issues</th>
+            <th scope="col" class="text-center col-small">2.1 Computation Thinking</th>
+            <th scope="col" class="text-center col-small">2.2 Problem Solving</th>
+            <th scope="col" class="text-center col-small">%</th>
+            <th scope="col" class="text-center col-small">Rank in cohort</th>
         </thead>
         {% else %}
         <thead class="table-dark">
-            <th scope="col">Test No</th>
-            <th scope="col" class="center col-small">1. Algorithms</th>
-            <th scope="col" class="center col-small">2. Programming</th>
-            <th scope="col" class="center col-small">3. Computer Systems</th>
-            <th scope="col" class="center col-small">4. Data rep</th>
-            <th scope="col" class="center col-small">5. Security</th>
-            <th scope="col" class="center col-small">6. Networks</th>
-            <th scope="col" class="center col-small">7. Ethics & Leg</th>
-            <th scope="col" class="center col-small">%</th>
-            <th scope="col">Rank in cohort</th>
+            <th scope="col" class="text-center col-small">Test No</th>
+            <th scope="col" class="text-center col-small">1. Algorithms</th>
+            <th scope="col" class="text-center col-small">2. Programming</th>
+            <th scope="col" class="text-center col-small">3. Computer Systems</th>
+            <th scope="col" class="text-center col-small">4. Data rep</th>
+            <th scope="col" class="text-center col-small">5. Security</th>
+            <th scope="col" class="text-center col-small">6. Networks</th>
+            <th scope="col" class="text-center col-small">7. Ethics & Leg</th>
+            <th scope="col" class="text-center col-small">%</th>
+            <th scope="col" class="text-center col-small">Rank in cohort</th>
         </thead>
         {% endif %}
         <tbody>
             {% for test in tests %}
                 <tr>
-                    <th scope="row">{{test.testNO}}</th>
-                    <td class="center col-small">{{test.topic1|floatformat}}%</td>
-                    <td class="center col-small">{{test.topic2|floatformat}}%</td>
-                    <td class="center col-small">{{test.topic3|floatformat}}%</td>
-                    <td class="center col-small">{{test.topic4|floatformat}}%</td>
-                    <td class="center col-small">{{test.topic5|floatformat}}%</td>
-                    <td class="center col-small">{{test.topic6|floatformat}}%</td>
-                    <td class="center col-small">{{test.topic7|floatformat}}%</td>
-                    <td class="center col-small">{{test.total}}%</td>
-                    <td>{{test.rank}}</td>
+                    <th scope="row" class="text-center col-small">{{test.testNO}}</th>
+                    {% if test.topic1 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic1|floatformat}}%</td>{% endif %}
+                    {% if test.topic2 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic2|floatformat}}%</td>{% endif %}
+                    {% if test.topic3 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic3|floatformat}}%</td>{% endif %}
+                    {% if test.topic4 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic4|floatformat}}%</td>{% endif %}
+                    {% if test.topic5 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic5|floatformat}}%</td>{% endif %}
+                    {% if test.topic6 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic6|floatformat}}%</td>{% endif %}
+                    {% if test.topic7 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic7|floatformat}}%</td>{% endif %}
+                    <td class="text-center col-small">{{test.total}}%</td>
+                    <td class="text-center col-small">{{test.rank}}</td>
                 </tr>
             {% endfor %}
         </tbody>
@@ -150,47 +150,47 @@
     <br>
 
     <h3 class="text-light">Results of mock tests</h3>
-    <table class="table table-dark table-striped">
+    <table class="table table-dark table-striped table-bordered">
         {% if user.user_profile.exam_yr == 13 %}
         <thead class="table-dark">
-            <th scope="col">Test Name</th>
-            <th scope="col" class="center col-small">1.1 Input & Output </th>
-            <th scope="col" class="center col-small">1.2 Software & Development</th>
-            <th scope="col" class="center col-small">1.3 Exchanging Data</th>
-            <th scope="col" class="center col-small">1.4 Datatypes & Algorithms</th>
-            <th scope="col" class="center col-small">1.5 legal & moral issues</th>
-            <th scope="col" class="center col-small">2.1 Computation Thinking</th>
-            <th scope="col" class="center col-small">2.2 Problem Solving</th>
-            <th scope="col" class="center col-small">%</th>
+            <th scope="col" class="text-center col-small">Test Name</th>
+            <th scope="col" class="text-center col-small">1.1 Input & Output </th>
+            <th scope="col" class="text-center col-small">1.2 Software & Development</th>
+            <th scope="col" class="text-center col-small">1.3 Exchanging Data</th>
+            <th scope="col" class="text-center col-small">1.4 Datatypes & Algorithms</th>
+            <th scope="col" class="text-center col-small">1.5 legal & moral issues</th>
+            <th scope="col" class="text-center col-small">2.1 Computation Thinking</th>
+            <th scope="col" class="text-center col-small">2.2 Problem Solving</th>
+            <th scope="col" class="text-center col-small">%</th>
             <th scope="col">Rank in cohort</th>
         </thead>
         {% else %}
         <thead class="table-dark">
-            <th scope="col">Test Name</th>
-            <th scope="col" class="center col-small">1. Algorithms</th>
-            <th scope="col" class="center col-small">2. Programming</th>
-            <th scope="col" class="center col-small">3. Computer Systems</th>
-            <th scope="col" class="center col-small">4. Data rep</th>
-            <th scope="col" class="center col-small">5. Security</th>
-            <th scope="col" class="center col-small">6. Networks</th>
-            <th scope="col" class="center col-small">7. Ethics & Leg</th>
-            <th scope="col" class="center col-small">%</th>
-            <th scope="col">Rank in cohort</th>
+            <th scope="col" class="text-center col-small">Test Name</th>
+            <th scope="col" class="text-center col-small">1. Algorithms</th>
+            <th scope="col" class="text-center col-small">2. Programming</th>
+            <th scope="col" class="text-center col-small">3. Computer Systems</th>
+            <th scope="col" class="text-center col-small">4. Data rep</th>
+            <th scope="col" class="text-center col-small">5. Security</th>
+            <th scope="col" class="text-center col-small">6. Networks</th>
+            <th scope="col" class="text-center col-small">7. Ethics & Leg</th>
+            <th scope="col" class="text-center col-small">%</th>
+            <th scope="col" class="text-center col-small">Rank in cohort</th>
         </thead>
         {% endif %}
         <tbody>
             {% for test in mock_table %}
             <tr>
-                <th scope="row">{{test.testName}}</th>
-                <td class="center col-small">{{test.topic1|floatformat}}%</td>
-                <td class="center col-small">{{test.topic2|floatformat}}%</td>
-                <td class="center col-small">{{test.topic3|floatformat}}%</td>
-                <td class="center col-small">{{test.topic4|floatformat}}%</td>
-                <td class="center col-small">{{test.topic5|floatformat}}%</td>
-                <td class="center col-small">{{test.topic6|floatformat}}%</td>
-                <td class="center col-small">{{test.topic7|floatformat}}%</td>
-                <td class="center col-small">{{test.total}}%</td>
-                <td>{{test.rank}}</td>
+                <th scope="row" class="text-center col-small">{{test.testName}}</th>
+                {% if test.topic1 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic1|floatformat}}%</td>{% endif %}
+                {% if test.topic2 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic2|floatformat}}%</td>{% endif %}
+                {% if test.topic3 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic3|floatformat}}%</td>{% endif %}
+                {% if test.topic4 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic4|floatformat}}%</td>{% endif %}
+                {% if test.topic5 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic5|floatformat}}%</td>{% endif %}
+                {% if test.topic6 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic6|floatformat}}%</td>{% endif %}
+                {% if test.topic7 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic7|floatformat}}%</td>{% endif %}
+                <td class="text-center col-small">{{test.total}}%</td>
+                <td class="text-center col-small">{{test.rank}}</td>
             </tr>
             {% endfor %}
         </tbody>

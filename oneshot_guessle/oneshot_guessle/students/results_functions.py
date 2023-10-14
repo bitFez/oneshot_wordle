@@ -16,6 +16,7 @@ def analysis_table(data, year, student, subject):
         # finds the row matching the users student ID
         # and gathers data for the table
         if data[i]['exam_ID'] == student:
+            print(data[i])
             studentX = data[i]
             studentX_d = {
                 'atopic1':studentX[subjects[subject][year][0]], 
