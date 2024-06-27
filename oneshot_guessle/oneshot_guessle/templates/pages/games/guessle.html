@@ -38,9 +38,12 @@
     <div class="row my-1 align-items-start no-gutters justify-content-center border-bottom w-100">
         <!-- Site title & top bar -->
         <!-- Ezoic - top_of_page - top_of_page -->
-            <div id="ezoic-pub-ad-placeholder-164"> </div>
+            <!-- <div id="ezoic-pub-ad-placeholder-164"> </div> -->
         <!-- End Ezoic - top_of_page - top_of_page -->
-        
+        <!-- Google Ad - top_of_page -->
+        {% if not user.is_authenticated or user.no_ads == False %}
+            {% include "pages/ads/top_page.html" %}
+        {% endif %}
     </div>
     <div class="row flex-grow-1 justify-content-start align-items-center">
         
@@ -77,8 +80,12 @@
     
     <div class="row mb-0">
         <div class="col side_add_cols">
+            <!-- Google Ad - side / vertical -->
+            {% if not user.is_authenticated or user.no_ads == False %}
+                {% include "pages/ads/side_ad.html" %}
+            {% endif %}
             <!-- Ezoic - mid_content_bedside_clues - mid_content -->
-            <div id="ezoic-pub-ad-placeholder-166"> </div>
+            <!-- <div id="ezoic-pub-ad-placeholder-166"> </div> -->
             <!-- End Ezoic - mid_content_bedside_clues - mid_content -->
         </div>
         <div class="col">
@@ -96,10 +103,13 @@
             {% endif %}    
         </div>
         <div class="col side_add_cols">
+            <!-- Google Ad - side / vertical -->
+            {% if not user.is_authenticated or user.no_ads == False %}
+                {% include "pages/ads/side_ad.html" %}
+            {% endif %}
             <!-- Ezoic - mid_content_bedside_clues - mid_content -->
-            <div id="ezoic-pub-ad-placeholder-167"> </div>
-            <!-- End Ezoic - mid_content_bedside_clues - mid_content -->
-            
+            <!-- <div id="ezoic-pub-ad-placeholder-167"> </div> -->
+            <!-- End Ezoic - mid_content_bedside_clues - mid_content -->  
         </div>
     </div>
        
@@ -183,27 +193,33 @@
         </div>
         
     </div>
-    <div id="popup">
+    <div>
         <!-- <img src="https://upload.wikimedia.org/wikipedia/commons/d/db/Simple_English_Wiktionary_text_logo.png" alt=""> -->
+        <p id="popup">
+
+        </p>
     </div>
+
+
+    {% if attempts %}
+    <p>There is an attempt</p>
+    <script>
+        const target_word = '{{t_word}}';
+        fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${target_word}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('popup').innerHTML = `
+                <h2 class="wordDef">${data[0]["word"]}</h2>
+                <span class="text-success"><b>Meaning:</b></span> ${data[0]["meanings"][0]["definitions"][0]["definition"]}`;
+                // console.log(data)
+            })
+            .catch(error => console.error(error))
+            document.getElementById('popup').innerHTML = `
+                <span class="text-danger">Whhoaa 😯</span> <br>
+                <span class="">It seems like this word doesn't appear in the dictionary!</span>`;
+    </script>
+    {% endif %}
+
+    {% endblock content %}
+
 </div>
-<script>
-    const target_word = '{{t_word}}';
-    fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${target_word}`)
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('popup').innerHTML = data
-            console.log(data)
-        })
-        .catch(error => console.error(error))
-
-</script>
-{% endblock content %}
-
-    {% block javascript %}
-        {% if attempts %}
-        
-        {% else %}
-            
-        {% endif %}
-{% endblock javascript %}

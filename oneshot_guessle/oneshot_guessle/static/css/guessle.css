@@ -1,4 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playwrite+ES+Deco:wght@100..400&display=swap');
+
 *,
 *::after,
 *::before {
@@ -151,6 +153,14 @@ body {
     font-size: 16px;
     margin-top: 10px;
     margin-bottom: 10px;
+}
+
+.wordDef {
+    font-size: 22px;
+    font-family: "Playwrite ES Deco", cursive;
+    font-optical-sizing: auto;
+    font-weight: 200;
+    font-style: normal;
 }
 
 .error {
