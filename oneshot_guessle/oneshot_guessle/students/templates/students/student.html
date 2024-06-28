@@ -36,9 +36,9 @@
     </div>
     <div class="row my-1 align-items-start no-gutters justify-content-center border-bottom w-100">
         <!-- Site title & top bar -->
-        <!-- Ezoic - top_of_page - top_of_page -->
-            <div id="ezoic-pub-ad-placeholder-164"> </div>
-        <!-- End Ezoic - top_of_page - top_of_page -->
+        {% if not user.is_authenticated or (user.is_authenticated and user.no_ads == False) %}
+            {% include "pages/ads/top_page.html" %}
+        {% endif %}
         
     </div>
     <h1 class="text-light"></h1>
@@ -137,8 +137,12 @@
 
     <br>
     <div class="col side_add_cols">
+        <!-- Google Ad - side / vertical -->
+        {% if not user.is_authenticated or (user.is_authenticated and user.no_ads == False) %}
+            {% include "pages/ads/side_ad.html" %}
+        {% endif %}
         <!-- Ezoic - mid_content_bedside_clues - mid_content -->
-        <div id="ezoic-pub-ad-placeholder-166"> </div>
+        <!-- <div id="ezoic-pub-ad-placeholder-166"> </div> -->
         <!-- End Ezoic - mid_content_bedside_clues - mid_content -->
     </div>
     <div class="card text-bg-secondary">

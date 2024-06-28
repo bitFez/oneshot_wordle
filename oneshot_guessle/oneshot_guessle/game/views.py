@@ -34,12 +34,12 @@ from .functions import guess_result, get_random_clues, get_clues_rows, check_plu
 ENCODING_FORMAT='utf8' 
 
 # Create your views here.
-class AdsView(View):
-    """Replace pub-0000000000000000 with your own publisher ID"""
-    line = "google.com, pub-2072226965226950, DIRECT, f08c47fec0942fa0"
+# class AdsView(View):
+#     """Replace pub-0000000000000000 with your own publisher ID"""
+#     line = "google.com, pub-2072226965226950, DIRECT, f08c47fec0942fa0"
     
-    def get(self, request, *args, **kwargs):
-        return HttpResponse(line)
+#     def get(self, request, *args, **kwargs):
+#         return HttpResponse(line)
 
 
 def load_words(request):

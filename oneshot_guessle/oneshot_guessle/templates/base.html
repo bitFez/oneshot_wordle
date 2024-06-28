@@ -44,7 +44,7 @@
       <!--  -->
       
     {% endblock javascript %}
-    {% if not user.is_authenticated or user.no_ads == False %}
+    {% if not user.is_authenticated or (user.is_authenticated and user.no_ads == False) %}
       <!-- Google Ads -->
       <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2072226965226950" crossorigin="anonymous"></script>
       <!-- Google Ads -->

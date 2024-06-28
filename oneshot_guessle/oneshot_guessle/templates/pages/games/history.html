@@ -12,7 +12,7 @@
       </div>
       <!-- {% if user.no_ads == False %} SHOW ADS PLEASE {% endif %} -->
       <!-- Google Ad - top_of_page -->
-      {% if not user.is_authenticated || user.no_ads == False %}
+      {% if not user.is_authenticated or (user.is_authenticated and user.no_ads == False) %}
         {% include "pages/ads/top_page.html" %}
       {% endif %}
       <div class="col-6">

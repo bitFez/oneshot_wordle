@@ -1,6 +1,6 @@
 from .models import Word,WordsHard
-import inflect
-p = inflect.engine()
+# import inflect
+# p = inflect.engine()
 
 def guess_result(guess, target_word, alphabet):
 
@@ -159,8 +159,7 @@ def get_random_clues(oneshotWord, **kwargs):
     return clues_list
 
 def check_plural(word):
-    
-    if p.singular_noun(word) == word:
+    if (word) == word: # p.singular_noun
         return True
     else:
         return False
