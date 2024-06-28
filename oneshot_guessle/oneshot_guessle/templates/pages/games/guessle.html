@@ -41,7 +41,7 @@
             <!-- <div id="ezoic-pub-ad-placeholder-164"> </div> -->
         <!-- End Ezoic - top_of_page - top_of_page -->
         <!-- Google Ad - top_of_page -->
-        {% if not user.is_authenticated or (user.is_authenticated and user.no_ads == False) %}
+        {% if not user.is_authenticated or user.no_ads is False %}
             {% include "pages/ads/top_page.html" %}
         {% endif %}
     </div>
@@ -81,7 +81,7 @@
     <div class="row mb-0">
         <div class="col side_add_cols">
             <!-- Google Ad - side / vertical -->
-            {% if not user.is_authenticated or (user.is_authenticated and user.no_ads == False) %}
+            {% if not user.is_authenticated or user.no_ads is False %}
                 {% include "pages/ads/side_ad.html" %}
             {% endif %}
             <!-- Ezoic - mid_content_bedside_clues - mid_content -->
@@ -104,7 +104,7 @@
         </div>
         <div class="col side_add_cols">
             <!-- Google Ad - side / vertical -->
-            {% if not user.is_authenticated or user.no_ads == False %}
+            {% if not user.is_authenticated or user.no_ads is False %}
                 {% include "pages/ads/side_ad.html" %}
             {% endif %}
             <!-- Ezoic - mid_content_bedside_clues - mid_content -->

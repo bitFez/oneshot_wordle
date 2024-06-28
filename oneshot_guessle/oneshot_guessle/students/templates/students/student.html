@@ -36,7 +36,7 @@
     </div>
     <div class="row my-1 align-items-start no-gutters justify-content-center border-bottom w-100">
         <!-- Site title & top bar -->
-        {% if not user.is_authenticated or (user.is_authenticated and user.no_ads == False) %}
+        {% if not user.is_authenticated or user.no_ads is False %}
             {% include "pages/ads/top_page.html" %}
         {% endif %}
         
@@ -138,7 +138,7 @@
     <br>
     <div class="col side_add_cols">
         <!-- Google Ad - side / vertical -->
-        {% if not user.is_authenticated or (user.is_authenticated and user.no_ads == False) %}
+        {% if not user.is_authenticated or user.no_ads is False %}
             {% include "pages/ads/side_ad.html" %}
         {% endif %}
         <!-- Ezoic - mid_content_bedside_clues - mid_content -->
