@@ -202,22 +202,32 @@
 
 
     {% if attempts %}
-    <p>There is an attempt</p>
-    <script>
-        const target_word = '{{t_word}}';
-        fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${target_word}`)
-            .then(response => response.json())
-            .then(data => {
+    
+        <script>
+            const target_word = '{{t_word}}';
+            fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${target_word}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('popup').innerHTML = `
+                    <div class="container">
+                        <div class="alert alert-info px-5" role="alert">
+                            <h2 class="wordDef">${data[0]["word"]}</h2>
+                            <span class="text-success"><b>Meaning:</b></span> ${data[0]["meanings"][0]["definitions"][0]["definition"]}
+                        </div>
+                    </div>
+                    `;
+                    
+                    // console.log(data)
+                })
+                .catch(error => console.error(error))
                 document.getElementById('popup').innerHTML = `
-                <h2 class="wordDef">${data[0]["word"]}</h2>
-                <span class="text-success"><b>Meaning:</b></span> ${data[0]["meanings"][0]["definitions"][0]["definition"]}`;
-                // console.log(data)
-            })
-            .catch(error => console.error(error))
-            document.getElementById('popup').innerHTML = `
-                <span class="text-danger">Whhoaa 😯</span> <br>
-                <span class="">It seems like this word doesn't appear in the dictionary!</span>`;
-    </script>
+                <div class="container">
+                    <div class="alert alert-danger px-5" role="alert">
+                        <span class="text-danger">Whhoaa 😯</span> <br>
+                        <span class="">It seems like this word doesn't appear in the dictionary!</span>
+                    </div>
+                </div>`;
+        </script>
     {% endif %}
 
     {% endblock content %}

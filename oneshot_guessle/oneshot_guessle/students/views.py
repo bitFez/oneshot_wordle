@@ -7,8 +7,8 @@ from .results_functions import analysis_table, weekly_tests_table, mock_tests_ta
 from .models import Student
 
 SHEETS_API=settings.G_SHEETS_API
-GSHEET_YEAR11 = settings.GSHEET_YEAR11
 GSHEET_YEAR10 = settings.GSHEET_YEAR10
+GSHEET_YEAR2425 = settings.GSHEET_YEAR2425
 GSHEET_YEAR9 = settings.GSHEET_YEAR9
 
 # Create your views here.
@@ -23,10 +23,11 @@ def g_sheet_API_call(user, page):
     # with their corresponding GoogleSheet IDs and subjects in a dict or ...
     # another Google Sheet document which returns a lookup table with all the desired data to other 
     # GoogleSheet documents 
-    if year == 11:
-        sheetID = GSHEET_YEAR11
-    elif year == 10:
+    
+    if year == 10:
         sheetID = GSHEET_YEAR10
+    elif year == 2425:
+        sheetID = GSHEET_YEAR2425
     else:
         sheetID = GSHEET_YEAR9
 
