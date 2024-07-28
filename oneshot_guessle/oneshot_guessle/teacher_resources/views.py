@@ -22,5 +22,5 @@ def resources_page(request):
 
     # Render the template with the filtered list
     context = {'resources': resources, 'ks_choices': KS_CHOICES, 'category_choices': CATEGORY_CHOICES, 'exam_b_choices': EXAM_B_CHOICES}
-    return render(request, 'resource_list.html', context)
+    return render(request, 'teacher_resources/resource_list.html', context)
 
