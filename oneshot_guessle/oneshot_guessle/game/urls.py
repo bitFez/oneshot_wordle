@@ -25,5 +25,5 @@ urlpatterns = [
     path('check_plural/<str:diff>', scan_for_plurals, name="sfp"),
 
     # Ads View
-    # path('ads.txt', AdsView.as_view()),
+    path('ads.txt', AdsView.as_view()),
 ]
