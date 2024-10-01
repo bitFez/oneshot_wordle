@@ -31,4 +31,21 @@ class UserAdmin(auth_admin.UserAdmin):
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
     list_display = ["username", "name","stars", "supporter", "no_ads","is_superuser"]
+    actions=['add_supporter','remove_supporter', 'show_ads', 'disable_ads']
     search_fields = ["name"]
+
+    @admin.action(description='Add as supporter')
+    def add_supporter(self, request, queryset):
+        queryset.update(supporter=True)
+
+    @admin.action(description='Remove as supporter')
+    def remove_supporter(self, request, queryset):
+        queryset.update(supporter=False)
+    
+    @admin.action(description='Enable ads')
+    def show_ads(self, request, queryset):
+        queryset.update(no_ads=False)
+
+    @admin.action(description='disable ads')
+    def disable_ads(self, request, queryset):
+        queryset.update(no_ads=True)

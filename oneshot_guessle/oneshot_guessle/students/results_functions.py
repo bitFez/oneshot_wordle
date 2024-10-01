@@ -13,10 +13,10 @@ subjects = {
 def analysis_table(data, year, student, subject):
     # Looks at each row in the spreadsheet table
     for i in range(len(data)):
-        # finds the row matching the users student ID
+        # finds the row matching the user student ID
         # and gathers data for the table
         if data[i]['exam_ID'] == student:
-            print(data[i])
+            # print(data[i])
             studentX = data[i]
             studentX_d = {
                 'atopic1':studentX[subjects[subject][year][0]], 
