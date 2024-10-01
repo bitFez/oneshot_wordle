@@ -44,42 +44,81 @@
         
     </div>
     
+    <div class="card text-bg-dark mb-3" style="">
+        <div class="card-body">
+          <h5 class="card-title">Resource Filters</h5>
+          
+          <form action="{% url 'teacher_resources:res_page' %}" method="get" hx-target="#resource-list" hx-swap="outer">
+            <div class="row">
+                <div class="col-md-6">
+                    <b>Key Stage:</b><br>
+                    {% for keystage, value in ks_choices %}
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" name="keystage" value="{{ keystage }}" id="{{ keystage }}">
+                        <label for="{{ keystage }}">{{ value }}</label><br>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-6">
+                    <b>Exam Board:</b><br>
+                    {% for exam_board, value in exam_b_choices %}
+                    <div class="form-check form-check-inline">
+                        <input type="checkbox" name="exam_board" value="{{ exam_board }}" id="{{ exam_board }}">
+                        <label for="{{ exam_board }}">{{ value }}</label><br>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="row">
+                <button class="btn btn-bd-primary" type="submit">Filter</button>
+            </div>
+              
+        </form>
 
-    <form action="{% url 'resource_list' %}" method="get" hx-target="#resource-list" hx-swap="outer">
-        <h4>Filters</h4>
-        <ul>
-            <li>
-                <b>Key Stage:</b><br>
-                {% for keystage, value in ks_choices %}
-                    <input type="checkbox" name="keystage" value="{{ keystage }}" id="{{ keystage }}">
-                    <label for="{{ keystage }}">{{ value }}</label><br>
-                {% endfor %}
-            </li>
-            <li>
-                <b>Category:</b><br>
-                {% for category, value in category_choices %}
-                    <input type="checkbox" name="category" value="{{ category }}" id="{{ category }}">
-                    <label for="{{ category }}">{{ value }}</label><br>
-                {% endfor %}
-            </li>
-            <li>
-                <b>Exam Board:</b><br>
-                {% for exam_board, value in exam_b_choices %}
-                    <input type="checkbox" name="exam_board" value="{{ exam_board }}" id="{{ exam_board }}">
-                    <label for="{{ exam_board }}">{{ value }}</label><br>
-                {% endfor %}
-            </li>
-        </ul>
-        <button type="submit">Filter</button>
-    </form>
+        </div>
+    </div>
+
+    
 
     <div id="resource-list">
         <h2>Resources</h2>
-        <ul>
-            {% for resource in resources %}
-                <li>{{ resource.name }}</li>
-            {% endfor %}
-        </ul>
+
+        <table class="table table-striped table-bordered">
+            
+            <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">Name</th>
+                  <th scope="col">Description</th>
+                  <th scope="col">Keystage</th>
+                  <th scope="col">Exam<br>Board</th>
+                  <th scope="col">Price</th>
+                  <th scope="col">Purchased</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for resource in resources %}
+                    <tr>
+                        <th scope="row">{{ resource.id }}</th>
+                        <th scope="col">{{ resource.name }}</th>
+                        <th scope="col">{{ resource.description }}</th>
+                        <th scope="col">{{ resource.keystage }}</th>
+                        <th scope="col">{{ resource.exam_board }}</th>
+                        <th scope="col">{{ resource.price }}</th>
+                        <th scope="col">
+                            {% for purchase in resource.purchase_set.all %}
+                                {% if purchase.user.username %}        
+                                    ✅ Download
+                                {% endif %}
+                            {% endfor %}
+                        </th>
+                    </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+        
     </div>
 </div>
 

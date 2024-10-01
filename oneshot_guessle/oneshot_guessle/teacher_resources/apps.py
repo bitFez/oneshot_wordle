@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class StudentsConfig(AppConfig):
+class Teacher_ResourcesConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'oneshot_guessle.students'
+    name = 'oneshot_guessle.teacher_resources'

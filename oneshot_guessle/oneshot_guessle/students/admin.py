@@ -14,6 +14,7 @@ from .models import Student
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
     list_display = ['user', 'examNo', 'exam_yr']
+    list_filter = ['user', 'examNo','exam_yr']  # Filter by exam year
     actions=['publish_blog','unpublish_blog']
 
     def get_urls(self):

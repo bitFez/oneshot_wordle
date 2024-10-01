@@ -27,6 +27,10 @@ For convenience, you can keep your normal user logged in on Chrome and your supe
 or docker-compose -f production.yml run --rm django python manage.py makemigrations
 - docker-compose -f local.yml run --rm django python manage.py migrate
 
+💡 You can also run both together if you are having problems. eg:
+
+docker-compose -f production.yml run --rm django sh -c "python manage.py makemigrations && python manage.py migrate"
+
 ### Type checks
 
 Running type checks with mypy:

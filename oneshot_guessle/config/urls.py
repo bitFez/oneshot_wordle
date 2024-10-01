@@ -18,6 +18,7 @@ urlpatterns = [
     # Your stuff: custom urls includes go here
     path("", include("oneshot_guessle.game.urls", namespace="game")),
     path("", include("oneshot_guessle.students.urls", namespace="students")),
+    path("", include("oneshot_guessle.teacher_resources.urls")),
 
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
