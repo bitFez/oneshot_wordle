@@ -67,8 +67,11 @@
           <li><a class="dropdown-item" href="{% url 'game:tsandcs' %}">Terms & Conditions</a></li>
         </ul>
       </li>
-      <li>
-        <a href="https://codefez.github.io/" target="_blank" > <img src="https://avatars.githubusercontent.com/u/5003973?s=96&v=4" height="50px" alt=""> Learn to codefez!</a>
+      <li class="nav-item">
+        <a href="https://codefez.github.io/" class="nav-link" target="_blank" > <img class="avatar" src="https://avatars.githubusercontent.com/u/5003973?s=96&v=4" height="40px" alt=""> Learn to codefez!</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'teacher_resources:res_page' %}">{% translate "Codefez Computing Resources" %}</a>
       </li>
       <li>
         <a href="https://twitter.com/oneshotguessle" target="_blank"><i class="bi bi-twitter-x" style="font-size: 2rem;"></i></a>
