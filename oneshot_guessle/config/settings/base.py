@@ -89,6 +89,7 @@ LOCAL_APPS = [
     "oneshot_guessle.game",
     "oneshot_guessle.students",
     "oneshot_guessle.teacher_resources",
+    "oneshot_guessle.tangle",
 
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps

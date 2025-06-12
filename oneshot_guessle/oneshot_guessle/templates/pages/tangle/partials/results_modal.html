@@ -1,0 +1,41 @@
+<h3 class="font-bold text-lg bg-warning rounded-lg">🎉 Your Results</h3>
+<div class="mt-4">
+  <ul>
+    {% for line in words %}
+      <li><strong>{{ forloop.counter }}️⃣</strong> {{ line }}</li>
+    {% endfor %}
+  </ul>
+  <div id="resultsContent" class="mt-4">
+    <p>
+      Challenge your friends to beat your Daily Tangle score on 
+      <a href="https://oneshotguessle.com/tangle" class="link link-primary" target="_blank">https://oneshotguessle.com/tangle</a>
+    </p>
+
+    <ul>
+      {% for line in score_breakdown %}
+        <li>{{ line }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+<div class="modal-action">
+  <button class="btn btn-primary" onclick="document.getElementById('resultsModal').classList.add('hidden')">Close</button>
+  <button class="btn btn-success" onclick="copyResults()">Copy</button>
+</div>
+
+
+<script>
+  document.getElementById('resultsModal').classList.remove('hidden');
+
+  function copyResults() {
+    const textElement = document.getElementById('resultsContent');
+    const tempTextArea = document.createElement('textarea');
+    tempTextArea.value = textElement.innerText; // innerText includes the link text as plain URL
+    document.body.appendChild(tempTextArea);
+    tempTextArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(tempTextArea);
+    showToast('✅ Results copied to clipboard!', 'success');
+  }
+
+</script>

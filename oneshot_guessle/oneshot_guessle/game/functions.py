@@ -1,6 +1,7 @@
 from .models import Word,WordsHard
-# import inflect
-# p = inflect.engine()
+import inflect
+
+p = inflect.engine()
 
 def guess_result(guess, target_word, alphabet):
 
@@ -158,8 +159,11 @@ def get_random_clues(oneshotWord, **kwargs):
         # print(f"Cows: {cows_list} -- Bulls: {bulls_list}")
     return clues_list
 
-def check_plural(word):
-    if (word) == word: # p.singular_noun
-        return True
-    else:
-        return False
+def check_plural(word:str) -> bool:
+    """Check if a word is plural and singular noun or not.
+        eg
+        'cats' -> True
+        'cat' -> False
+    """
+    return bool(p.singular_noun(word))
+    

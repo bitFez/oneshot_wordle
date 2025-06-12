@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Submission Success</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@5.0.4/dist/full.css" rel="stylesheet" type="text/css" />
+</head>
+<body class="bg-base-200 min-h-screen flex items-center justify-center">
+
+  <div class="card bg-base-100 shadow-xl max-w-md w-full p-6">
+    <h1 class="card-title text-2xl text-center">🎉 Submission Results</h1>
+    
+    <div class="mt-4">
+      <p class="text-lg font-bold">Total Score: {{ total_score }}</p>
+    </div>
+
+    <div class="mt-4">
+      <p class="font-semibold">Definitions:</p>
+      <ul class="list-disc list-inside">
+        {% for def in definitions %}
+          <li><strong>{{ def.letter }}</strong> ({{ def.position.0 }}, {{ def.position.1 }}): {{ def.definition }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="mt-4">
+      <p class="font-semibold">Score Breakdown (copy & share!):</p>
+      <pre id="scoreBreakdown" class="bg-base-300 rounded p-2 whitespace-pre-wrap">{{ score_breakdown_text }}</pre>
+      <button
+        class="btn btn-primary btn-sm mt-2"
+        onclick="copyBreakdown()"
+      >Copy to Clipboard</button>
+    </div>
+  </div>
+
+  <script>
+    function copyBreakdown() {
+      const breakdown = document.getElementById('scoreBreakdown').innerText;
+      navigator.clipboard.writeText(breakdown).then(() => {
+        alert('Score breakdown copied!');
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+.scrabble-tile {
+      position: relative;
+      background: #e6c229;
+      border-radius: 4px;
+      box-shadow: 1px 1px 1px rgba(0,0,0,0.3),
+                  inset 0 0 0 2px #daa520,
+                  inset 0 -3px 0 2px #b8860b;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Arial', sans-serif;
+      font-weight: bold;
+      margin: 0.5px;
+    }
+
+    .scrabble-letter { font-size: 18px; color: #000; }
+    .scrabble-value {
+      position: absolute;
+      bottom: 2px;
+      right: 4px;
+      font-size: 9px;
+      color: #000;
+    }
+
+    .scrabble-input {
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      text-transform: uppercase;
+      border: 2px solid #daa520;
+      border-radius: 4px;
+      background: #f8f8f8;
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    .scrabble-input:focus {
+      outline: none;
+      background: #fff;
+      box-shadow: 0 0 5px rgba(218, 165, 32, 0.5);
+    }
+
+    .scrabble-input.invalid {
+      border: 2px solid #f44336;
+      background: #ffebee;
+      animation: shake 0.5s;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-3px); }
+      40%, 80% { transform: translateX(3px); }
+    }
+
+    .scrabble-table {
+      border-collapse: separate;
+      border-spacing: 1px;
+      margin: 0;
+    }
+
+    .scrabble-table th, .scrabble-table td {
+      padding: 1px;
+    }

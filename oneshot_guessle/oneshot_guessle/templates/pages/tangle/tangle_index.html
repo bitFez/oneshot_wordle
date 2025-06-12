@@ -1,0 +1,172 @@
+{% extends "tangle_base.html" %}
+{% load static %}
+{% include 'tangle/partials/modals.html' %}
+
+{% load scrabble_tags %}
+{% block content %}
+      {% if attempted %}
+        <div class="alert alert-warning rounded-lg shadow mb-4">
+          ⚠️ You have already attempted today's Daily Tangle.
+        </div>
+      {% endif %}
+
+      <form id="submitForm"
+            hx-post="{% url 'tangle:submit_words' %}"
+            hx-target="#resultsModalContent"
+            hx-swap="innerHTML"
+            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+            onsubmit="return validateTangleForm(this)"
+            class="space-y-4">
+        <input type="hidden" name="tangle_id" value="{{ tangle.id }}">
+        {% csrf_token %}
+
+        <table class="scrabble-table table-fixed max-w-full">
+          <thead>
+            <tr>
+              <th class="bg-base-200"></th>
+              {% for word in tangle.get_column_words %}
+              <th class="bg-base-200 align-bottom">
+                <div class="flex flex-col items-center gap-1">
+                  {% for letter in word %}
+                  <div class="scrabble-tile w-8 h-8 sm:w-11 sm:h-11 md:w-13 md:h-13">
+                    <span class="scrabble-letter">{{ letter|upper }}</span>
+                    <span class="scrabble-value">{{ letter|upper|scrabble_value }}</span>
+                  </div>
+                  {% endfor %}
+                </div>
+              </th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row_word in tangle.get_row_words %}
+            <tr>
+              <th class="bg-base-200 text-right">
+                <div class="flex gap-1 justify-end">
+                  {% for letter in row_word %}
+                  <div class="scrabble-tile w-8 h-8 sm:w-11 sm:h-11 md:w-13 md:h-13">
+                    <span class="scrabble-letter">{{ letter|upper }}</span>
+                    <span class="scrabble-value">{{ letter|upper|scrabble_value }}</span>
+                  </div>
+                  {% endfor %}
+                </div>
+              </th>
+              {% for col_word in tangle.get_column_words %}
+              <td>
+                <input type="text"
+                  class="scrabble-input w-8 h-8 sm:w-11 sm:h-11 md:w-13 md:h-13"
+                  name="word_{{ forloop.parentloop.counter }}_{{ forloop.counter }}"
+                  maxlength="1"
+                  pattern="[A-Za-z]"
+                  title="Single letter only"
+                  required
+                  value="{% if attempted %}{{ previous_words|index:forloop.parentloop.counter0|index:forloop.counter0 }}{% endif %}"
+                />
+
+
+
+              </td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <div class="card-actions justify-end mt-6">
+          <button type="submit" class="btn btn-primary">Submit Words</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="resultsModal" class="modal">
+    <div id="resultsModalContent" class="modal-box bg-white shadow rounded p-4"></div>
+  </div>
+
+  <div id="toastContainer" class="toast toast-center"></div>
+
+  <!-- Expose row/column words to JS -->
+  {{ tangle.get_row_words|json_script:"rowWords" }}
+  {{ tangle.get_column_words|json_script:"columnWords" }}
+
+  <script>
+    const rowWords = JSON.parse(document.getElementById('rowWords').textContent);
+    const columnWords = JSON.parse(document.getElementById('columnWords').textContent);
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const inputs = document.querySelectorAll('.scrabble-input');
+
+      inputs.forEach((input, index) => {
+        input.addEventListener('input', function() {
+          this.value = this.value.toUpperCase();
+          if (this.value.length === this.maxLength) {
+            const next = inputs[index + 1];
+            if (next) next.focus();
+          }
+        });
+
+        input.addEventListener('keydown', function(e) {
+          if (e.key === 'Backspace' && this.value.length === 0) {
+            const prev = inputs[index - 1];
+            if (prev) prev.focus();
+          }
+        });
+      });
+    });
+
+    function validateTangleForm(form) {
+      let isValid = true;
+      let errorMessages = '';
+
+      document.querySelectorAll('.scrabble-input').forEach(input => {
+        input.classList.remove('invalid');
+      });
+
+      document.querySelectorAll('.scrabble-input').forEach(input => {
+        const [_, row, col] = input.name.match(/word_(\d+)_(\d+)/);
+        const rowIdx = parseInt(row) - 1;
+        const colIdx = parseInt(col) - 1;
+        const userLetter = input.value.toUpperCase();
+
+        if (!userLetter) {
+          isValid = false;
+          input.classList.add('invalid');
+          errorMessages += `Cell (${row},${col}) is empty.\n`;
+        } else {
+          const rowWord = rowWords[rowIdx].toUpperCase();
+          const colWord = columnWords[colIdx].toUpperCase();
+
+          if (!rowWord.includes(userLetter) && !colWord.includes(userLetter)) {
+            isValid = false;
+            input.classList.add('invalid');
+            errorMessages += `Cell (${row},${col}): "${userLetter}" must be in "${rowWord}" or "${colWord}".\n`;
+          }
+        }
+      });
+
+      if (!isValid) {
+        showToast(errorMessages, 'error');
+        return false;
+      }
+
+      return true;
+    }
+
+    function showToast(message, type = 'error') {
+      const toastContainer = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `alert ${type === 'error' ? 'alert-error' : 'alert-success'} shadow-lg`;
+      toast.innerHTML = `<span>${message.replace(/\n/g, '<br>')}</span>`;
+      toastContainer.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
+
+    document.body.addEventListener('htmx:afterSwap', (e) => {
+      if (e.detail.target.id === 'resultsModalContent') {
+        document.getElementById('resultsModal').classList.add('modal-open');
+      }
+    });
+  </script>
+  {% endblock content %}
+</body>
+</html>

@@ -43,7 +43,7 @@ def load_words(request):
     if settings.DEBUG:
         file_ = find('dicts/words.txt')
         with open(file_) as f:
-            data =f.read()
+            data =f.readlines()
     else:
         # file_ = staticfiles_storage.url('dicts/words.txt')
         with open(r'oneshot_guessle/game/dicts/words.txt') as f:
@@ -63,7 +63,7 @@ def load_words(request):
                 word = wd
             )
             newWords += 1
-        print(f"Adding 5 Letter Words {round((item/lenOfData)*100,2)}%")
+        print(f"Adding 5 Letter Words: {wd}: {round((item/lenOfData)*100,2)}%")
     
     if settings.DEBUG:
         file_ = find('dicts/6-letter-words.txt')
@@ -101,25 +101,23 @@ def scan_for_plurals(request, **kwargs):
         # return WordsHard.objects.filter(Q(lastOccurance__lte=datetime.now() - timedelta(days=730)) | Q(frequency=0)).order_by('?')[0]
         words = WordsHard.objects.all()
         for word in words:
+            a = WordsHard.objects.get(word = word)
             if check_plural(word.word) == True:
-                a = WordsHard.objects.get(word = word)
-                a.proper_noun = True
+                a.proper_noun = False
                 a.save()
             else:
-                word.proper_noun = False
-                a = WordsHard.objects.get(word = word)
-                a.proper_noun = False
+                a.proper_noun = True
                 a.save()
     elif difficulty == "easy":
         words = Word.objects.all()
         for word in words:
+            print(f"---> word is: {word}")
+            a = Word.objects.get(word = word)
             if check_plural(word.word) == True:
-                a = Word.objects.get(word = word)
-                a.proper_noun = True
+                a.proper_noun = False
                 a.save()
             else:
-                a = Word.objects.get(word = word)
-                a.proper_noun = False
+                a.proper_noun = True
                 a.save()
     else:
         pass
