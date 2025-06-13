@@ -121,6 +121,7 @@ def scan_for_plurals(request, **kwargs):
                 a.save()
     else:
         pass
+    return HttpResponse("Scanned for plurals and updated the database accordingly. Please check the admin panel to confirm.")
 
 def guessle(request):   
     #initiate array for alphabet colors
