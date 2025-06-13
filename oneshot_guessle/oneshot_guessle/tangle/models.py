@@ -51,6 +51,7 @@ class TangleAttempt(models.Model):
     tangle = models.ForeignKey(DailyTangle, on_delete=models.CASCADE)
     words = models.JSONField() # store user attempts as a list of words
     created_at = models.DateTimeField(auto_now_add=True)
+    points = models.IntegerField(default=0)  # Points scored by the user
 
     def __str__(self):
         return f"{self.user} - {self.tangle} - {self.created_at}"

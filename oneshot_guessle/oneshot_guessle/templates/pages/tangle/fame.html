@@ -1,0 +1,36 @@
+{% extends "tangle_base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+  <h1 class="text-center text-3xl font-bold mb-2">Tangle Hall of Fame</h1>
+  <p class="text-center text-lg mb-6">Top 10 players based on Tangle points.</p>
+
+  <!-- HTMX Filter Buttons -->
+  <div class="flex justify-center gap-4 mb-6">
+    <button
+      class="btn btn-outline btn-sm"
+      hx-get="{% url 'tangle:tangle_rankings' %}?filter=daily"
+      hx-target="#ranking-table"
+      hx-swap="innerHTML"
+      hx-push-url="true"
+    >
+      Daily Rankings
+    </button>
+    <button
+      class="btn btn-outline btn-sm"
+      hx-get="{% url 'tangle:tangle_rankings' %}?filter=alltime"
+      hx-target="#ranking-table"
+      hx-swap="innerHTML"
+      hx-push-url="true"
+    >
+      All-Time Rankings
+    </button>
+  </div>
+
+  <!-- Rankings table and pagination -->
+  <div id="ranking-table">
+    {% include "pages/tangle/partials/top10users.html" %}
+  </div>
+</div>
+{% endblock content %}

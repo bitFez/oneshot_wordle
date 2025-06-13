@@ -3,12 +3,13 @@ from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.core.paginator import Paginator
 import os
 import datetime
 from django.conf import settings
 from django.contrib.staticfiles.finders import find
 from random import sample
-
+from django.db.models import OuterRef, Subquery
 
 # importing functions
 from .functions.twl import check
@@ -16,8 +17,6 @@ from .models import DailyTangle, TangleAttempt
 
 from .utils import process_valid_submissions
 # Create your views here.
-
-
 
 def tangle_index(request):
     """
@@ -136,8 +135,14 @@ def submit_words(request):
                     "word4": words[3],
                     "word4_points": score_breakdown_numbers[3],
                     "total_score": sum(score_breakdown_numbers)
-                }
+                },
+                points=sum(score_breakdown_numbers),
+                created_at=datetime.datetime.now()
             )
+        # Update user's total Tangle points
+        if request.user.is_authenticated:
+            request.user.totalTanglePointsEver += sum(score_breakdown_numbers)
+            request.user.save()
 
         # 6️⃣ Instead of JSON, render partial HTML for modal content
         return render(request, 'pages/tangle/partials/results_modal.html', {
@@ -147,3 +152,73 @@ def submit_words(request):
         })
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
+
+def tangleRankings(request):
+    today = datetime.date.today()
+    tangle = DailyTangle.objects.filter(date=today).first()
+
+    filter_type = request.GET.get("filter", "daily")
+
+    if filter_type == "alltime":
+        # Get the latest attempt per user ordered by totalTanglePointsEver
+        subquery = TangleAttempt.objects.filter(user=OuterRef('user')).order_by('-created_at')
+        users = (TangleAttempt.objects
+                 .filter(pk=Subquery(subquery.values('pk')[:1]))
+                 .select_related('user')
+                 .order_by('-user__totalTanglePointsEver')
+                 .distinct('user'))
+    else:
+        users = TangleAttempt.objects.all().order_by("-points")
+
+    table = {}
+    for i, user in enumerate(users):
+        table[i + 1] = {
+            "username": user.user,
+            "points": user.points,
+            "totalTanglePoints": user.user.totalTanglePointsEver,
+            "day": user.created_at.strftime("%Y-%m-%d"),
+        }
+
+    paginator = Paginator(tuple(table.items()), 10)
+    page_number = request.GET.get("page")
+    user_scores = paginator.get_page(page_number)
+
+    context = {
+        "user_scores": user_scores,
+        "tangle": tangle,
+        "filter": filter_type,
+    }
+
+    if request.htmx:
+        return render(request, "pages/tangle/partials/top10users.html", context)
+    else:
+        return render(request, "pages/tangle/fame.html", context)
+
+    # # to feed daily tangle number --> alternative is to change placement of top bar
+    # today = datetime.date.today()
+    # tangle = DailyTangle.objects.filter(date=today).first()
+
+    # users = TangleAttempt.objects.all().order_by("-points",)
+    
+    # table = {}
+    # for person in range(0,len(users)):
+    #     rank=person+1
+    #     username=users[person].user
+    #     points=users[person].points
+    #     totalTanglePoints = users[person].user.totalTanglePointsEver
+    #     created_at=users[person].created_at
+        
+    #     a = {rank:{'username':username,'points':points,
+    #             'totalTanglePoints':totalTanglePoints,'day':created_at.strftime('%Y-%m-%d')}}
+    #     print(a)
+    #     table.update(a)
+
+    # paginator = Paginator(tuple(table.items()), 10)
+    # page_number = request.GET.get('page')
+    # user_scores = paginator.get_page(page_number)
+    # context = {'user_scores':user_scores, 'tangle':tangle}
+    
+    # if request.htmx:
+    #     return render(request, "pages/tangle/partials/top10users.html", context)
+    # else:
+    #     return render(request, 'pages/tangle/fame.html', context)

@@ -1,11 +1,11 @@
 {% extends "tangle_base.html" %}
 {% load static %}
-{% include 'tangle/partials/modals.html' %}
+
 
 {% load scrabble_tags %}
 {% block content %}
       {% if attempted %}
-        <div class="alert alert-warning rounded-lg shadow mb-4">
+        <div class="alert alert-error rounded-lg shadow mb-4">
           ⚠️ You have already attempted today's Daily Tangle.
         </div>
       {% endif %}
@@ -167,6 +167,8 @@
       }
     });
   </script>
+
+  {% include 'pages/tangle/partials/modals.html' %}
   {% endblock content %}
 </body>
 </html>

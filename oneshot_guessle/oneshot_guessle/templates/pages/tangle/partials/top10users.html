@@ -1,0 +1,26 @@
+<div class="overflow-x-auto shadow rounded-lg">
+  <table class="table table-zebra w-full">
+    <thead class="bg-base-200">
+      <tr>
+        <th>Rank #</th>
+        <th>Username</th>
+        <th>Points</th>
+        <th>All-time Tangle Points</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for player in user_scores %}
+      <tr>
+        <td>{{ player.0 }}</td>
+        <td>{{ player.1.username }}</td>
+        <td>{{ player.1.points }}</td>
+        <td>{{ player.1.totalTanglePoints }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="flex justify-center mt-6">
+  {% include "pages/tangle/partials/hof_navbar.html" with filter=filter %}
+</div>

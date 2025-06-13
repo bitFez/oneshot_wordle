@@ -1,0 +1,15 @@
+<div class="join">
+  {% if user_scores.has_previous %}
+    <a class="join-item btn" href="?page=1">« First</a>
+    <a class="join-item btn" href="?page={{ user_scores.previous_page_number }}">‹ Prev</a>
+  {% endif %}
+
+  <span class="join-item btn btn-disabled">
+    Page {{ user_scores.number }} of {{ user_scores.paginator.num_pages }}
+  </span>
+
+  {% if user_scores.has_next %}
+    <a class="join-item btn" href="?page={{ user_scores.next_page_number }}">Next ›</a>
+    <a class="join-item btn" href="?page={{ user_scores.paginator.num_pages }}">Last »</a>
+  {% endif %}
+</div>

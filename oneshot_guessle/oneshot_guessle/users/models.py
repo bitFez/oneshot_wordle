@@ -23,6 +23,7 @@ class User(AbstractUser):
     supporter = BooleanField(default=False)
     no_ads = BooleanField(default=False)
     stars = IntegerField(default=0)
+    totalTanglePointsEver = IntegerField(default=0)
     colourTone = BooleanField(default=False) # True == High Vis 
     colourMode = BooleanField(default=False) # True == Dark mode
     # easystreak = IntegerField(default=0)

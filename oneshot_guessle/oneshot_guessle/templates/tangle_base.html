@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="{% static 'css/tangle.css' %}">
   <script src="https://unpkg.com/htmx.org@1.9.10"></script>
   <title>Daily Word Tangle #{{ tangle.id }}</title>
-  
+  <link rel="icon" type="image/png" href="{% static 'images/favicons/tw_favicon.ico' %}"> 
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
 
@@ -46,9 +46,11 @@
             </div>
             
             <ul tabindex="0" class="menu menu-sm dropdown-content bg-base-100 rounded-box z-30 mt-3 w-52 p-2 shadow">
-              <li><a>Homepage</a></li>
-              <li><a>Portfolio</a></li>
-              <li><a>About</a></li>
+              <li><a href="{% url 'tangle:tangle_index' %}"><img width="20px" src="{% static 'images/favicons/tw_favicon.ico' %}"> Daily Tangle</a></li>
+              <li><a href="{% url 'tangle:tangle_rankings' %}">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" width="20px"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M353.8 54.1L330.2 6.3c-3.9-8.3-16.1-8.6-20.4 0L286.2 54.1l-52.3 7.5c-9.3 1.4-13.3 12.9-6.4 19.8l38 37-9 52.1c-1.4 9.3 8.2 16.5 16.8 12.2l46.9-24.8 46.6 24.4c8.6 4.3 18.3-2.9 16.8-12.2l-9-52.1 38-36.6c6.8-6.8 2.9-18.3-6.4-19.8l-52.3-7.5zM256 256c-17.7 0-32 14.3-32 32l0 192c0 17.7 14.3 32 32 32l128 0c17.7 0 32-14.3 32-32l0-192c0-17.7-14.3-32-32-32l-128 0zM32 320c-17.7 0-32 14.3-32 32L0 480c0 17.7 14.3 32 32 32l128 0c17.7 0 32-14.3 32-32l0-128c0-17.7-14.3-32-32-32L32 320zm416 96l0 64c0 17.7 14.3 32 32 32l128 0c17.7 0 32-14.3 32-32l0-64c0-17.7-14.3-32-32-32l-128 0c-17.7 0-32 14.3-32 32z"/></svg> 
+                Tangle Rankings</a></li>
+              <li><a href="/"><img width="20px" src="{% static 'images/favicons/favicon.ico' %}"> Play OneShotGuessle</a></li>
             </ul>
           </div>
           {% else %}
