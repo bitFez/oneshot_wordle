@@ -56,7 +56,7 @@ Moved to [Live reloading and SASS compilation](https://cookiecutter-django.readt
 ## Deployment
 
 The following details how to deploy this application.
-1. build the app using `docker-compose -f local.yml build`
+1. build the app using `docker-compose -f local.yml build` # This will include updating requirements and push to docker container.
 2. make the migrations for the app `docker-compose -f local.yml run --rm django python manage.py makemigrations`
 3. Create a Superuser `docker-compose -f local.yml run --rm django python manage.py createsuperuser`
 4. Run the server `docker-compose -f local.yml up`
