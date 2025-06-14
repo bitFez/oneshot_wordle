@@ -9,13 +9,23 @@
           ⚠️ You have already attempted today's Daily Tangle.
         </div>
       {% endif %}
+      {% if messages %}
+        <div class="space-y-2 mt-4">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
 
       <form id="submitForm"
             hx-post="{% url 'tangle:submit_words' %}"
             hx-target="#resultsModalContent"
             hx-swap="innerHTML"
             hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-            onsubmit="return validateTangleForm(this)"
+            onsubmit="return checkSubmissionStatus(this)"
             class="space-y-4">
         <input type="hidden" name="tangle_id" value="{{ tangle.id }}">
         {% csrf_token %}
@@ -80,7 +90,11 @@
   </div>
 
   <div id="resultsModal" class="modal">
-    <div id="resultsModalContent" class="modal-box bg-white shadow rounded p-4"></div>
+    <div id="resultsModalContent" class="modal-box bg-white shadow rounded p-4">
+      {% if attempted %}
+        {% include 'pages/tangle/partials/results_modal.html' %}
+      {% endif %}
+    </div>
   </div>
 
   <div id="toastContainer" class="toast toast-center"></div>
@@ -88,10 +102,14 @@
   <!-- Expose row/column words to JS -->
   {{ tangle.get_row_words|json_script:"rowWords" }}
   {{ tangle.get_column_words|json_script:"columnWords" }}
-
+  
+  <script>
+    window.modalData = {{ modal_data|safe }};
+  </script>
   <script>
     const rowWords = JSON.parse(document.getElementById('rowWords').textContent);
     const columnWords = JSON.parse(document.getElementById('columnWords').textContent);
+    const userHasSubmitted = {{ previous_words|yesno:"true,false" }};
 
     document.addEventListener('DOMContentLoaded', function() {
       const inputs = document.querySelectorAll('.scrabble-input');
@@ -166,6 +184,31 @@
         document.getElementById('resultsModal').classList.add('modal-open');
       }
     });
+
+    function checkSubmissionStatus(form) {
+      if (userHasSubmitted) {
+        showToast("You have already submitted today's puzzle. Submissions are limited to one per day.");
+
+        // Delay modal open slightly so the toast appears first
+        setTimeout(() => {
+          const modal = document.getElementById('resultsModal');
+          if (modal && window.modalData) {
+            // Populate modal fields
+            document.getElementById('score_display').textContent = `Score: ${window.modalData.score}`;
+            // You can continue populating other modal content here...
+
+            // Show the modal
+            modal.classList.add('modal-open');
+          }
+        }, 500); // Adjust delay if needed
+
+        return false; // Prevent form submission
+      }
+
+      return validateTangleForm(form); // Proceed if not submitted yet
+    }
+
+
   </script>
 
   {% include 'pages/tangle/partials/modals.html' %}

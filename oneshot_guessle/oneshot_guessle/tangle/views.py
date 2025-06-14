@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.db import IntegrityError
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -19,11 +20,6 @@ from .utils import process_valid_submissions
 # Create your views here.
 
 def tangle_index(request):
-    """
-    Renders the index page of the words game.
-    This will create a a list of words for the day's tangle if one does not already exist.
-    If a tangle already exists for today, it will retrieve the existing tangle.
-    """
     today = datetime.date.today()
     tangle = DailyTangle.objects.filter(date=today).first()
 
@@ -42,86 +38,102 @@ def tangle_index(request):
         except FileNotFoundError:
             raise FileNotFoundError(f"Could not find words file at: {file_path}")
 
-    # Safely define `words` before use
-    words = {}
     attempted = False
+    previous_words_list = []
+    modal_data = {}
 
     if request.user.is_authenticated:
         attempt = TangleAttempt.objects.filter(user=request.user, tangle=tangle).first()
         if attempt:
             attempted = True
             words = attempt.words
+            score = attempt.points
+            
 
-    previous_words = {
-        "word1": words["word1"][0:5] if words else "",
-        "word2": words["word2"][0:5] if words else "",
-        "word3": words["word3"][0:5] if words else "",
-        "word4": words["word4"][0:5] if words else "",    
-        }
-    previous_words_list = [list(word) for key, word in sorted(previous_words.items())]
+            previous_words = {
+                "word1": words.get("word1", "")[:5],
+                "word2": words.get("word2", "")[:5],
+                "word3": words.get("word3", "")[:5],
+                "word4": words.get("word4", "")[:5],
+            }
+            previous_words_list = [list(word) for key, word in sorted(previous_words.items())]
+
+            # Build modal data
+            modal_data = {
+                "score": score,
+                "submitted_words": words,
+            }
 
     context = {
         'tangle': tangle,
         'attempted': attempted,
         'previous_words': previous_words_list,
+        'modal_data': modal_data,
     }
     return render(request, 'pages/tangle/tangle_index.html', context)
 
 
 @require_POST
 def submit_words(request):
-    if request.method == 'POST':
-        # 1️⃣ Fetch the tangle
-        tangle_id = request.POST.get('tangle_id') or request.session.get('current_tangle_id')
-        daily_tangle_instance = get_object_or_404(DailyTangle, id=tangle_id)
+    # 1️⃣ Fetch the tangle
+    tangle_id = request.POST.get('tangle_id') or request.session.get('current_tangle_id')
+    daily_tangle_instance = get_object_or_404(DailyTangle, id=tangle_id)
 
-        # 2️⃣ Build the user's board
-        num_rows = len(daily_tangle_instance.get_row_words())
-        num_cols = len(daily_tangle_instance.get_column_words())
-        board = []
-
-        for row in range(1, num_rows + 1):
-            row_data = []
-            for col in range(1, num_cols + 1):
-                cell = request.POST.get(f'word_{row}_{col}', '').upper()
-                row_data.append(cell)
-            board.append(row_data)
-        # print("Board submitted:", board)
-        # 3️⃣ Validate the board (check letters against rows and columns)
-        errors = []
-        for row_idx in range(num_rows):
-            row_word = daily_tangle_instance.get_row_words()[row_idx].upper()
-            for col_idx in range(num_cols):
-                col_word = daily_tangle_instance.get_column_words()[col_idx].upper()
-                letter = board[row_idx][col_idx]
-                if letter and letter not in row_word and letter not in col_word:
-                    errors.append({
-                        'cell': (row_idx + 1, col_idx + 1),
-                        'letter': letter,
-                        'row_word': row_word,
-                        'col_word': col_word
-                    })
-
-        if errors:
-            # Build error HTML
-            error_html = '<ul class="list-disc pl-4">'
-            for error in errors:
-                error_html += (
-                    f'<li>Cell {error["cell"]}: '
-                    f'"{error["letter"]}" must be in row "{error["row_word"]}" '
-                    f'or column "{error["col_word"]}".</li>'
-                )
-            error_html += '</ul>'
+    # Check for existing attempt
+    if request.user.is_authenticated:
+        if TangleAttempt.objects.filter(user=request.user, tangle=daily_tangle_instance).exists():
+            messages.error(request, "You have already submitted for today's tangle.")
             return HttpResponse(
-                f'<div class="p-4 text-red-600">'
-                f'<strong>Submission Errors:</strong>{error_html}</div>',
+                '<div class="p-4 text-red-600"><strong>Error:</strong> You have already submitted today.</div>',
                 status=400
             )
 
-        
-        # 5️⃣ Process valid submissions
-        score_breakdown, score_breakdown_numbers, definitions , words = process_valid_submissions(board)
-        if request.user.is_authenticated:
+    # Continue building board...
+    num_rows = len(daily_tangle_instance.get_row_words())
+    num_cols = len(daily_tangle_instance.get_column_words())
+    board = []
+    for row in range(1, num_rows + 1):
+        row_data = []
+        for col in range(1, num_cols + 1):
+            cell = request.POST.get(f'word_{row}_{col}', '').upper()
+            row_data.append(cell)
+        board.append(row_data)
+
+    # Validate board...
+    errors = []
+    for row_idx in range(num_rows):
+        row_word = daily_tangle_instance.get_row_words()[row_idx].upper()
+        for col_idx in range(num_cols):
+            col_word = daily_tangle_instance.get_column_words()[col_idx].upper()
+            letter = board[row_idx][col_idx]
+            if letter and letter not in row_word and letter not in col_word:
+                errors.append({
+                    'cell': (row_idx + 1, col_idx + 1),
+                    'letter': letter,
+                    'row_word': row_word,
+                    'col_word': col_word
+                })
+
+    if errors:
+        error_html = '<ul class="list-disc pl-4">'
+        for error in errors:
+            error_html += (
+                f'<li>Cell {error["cell"]}: '
+                f'"{error["letter"]}" must be in row "{error["row_word"]}" '
+                f'or column "{error["col_word"]}".</li>'
+            )
+        error_html += '</ul>'
+        return HttpResponse(
+            f'<div class="p-4 text-red-600">'
+            f'<strong>Submission Errors:</strong>{error_html}</div>',
+            status=400
+        )
+
+    # Valid submission
+    score_breakdown, score_breakdown_numbers, definitions , words = process_valid_submissions(board)
+
+    if request.user.is_authenticated:
+        try:
             TangleAttempt.objects.create(
                 user=request.user,
                 tangle=daily_tangle_instance,
@@ -136,20 +148,23 @@ def submit_words(request):
                     "word4_points": score_breakdown_numbers[3],
                     "total_score": sum(score_breakdown_numbers)
                 },
-                points=sum(score_breakdown_numbers),
-                created_at=datetime.datetime.now()
+                points=sum(score_breakdown_numbers)
             )
-        # Update user's total Tangle points
-        if request.user.is_authenticated:
             request.user.totalTanglePointsEver += sum(score_breakdown_numbers)
             request.user.save()
+        except IntegrityError:
+            messages.error(request, "You have already submitted for today's tangle.")
+            return HttpResponse(
+                '<div class="p-4 text-red-600"><strong>Error:</strong> Duplicate submission detected.</div>',
+                status=400
+            )
 
-        # 6️⃣ Instead of JSON, render partial HTML for modal content
-        return render(request, 'pages/tangle/partials/results_modal.html', {
-            'definitions': definitions,
-            'score_breakdown': score_breakdown,
-            'words': words,
-        })
+    return render(request, 'pages/tangle/partials/results_modal.html', {
+        'definitions': definitions,
+        'score_breakdown': score_breakdown,
+        'words': words,
+        'attempted': True,
+    })
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
 

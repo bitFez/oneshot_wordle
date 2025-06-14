@@ -53,10 +53,16 @@ class TangleAttempt(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     points = models.IntegerField(default=0)  # Points scored by the user
 
-    def __str__(self):
-        return f"{self.user} - {self.tangle} - {self.created_at}"
-    
     class Meta:
         verbose_name = "Tangle Attempt"
         verbose_name_plural = "Tangle Attempts"
+        # Ensure that a user can only have one attempt per tangle
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'tangle'], name='unique_user_tangle')
+        ]
         ordering = ['-created_at'] 
+
+    def __str__(self):
+        return f"{self.user} - {self.tangle} - {self.created_at}"
+    
+        
