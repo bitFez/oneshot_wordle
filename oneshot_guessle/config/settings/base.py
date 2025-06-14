@@ -285,6 +285,9 @@ SOCIALACCOUNT_ADAPTER = "oneshot_guessle.users.adapters.SocialAccountAdapter"
 # https://django-allauth.readthedocs.io/en/latest/forms.html
 SOCIALACCOUNT_FORMS = {"signup": "oneshot_guessle.users.forms.UserSocialSignupForm"}
 
+ACCOUNT_LOGOUT_ON_GET = True
+ACCOUNT_LOGOUT_REDIRECT_URL = "/" 
+
 SOCIALACCOUNT_PROVIDERS = {
     'google':{}, 'facebook':{}, 'reddit':{}, 'twitter':{}
 }

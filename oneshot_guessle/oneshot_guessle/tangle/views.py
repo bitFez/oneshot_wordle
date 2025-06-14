@@ -168,22 +168,41 @@ def submit_words(request):
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
+from django.db.models import OuterRef, Subquery, Max, F
+
 def tangleRankings(request):
     today = datetime.date.today()
     tangle = DailyTangle.objects.filter(date=today).first()
-
     filter_type = request.GET.get("filter", "daily")
 
     if filter_type == "alltime":
-        # Get the latest attempt per user ordered by totalTanglePointsEver
-        subquery = TangleAttempt.objects.filter(user=OuterRef('user')).order_by('-created_at')
-        users = (TangleAttempt.objects
-                 .filter(pk=Subquery(subquery.values('pk')[:1]))
-                 .select_related('user')
-                 .order_by('-user__totalTanglePointsEver')
-                 .distinct('user'))
+        # Get each user's best scoring attempt ever
+        subquery = (
+            TangleAttempt.objects
+            .filter(user=OuterRef('user'))
+            .order_by('-points', '-created_at')  # prioritize high score, then recency
+        )
+        users = (
+            TangleAttempt.objects
+            .select_related('user')
+            .order_by('user', '-points', '-created_at')
+            .distinct('user')
+        )
+
     else:
-        users = TangleAttempt.objects.all().order_by("-points")
+        # Get best attempt per user for today's tangle
+        subquery = (
+            TangleAttempt.objects
+            .filter(tangle=tangle, user=OuterRef('user'))
+            .order_by('-points', '-created_at')
+        )
+        users = (
+            TangleAttempt.objects
+            .filter(tangle=tangle)
+            .select_related('user')
+            .order_by('user', '-points', '-created_at')
+            .distinct('user')
+        )
 
     table = {}
     for i, user in enumerate(users):
@@ -193,7 +212,10 @@ def tangleRankings(request):
             "totalTanglePoints": user.user.totalTanglePointsEver,
             "day": user.created_at.strftime("%Y-%m-%d"),
         }
+    # Sort the table by points in descending order
+    users = sorted(users, key=lambda u: u.points, reverse=True)
 
+    # Create a paginator for the user scores
     paginator = Paginator(tuple(table.items()), 10)
     page_number = request.GET.get("page")
     user_scores = paginator.get_page(page_number)
@@ -209,31 +231,3 @@ def tangleRankings(request):
     else:
         return render(request, "pages/tangle/fame.html", context)
 
-    # # to feed daily tangle number --> alternative is to change placement of top bar
-    # today = datetime.date.today()
-    # tangle = DailyTangle.objects.filter(date=today).first()
-
-    # users = TangleAttempt.objects.all().order_by("-points",)
-    
-    # table = {}
-    # for person in range(0,len(users)):
-    #     rank=person+1
-    #     username=users[person].user
-    #     points=users[person].points
-    #     totalTanglePoints = users[person].user.totalTanglePointsEver
-    #     created_at=users[person].created_at
-        
-    #     a = {rank:{'username':username,'points':points,
-    #             'totalTanglePoints':totalTanglePoints,'day':created_at.strftime('%Y-%m-%d')}}
-    #     print(a)
-    #     table.update(a)
-
-    # paginator = Paginator(tuple(table.items()), 10)
-    # page_number = request.GET.get('page')
-    # user_scores = paginator.get_page(page_number)
-    # context = {'user_scores':user_scores, 'tangle':tangle}
-    
-    # if request.htmx:
-    #     return render(request, "pages/tangle/partials/top10users.html", context)
-    # else:
-    #     return render(request, 'pages/tangle/fame.html', context)
