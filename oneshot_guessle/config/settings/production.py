@@ -77,22 +77,33 @@ EMAIL_SUBJECT_PREFIX = env(
 # ------------------------------------------------------------------------------
 # Django Admin URL regex.
 ADMIN_URL = env("DJANGO_ADMIN_URL")
+# In config/settings/production.py (or similar)
 
+# Email settings for production (using Gmail SMTP)
+# ------------------------------------------------------------------------------
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = env("GMAIL_EMAIL_USER") # Make sure your settings load this from the .env
+EMAIL_HOST_PASSWORD = env("GMAIL_EMAIL_PASSWORD") # Make sure your settings load this from the .env
+# EMAIL_USE_SSL = False # Ensure this is False if using TLS (Port 587 uses TLS)
+# EMAIL_TIMEOUT = 5 # Optional: Add a timeout
 # Anymail
 # ------------------------------------------------------------------------------
 # https://anymail.readthedocs.io/en/stable/installation/#installing-anymail
-INSTALLED_APPS += ["anymail"]  # noqa F405
-# https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
-# https://anymail.readthedocs.io/en/stable/installation/#anymail-settings-reference
-# https://anymail.readthedocs.io/en/stable/esps
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
-EMAIL_HOST_USER = '2dc232a34ba034'
-EMAIL_HOST_PASSWORD = 'c8b4cd080200c6'
-EMAIL_PORT = '2525'
-EMAIL_USE_TLS = True
+# INSTALLED_APPS += ["anymail"]  # noqa F405
+# # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
+# # https://anymail.readthedocs.io/en/stable/installation/#anymail-settings-reference
+# # https://anymail.readthedocs.io/en/stable/esps
+# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
+# EMAIL_HOST_USER = '2dc232a34ba034'
+# EMAIL_HOST_PASSWORD = 'c8b4cd080200c6'
+# EMAIL_PORT = '2525'
+# EMAIL_USE_TLS = True
 
-ANYMAIL = {}
+# ANYMAIL = {}
 
 
 # LOGGING

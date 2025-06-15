@@ -1,5 +1,5 @@
 # Start with ARG that can be used by the first FROM instruction.
-ARG PYTHON_VERSION=3.12-slim-bullseye
+ARG PYTHON_VERSION=3.12-slim-bookworm # <--- CHANGE THIS LINE
 
 # Define the base Python image. This will be aliased as 'python' for multi-stage builds.
 FROM python:${PYTHON_VERSION} as python
@@ -16,15 +16,19 @@ ARG BUILD_ENVIRONMENT=production
 # Install apt packages required for building Python packages (e.g., build-essential, libpq-dev).
 # Also install 'curl' to download 'uv'.
 # The `&& rm -rf /var/lib/apt/lists/*` cleans up apt cache immediately to reduce layer size.
-RUN apt-get update && apt-get install --no-install-recommends -y \
-    build-essential \
-    libpq-dev \
-    curl \
-    # Add any other build-time dependencies here if needed (e.g., git if you pull private repos)
-    && curl -LsSf https://astral.sh/uv/install.sh | sh \
-    && mv /root/.local/bin/uv /usr/local/bin/ \
-    && apt-get purge -y --auto-remove curl \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowDowngradeToInsecureRepositories=true && \
+    apt-get install --no-install-recommends -y \
+        debian-archive-keyring \
+        dirmngr \
+        build-essential \
+        libpq-dev \
+        curl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    curl -LsSf https://astral.sh/uv/install.sh | sh && \
+    mv /root/.local/bin/uv /usr/local/bin/ && \
+    apt-get purge -y --auto-remove curl && \
+    rm -rf /var/lib/apt/lists/*
 
 # IMPORTANT: Copy the ENTIRE 'requirements' directory.
 # This ensures that if production.txt includes other files like base.txt, they are all present.

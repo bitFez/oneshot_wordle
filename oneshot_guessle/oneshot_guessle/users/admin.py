@@ -15,7 +15,8 @@ class UserAdmin(auth_admin.UserAdmin):
     fieldsets = (
         (None, {"fields": ("username", "password")}),
         (_("Personal info"), {"fields": ("name", "email", "image","supporter", "no_ads")}),
-        (_("Statistics"), {"fields": ("dayscorrect","daysincorrect","misseddays","streak","highestStreak","stars")}),
+        (_("Oneshot Stats"), {"fields": ("dayscorrect","daysincorrect","misseddays","streak","highestStreak","stars")}),
+        (_("Tangle Stats"), {"fields": ("totalTanglePointsEver",)}),
         (
             _("Permissions"),
             {
