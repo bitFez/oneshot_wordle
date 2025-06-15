@@ -61,3 +61,110 @@
     .scrabble-table th, .scrabble-table td {
       padding: 1px;
     }
+
+    /* --- Media Queries for smaller screens --- */
+@media (max-width: 639px) { /* Applies to screens smaller than Tailwind's 'sm' breakpoint */
+    .scrabble-letter {
+        font-size: 14px; /* Smaller font size for letters */
+    }
+    .scrabble-value {
+        font-size: 7px; /* Smaller font size for values */
+        bottom: 1px;
+        right: 2px;
+    }
+    .scrabble-input {
+        font-size: 14px; /* Smaller font size for input */
+    }
+}
+
+@media (max-width: 449px) { /* For screens smaller than 450px */
+    .scrabble-tile, .scrabble-input {
+        width: 30px !important; /* Force a smaller width */
+        height: 30px !important; /* Force a smaller height */
+    }
+    .scrabble-letter {
+        font-size: 12px; /* Even smaller font size */
+    }
+    .scrabble-value {
+        font-size: 6px; /* Even smaller font size */
+        bottom: 0;
+        right: 1px;
+    }
+    .scrabble-table th, .scrabble-table td {
+        padding: 0; /* Reduce padding even more for very small screens */
+    }
+}
+
+/* Specific adjustments for ultra-small screens (e.g., 390px and below) */
+@media (max-width: 399px) {
+    .scrabble-tile, .scrabble-input {
+        width: 26px !important; /* Make tiles even smaller */
+        height: 26px !important; /* Make tiles even smaller */
+    }
+    .scrabble-letter {
+        font-size: 10px; /* Adjust font size to fit */
+    }
+    .scrabble-value {
+        font-size: 5px; /* Adjust font size to fit */
+        bottom: 0px;
+        right: 0px; /* Move value closer to the edge if needed */
+    }
+}
+
+/* --- Navigation Bar Adjustments --- */
+@media (max-width: 399px) {
+    .navbar {
+        padding-left: 0.25rem; /* Reduce overall navbar padding */
+        padding-right: 0.25rem;
+    }
+    .navbar .navbar-start .avatar .w-14 {
+        width: 2rem; /* Make logo even smaller */
+        height: 2rem; /* Ensure height scales with width */
+    }
+
+    .navbar .navbar-center .card-title {
+        font-size: 0.8rem; /* Even smaller, use a specific pixel value if needed for precision */
+        line-height: 1; /* Reduce line height to prevent extra space */
+        margin-left: 0.2rem; /* Reduce margins */
+        margin-right: 0.2rem;
+        /* Allow it to potentially wrap, but if it's too long, consider changing the text in Django */
+        /* Example if you absolutely need to truncate but want more control: */
+        /* white-space: nowrap; */
+        /* overflow: hidden; */
+        /* text-overflow: ellipsis; */
+        /* max-width: 100px; */ /* Fine-tune this based on your actual title length */
+    }
+
+    .navbar .navbar-end {
+        gap: 0.1rem; /* Very tight gap between buttons */
+        /* Flex-shrink allows the end section to shrink if needed */
+        flex-shrink: 1;
+        /* Potentially reduce font size of icons if they have text, though yours are SVGs */
+    }
+    .navbar .navbar-end .btn-circle {
+        width: 1.75rem !important; /* Force smallest practical size */
+        height: 1.75rem !important;
+        min-height: 1.75rem !important;
+        padding: 0; /* Ensure no internal padding */
+    }
+
+    /* Ensure the SVG icons inside the buttons also scale */
+    .navbar .navbar-end .btn-circle svg {
+        width: 1rem; /* Smaller SVG icon size */
+        height: 1rem;
+    }
+
+    /* Important: Ensure dropdown button (if logged in) is not hidden */
+    .navbar .navbar-end .dropdown .btn-circle {
+        display: flex; /* Ensure it's displayed, overriding any hidden rule */
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Important: Ensure the log-in-link is not hidden */
+    #log-in-link {
+        display: flex !important; /* Ensure it's displayed */
+        align-items: center;
+        justify-content: center;
+    }
+}
