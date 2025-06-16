@@ -1,170 +1,215 @@
+/* --- Base Styles for Navigation Bar (Default for Larger Screens) --- */
+.navbar-center .card-title {
+    font-size: 1.5rem; /* Default size for larger screens */
+    line-height: 2rem;
+    font-weight: bold;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    /* For larger screens, keep it on one line and potentially truncate if space is truly limited */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* --- Base Styles for Scrabble Grid (Default for Larger Screens > 639px) --- */
 .scrabble-tile {
-      position: relative;
-      background: #e6c229;
-      border-radius: 4px;
-      box-shadow: 1px 1px 1px rgba(0,0,0,0.3),
-                  inset 0 0 0 2px #daa520,
-                  inset 0 -3px 0 2px #b8860b;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Arial', sans-serif;
-      font-weight: bold;
-      margin: 0.5px;
-    }
-
-    .scrabble-letter { font-size: 18px; color: #000; }
-    .scrabble-value {
-      position: absolute;
-      bottom: 2px;
-      right: 4px;
-      font-size: 9px;
-      color: #000;
-    }
-
-    .scrabble-input {
-      text-align: center;
-      font-size: 18px;
-      font-weight: bold;
-      text-transform: uppercase;
-      border: 2px solid #daa520;
-      border-radius: 4px;
-      background: #f8f8f8;
-      box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
-    }
-
-    .scrabble-input:focus {
-      outline: none;
-      background: #fff;
-      box-shadow: 0 0 5px rgba(218, 165, 32, 0.5);
-    }
-
-    .scrabble-input.invalid {
-      border: 2px solid #f44336;
-      background: #ffebee;
-      animation: shake 0.5s;
-    }
-
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-3px); }
-      40%, 80% { transform: translateX(3px); }
-    }
-
-    .scrabble-table {
-      border-collapse: separate;
-      border-spacing: 1px;
-      margin: 0;
-    }
-
-    .scrabble-table th, .scrabble-table td {
-      padding: 1px;
-    }
-
-    /* --- Media Queries for smaller screens --- */
-@media (max-width: 639px) { /* Applies to screens smaller than Tailwind's 'sm' breakpoint */
-    .scrabble-letter {
-        font-size: 14px; /* Smaller font size for letters */
-    }
-    .scrabble-value {
-        font-size: 7px; /* Smaller font size for values */
-        bottom: 1px;
-        right: 2px;
-    }
-    .scrabble-input {
-        font-size: 14px; /* Smaller font size for input */
-    }
+    position: relative;
+    background: #e6c229;
+    border-radius: 4px;
+    box-shadow: 1px 1px 1px rgba(0,0,0,0.3),
+                inset 0 0 0 2px #daa520,
+                inset 0 -3px 0 2px #b8860b;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centers letter horizontally within its tile */
+    justify-content: center; /* Centers letter vertically within its tile */
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+    margin: 0.5px; /* Small spacing between tiles */
+    /* --- CRITICAL FIX: Ensure base width and height are defined for large screens --- */
+    width: 45px !important; /* <--- ADDED !important */
+    height: 45px !important; /* <--- ADDED !important */
 }
 
-@media (max-width: 449px) { /* For screens smaller than 450px */
-    .scrabble-tile, .scrabble-input {
-        width: 30px !important; /* Force a smaller width */
-        height: 30px !important; /* Force a smaller height */
-    }
-    .scrabble-letter {
-        font-size: 12px; /* Even smaller font size */
-    }
-    .scrabble-value {
-        font-size: 6px; /* Even smaller font size */
-        bottom: 0;
-        right: 1px;
-    }
-    .scrabble-table th, .scrabble-table td {
-        padding: 0; /* Reduce padding even more for very small screens */
-    }
+.scrabble-letter {
+    font-size: 22px; /* Default letter size */
+    color: #000;
 }
 
-/* Specific adjustments for ultra-small screens (e.g., 390px and below) */
+.scrabble-value {
+    position: absolute;
+    bottom: 2px;
+    right: 4px;
+    font-size: 10px; /* Default value solid */
+    color: #000;
+}
+
+input.scrabble-input {
+    text-align: center;
+    font-weight: bold;
+    text-transform: uppercase;
+    border: 2px solid #daa520;
+    border-radius: 4px;
+    background: #f8f8f8;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+    line-height: 1;
+    padding: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip;
+    font-size: 20px; /* Default font size for input */
+    /* --- CRITICAL FIX: Ensure base width and height are defined for large screens --- */
+    width: 48px !important; /* <--- ADDED !important */
+    height: 48px !important; /* <--- ADDED !important */
+}
+
+.scrabble-input:focus {
+    outline: none;
+    background: #fff;
+    box-shadow: 0 0 5px rgba(218, 165, 32, 0.5);
+}
+
+.scrabble-input.invalid {
+    border: 2px solid #f44336;
+    background: #ffebee;
+    animation: shake 0.5s;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-3px); }
+    40%, 80% { transform: translateX(3px); }
+}
+
+.scrabble-table {
+    border-collapse: separate;
+    border-spacing: 1px; /* Small spacing between table cells */
+    margin: 0 auto; /* Centers the table horizontally within its parent */
+    width: fit-content; /* Table only takes up the space its content needs */
+    max-width: 100%; /* Prevents horizontal overflow from its container */
+    /* table-layout: auto is the default when table-fixed is removed */
+}
+
+.scrabble-table th, .scrabble-table td {
+    padding: 0 !important; /* Crucial: Eliminates all internal cell padding */
+    /* --- FIX for column word alignment --- */
+    vertical-align: bottom; /* Align content (the inner div) to the bottom of the TH cell */
+    width: auto; /* Allow columns to size based on content */
+    min-width: fit-content; /* Ensure cells can expand enough */
+    box-sizing: border-box;
+    /* Optional: background-color: rgba(0, 0, 255, 0.05); /* Temp debug background for TH/TD */
+}
+
+/* Specific rule for the flex container inside column header THs (the vertical words) */
+.scrabble-table thead th div {
+    /* These should be redundant if TH sizes correctly, but add for robustness */
+    flex-shrink: 0;
+    flex-grow: 0;
+    width: fit-content; /* Ensure the div itself wraps its content tightly */
+    height: fit-content;
+    /* Optional: background-color: rgba(255, 0, 0, 0.1); /* Temp debug background for this div */
+}
+
+
+/* --- Media Queries for Responsive Design --- */
+
+/* For screens up to 639px wide */
+@media (max-width: 639px) {
+    /* Navbar Adjustments (as before) */
+    .navbar { padding: 0.25rem; min-height: auto; justify-content: space-between; }
+    .navbar-start, .navbar-center, .navbar-end { display: flex; align-items: center; flex-shrink: 1; }
+    .navbar-start .avatar .w-14 { width: 2.5rem; height: 2.5rem; margin-right: 0.5rem; flex-shrink: 0; }
+    .navbar-center { 
+        flex: 1 1 auto; min-width: 0; justify-content: center; text-align: center; padding: 0; margin: 0;
+        /* Allow wrapping on smaller screens */
+        white-space: normal !important; /* Allow text to wrap */
+        overflow: visible !important; /* Ensure content is visible even if it wraps */
+        text-overflow: clip !important; /* Prevent ellipsis when wrapping */
+    }
+    .navbar-center .card-title { 
+        font-size: 1.0rem; line-height: 1.2; min-width: 100px; 
+        /* These properties are now set on .navbar-center to control wrapping */
+        white-space: normal !important; /* Ensure this overrides the base style */
+        overflow: visible !important;
+        text-overflow: clip !important;
+    }
+    .navbar-end { flex-grow: 0; flex-shrink: 0; gap: 0.5rem; margin-left: 0.5rem; }
+    .navbar-end .btn-circle { width: 2.25rem !important; height: 2.25rem !important; min-height: 2.25rem !important; padding: 0; }
+    .navbar .navbar-end .btn-circle svg { width: 1.1rem; height: 1.1rem; }
+
+    /* Grid Adjustments */
+    .scrabble-tile, input.scrabble-input {
+        width: 35px !important;
+        height: 35px !important;
+    }
+    .scrabble-letter { font-size: 16px !important; }
+    .scrabble-value { font-size: 7px !important; bottom: 1px; right: 2px; }
+    input.scrabble-input { font-size: 16px !important; }
+}
+
+/* For screens up to 449px wide */
+@media (max-width: 449px) {
+    /* Navbar Adjustments (as before) */
+    .navbar { padding: 0.15rem; }
+    .navbar-start .avatar .w-14 { width: 2.2rem; height: 2.2rem; margin-right: 0.25rem; }
+    .navbar-center .card-title { 
+        font-size: 0.9rem; line-height: 1; min-width: 80px;
+        /* These wrapping properties are inherited from .navbar-center, but can be explicit here if needed */
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+    }
+    .navbar-end { gap: 0.25rem; margin-left: 0.25rem; }
+    .navbar-end .btn-circle { width: 2rem !important; height: 2rem !important; min-height: 2rem !important; }
+    .navbar .navbar-end .btn-circle svg { width: 1rem; height: 1rem; }
+
+    /* Grid Adjustments */
+    .scrabble-tile, input.scrabble-input {
+        width: 30px !important;
+        height: 30px !important;
+    }
+    .scrabble-letter { font-size: 13px !important; }
+    .scrabble-value { font-size: 5px !important; bottom: 0px; right: 1px; }
+    input.scrabble-input { font-size: 13px !important; }
+}
+
+/* For screens up to 399px wide */
 @media (max-width: 399px) {
-    .scrabble-tile, .scrabble-input {
-        width: 26px !important; /* Make tiles even smaller */
-        height: 26px !important; /* Make tiles even smaller */
+    /* Navbar Adjustments (as before) */
+    .navbar { padding: 0.1rem; }
+    .navbar-start .avatar .w-14 { width: 2rem; height: 2rem; margin-right: 0.1rem; }
+    .navbar-center .card-title { 
+        font-size: 0.8rem; line-height: 1; min-width: 60px; 
+        /* These wrapping properties are inherited from .navbar-center, but can be explicit here if needed */
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
     }
-    .scrabble-letter {
-        font-size: 10px; /* Adjust font size to fit */
+    .navbar-end { gap: 0.1rem; margin-left: 0.1rem; }
+    .navbar-end .btn-circle { width: 1.75rem !important; height: 1.75rem !important; min-height: 1.75rem !important; }
+    .navbar .navbar-end .btn-circle svg { width: 0.9rem; height: 0.9rem; }
+    .navbar .navbar-end .dropdown .btn-circle, #log-in-link { display: flex !important; }
+
+    /* Grid Adjustments */
+    .scrabble-tile, input.scrabble-input {
+        width: 26px !important;
+        height: 26px !important;
     }
-    .scrabble-value {
-        font-size: 5px; /* Adjust font size to fit */
-        bottom: 0px;
-        right: 0px; /* Move value closer to the edge if needed */
-    }
+    .scrabble-letter { font-size: 11px !important; }
+    .scrabble-value { font-size: 4px !important; bottom: 0px; right: 0px; }
+    input.scrabble-input { font-size: 11px !important; }
 }
 
-/* --- Navigation Bar Adjustments --- */
-@media (max-width: 399px) {
-    .navbar {
-        padding-left: 0.25rem; /* Reduce overall navbar padding */
-        padding-right: 0.25rem;
+/* OPTIONAL: For ultra-small screens (e.g., 360px and below) */
+@media (max-width: 360px) {
+    .scrabble-tile, input.scrabble-input {
+        width: 22px !important;
+        height: 22px !important;
     }
-    .navbar .navbar-start .avatar .w-14 {
-        width: 2rem; /* Make logo even smaller */
-        height: 2rem; /* Ensure height scales with width */
-    }
-
-    .navbar .navbar-center .card-title {
-        font-size: 0.8rem; /* Even smaller, use a specific pixel value if needed for precision */
-        line-height: 1; /* Reduce line height to prevent extra space */
-        margin-left: 0.2rem; /* Reduce margins */
-        margin-right: 0.2rem;
-        /* Allow it to potentially wrap, but if it's too long, consider changing the text in Django */
-        /* Example if you absolutely need to truncate but want more control: */
-        /* white-space: nowrap; */
-        /* overflow: hidden; */
-        /* text-overflow: ellipsis; */
-        /* max-width: 100px; */ /* Fine-tune this based on your actual title length */
-    }
-
-    .navbar .navbar-end {
-        gap: 0.1rem; /* Very tight gap between buttons */
-        /* Flex-shrink allows the end section to shrink if needed */
-        flex-shrink: 1;
-        /* Potentially reduce font size of icons if they have text, though yours are SVGs */
-    }
-    .navbar .navbar-end .btn-circle {
-        width: 1.75rem !important; /* Force smallest practical size */
-        height: 1.75rem !important;
-        min-height: 1.75rem !important;
-        padding: 0; /* Ensure no internal padding */
-    }
-
-    /* Ensure the SVG icons inside the buttons also scale */
-    .navbar .navbar-end .btn-circle svg {
-        width: 1rem; /* Smaller SVG icon size */
-        height: 1rem;
-    }
-
-    /* Important: Ensure dropdown button (if logged in) is not hidden */
-    .navbar .navbar-end .dropdown .btn-circle {
-        display: flex; /* Ensure it's displayed, overriding any hidden rule */
-        align-items: center;
-        justify-content: center;
-    }
-
-    /* Important: Ensure the log-in-link is not hidden */
-    #log-in-link {
-        display: flex !important; /* Ensure it's displayed */
-        align-items: center;
-        justify-content: center;
+    .scrabble-letter { font-size: 9px !important; }
+    .scrabble-value { font-size: 3px !important; bottom: 0px; right: 0px; }
+    input.scrabble-input { font-size: 9px !important;
     }
 }

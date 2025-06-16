@@ -26,19 +26,19 @@
             hx-swap="innerHTML"
             hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
             onsubmit="return checkSubmissionStatus(this)"
-            class="space-y-4">
+            class="space-y-4 mx-auto block">
         <input type="hidden" name="tangle_id" value="{{ tangle.id }}">
         {% csrf_token %}
 
-        <table class="scrabble-table table-fixed max-w-full">
+        <table class="scrabble-table max-w-full">
           <thead>
             <tr>
               <th class="bg-base-200"></th>
               {% for word in tangle.get_column_words %}
-              <th class="bg-base-200 align-bottom">
-                <div class="flex flex-col items-center gap-1">
+              <th class="bg-base-200">
+                <div class="flex flex-col  items-center gap-1">
                   {% for letter in word %}
-                  <div class="scrabble-tile w-8 h-8 sm:w-11 sm:h-11 md:w-13 md:h-13">
+                  <div class="scrabble-tile">
                     <span class="scrabble-letter">{{ letter|upper }}</span>
                     <span class="scrabble-value">{{ letter|upper|scrabble_value }}</span>
                   </div>
@@ -54,7 +54,7 @@
               <th class="bg-base-200 text-right">
                 <div class="flex gap-1 justify-end">
                   {% for letter in row_word %}
-                  <div class="scrabble-tile w-8 h-8 sm:w-9 sm:h-9 md:w-11 md:h-11 lg:w-13 lg:h-13">
+                  <div class="scrabble-tile">
                     <span class="scrabble-letter">{{ letter|upper }}</span>
                     <span class="scrabble-value">{{ letter|upper|scrabble_value }}</span>
                   </div>
@@ -64,7 +64,7 @@
               {% for col_word in tangle.get_column_words %}
               <td>
                 <input type="text"
-                  class="scrabble-input w-8 h-8 sm:w-9 sm:h-9 md:w-11 md:h-11 lg:w-13 lg:h-13"
+                  class="scrabble-input"
                   name="word_{{ forloop.parentloop.counter }}_{{ forloop.counter }}"
                   maxlength="1"
                   pattern="[A-Za-z]"
