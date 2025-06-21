@@ -46,12 +46,12 @@ def process_valid_submissions(valid_submissions:list):
     
     """
     print("process_valid_submissions called with:", valid_submissions)
-    score = 0
     score_breakdown = []
     score_breakdown_numbers = []
     definitions = []
     words = []
     for submission in valid_submissions:
+        score = 0
         word = "".join(submission)
         result_definition = check_word_definition(word)
         if result_definition:
@@ -68,5 +68,5 @@ def process_valid_submissions(valid_submissions:list):
             score_breakdown.append("0️⃣0️⃣0️⃣0️⃣0️⃣")
             score_breakdown_numbers.append(0)
             words.append(f"{word}  0️⃣0️⃣0️⃣0️⃣0️⃣ : Not found in dictionary")
-    score_breakdown.append(f"Total Score: {score}")
+    score_breakdown.append(f"Total Score: {sum(score_breakdown_numbers)}")
     return score_breakdown, score_breakdown_numbers, definitions, words
