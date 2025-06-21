@@ -145,7 +145,7 @@ input.scrabble-input {
         height: 35px !important;
     }
     .scrabble-letter { font-size: 16px !important; }
-    .scrabble-value { font-size: 7px !important; bottom: 1px; right: 2px; }
+    .scrabble-value { font-size: 8px !important; bottom: 2px; right: 3px; }
     input.scrabble-input { font-size: 16px !important; }
 }
 
@@ -171,7 +171,7 @@ input.scrabble-input {
         height: 30px !important;
     }
     .scrabble-letter { font-size: 13px !important; }
-    .scrabble-value { font-size: 5px !important; bottom: 0px; right: 1px; }
+    .scrabble-value { font-size: 6px !important; bottom: 2px; right: 3px; }
     input.scrabble-input { font-size: 13px !important; }
 }
 
@@ -198,7 +198,7 @@ input.scrabble-input {
         height: 26px !important;
     }
     .scrabble-letter { font-size: 11px !important; }
-    .scrabble-value { font-size: 4px !important; bottom: 0px; right: 0px; }
+    .scrabble-value { font-size: 5px !important; bottom: 1px; right: 2px; }
     input.scrabble-input { font-size: 11px !important; }
 }
 
@@ -209,7 +209,7 @@ input.scrabble-input {
         height: 22px !important;
     }
     .scrabble-letter { font-size: 9px !important; }
-    .scrabble-value { font-size: 3px !important; bottom: 0px; right: 0px; }
+    .scrabble-value { font-size: 4px !important; bottom: 1px; right: 1px; }
     input.scrabble-input { font-size: 9px !important;
     }
 }
