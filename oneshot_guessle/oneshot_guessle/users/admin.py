@@ -17,6 +17,7 @@ class UserAdmin(auth_admin.UserAdmin):
         (_("Personal info"), {"fields": ("name", "email", "image","supporter", "no_ads")}),
         (_("Oneshot Stats"), {"fields": ("dayscorrect","daysincorrect","misseddays","streak","highestStreak","stars")}),
         (_("Tangle Stats"), {"fields": ("totalTanglePointsEver",)}),
+        (_("Cows & Bulls Stats"), {"fields": ("cows_bulls_points", "cows_bulls_attempts")}),
         (
             _("Permissions"),
             {

@@ -6,7 +6,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
 import os
-import datetime
+# import datetime
+from django.utils import timezone
 from django.conf import settings
 from django.contrib.staticfiles.finders import find
 from random import sample
@@ -20,7 +21,7 @@ from .utils import process_valid_submissions
 # Create your views here.
 
 def tangle_index(request):
-    today = datetime.date.today()
+    today = timezone.now().date() #datetime.date.today()
     tangle = DailyTangle.objects.filter(date=today).first()
 
     if not tangle:

@@ -1,0 +1,121 @@
+{% extends "cb_base.html" %}
+{% load static %}
+{% load scrabble_tags %}
+
+{% block content %}
+      {% if attempted %}
+        <div class="alert alert-error rounded-lg shadow mb-4">
+          ⚠️ You have already attempted today's Daily Oneshot 🐄 and 🐂.
+        </div>
+      {% endif %}
+      {# This div will be updated by HTMX if messages are returned #}
+      <div id="messages-container" class="space-y-2 mt-4">
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      </div>
+
+      <div class="bg-base-200 min-h-screen px-4 py-4">
+        <div class="text-center flex flex-col items-center w-full max-w-2xl">
+          <h1 class="text-4xl sm:text-5xl font-bold mb-6">Crack the code!</h1>
+
+          <div class="w-full overflow-x-auto">
+            <table class="table w-full text-left">
+              {# This tbody will be replaced by HTMX #}
+              <tbody id="clues-table-body">
+                {% include 'pages/cows_bulls/partials/_clues_table_body.html' with clue=clue text=text %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+  <div id="resultsModal" class="modal">
+    <div id="resultsModalContent" class="modal-box bg-white shadow rounded p-4">
+      {% if attempted %}
+        {# Consider if this partial is still needed/how it interacts with HTMX updates #}
+        {% include 'pages/tangle/partials/results_modal.html' %}
+      {% endif %}
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast toast-center"></div>
+  
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    setupInputs();
+    
+    document.body.addEventListener('htmx:afterSwap', function(event) {
+        if (event.detail.target.id === 'clues-table-body') {
+            setupInputs();
+            
+            // Re-enable submit button after swap
+            const submitButton = document.querySelector('#submitForm button[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.textContent = "Submit";
+            }
+            
+            if (event.detail.xhr.getResponseHeader('HX-Trigger') === 'puzzleSolved') {
+                const formRow = document.querySelector("#input-form-row");
+                if (formRow) formRow.remove();
+            }
+        }
+    });
+    
+    // Handle request completion (success or error)
+    document.body.addEventListener('htmx:afterRequest', function(event) {
+        const submitButton = document.querySelector('#submitForm button[type="submit"]');
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = "Submit";
+        }
+    });
+});
+
+// Rest of your functions remain the same...
+function setupInputs() {
+    const inputs = document.querySelectorAll(".digit-input");
+    
+    inputs.forEach(input => {
+        input.removeEventListener("input", handleInput);
+        input.removeEventListener("keydown", handleKeydown);
+        input.addEventListener("input", handleInput);
+        input.addEventListener("keydown", handleKeydown);
+        input.value = ''; // Clear input values
+    });
+    
+    if (inputs.length > 0) inputs[0].focus();
+}
+
+function handleInput(e) {
+    const inputs = document.querySelectorAll(".digit-input");
+    const index = Array.from(inputs).indexOf(e.target);
+    if (e.target.value.length === 1 && index < inputs.length - 1) {
+        inputs[index + 1].focus();
+    }
+}
+
+function handleKeydown(e) {
+    const inputs = document.querySelectorAll(".digit-input");
+    const index = Array.from(inputs).indexOf(e.target);
+    if (e.key === "Backspace" && e.target.value === "" && index > 0) {
+        inputs[index - 1].focus();
+    }
+}
+
+function checkSubmissionStatus(form) {
+    const button = form.querySelector('button[type="submit"]');
+    if (button) {
+        button.disabled = true;
+        button.textContent = "Submitting...";
+    }
+    return true;
+}
+</script>
+  {% include 'pages/tangle/partials/modals.html' %}
+{% endblock content %}

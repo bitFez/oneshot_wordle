@@ -20,6 +20,7 @@ urlpatterns = [
     path("", include("oneshot_guessle.tangle.urls", namespace="tangle")),
     path("", include("oneshot_guessle.students.urls", namespace="students")),
     path("", include("oneshot_guessle.teacher_resources.urls")),
+    path("", include("oneshot_guessle.cows_bulls.urls", namespace="cows_bulls")),
 
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

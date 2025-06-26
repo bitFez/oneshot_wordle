@@ -90,6 +90,7 @@ LOCAL_APPS = [
     "oneshot_guessle.students",
     "oneshot_guessle.teacher_resources",
     "oneshot_guessle.tangle",
+    "oneshot_guessle.cows_bulls",
 
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps

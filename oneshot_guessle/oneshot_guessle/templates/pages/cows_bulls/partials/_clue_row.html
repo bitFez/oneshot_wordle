@@ -1,0 +1,10 @@
+<tr class="hover:bg-base-100 transition-colors">
+    <th>
+        <div class="flex justify-center gap-0">
+            {% for digit in clue %}
+                <span class="w-10 h-10 bg-neutral text-neutral-content text-2xl font-mono flex items-center justify-center rounded-box">{{ digit }}</span>
+            {% endfor %}
+        </div>
+    </th>
+    <td class="text-sm sm:text-base">{{ text }}</td>
+</tr>

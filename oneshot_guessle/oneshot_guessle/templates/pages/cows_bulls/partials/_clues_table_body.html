@@ -1,0 +1,64 @@
+{% load static %} 
+
+{# Loop through existing clues and any new attempts #}
+{% for clue, text in clues %}
+<tr class="hover:bg-base-100 transition-colors">
+  <th>
+    <div class="flex justify-center gap-0">
+      {% for digit in clue %}
+        <span class="w-10 h-10 bg-neutral text-neutral-content text-2xl font-mono flex items-center justify-center rounded-box">{{ digit }}</span>
+      {% endfor %}
+    </div>
+  </th>
+  <td class="text-sm sm:text-base">{{ text|safe }}</td>
+</tr>
+{% endfor %}
+
+{# The input form row - only show if not solved yet #}
+{% if not is_solved_today %}
+<tr id="input-form-row">
+  <th>
+    <div class="flex justify-center gap-0">
+      <form id="submitForm"
+            hx-post="{% url 'cows_bulls:cb_index' %}"
+            hx-target="#clues-table-body"
+            hx-swap="innerHTML"
+            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+            onsubmit="return checkSubmissionStatus(this)"
+            class="flex justify-center gap-1"
+            autocomplete="off">
+        <input type="hidden" name="cba_id" value="{{ ocb.id }}">
+        {% csrf_token %}
+      
+        {% for i in "01234" %}
+          <input type="text"
+                 name="digit{{ forloop.counter }}"
+                 maxlength="1"
+                 pattern="[0-9]"
+                 title="Single digit only"
+                 required
+                 autocomplete="off"
+                 inputmode="numeric"
+                 class="w-10 h-12 bg-white text-neutral text-2xl font-mono text-center rounded-box border border-neutral focus:outline-none focus:ring-2 focus:ring-primary digit-input"
+          />
+        {% endfor %}
+    </div>
+  </th>
+  <td>
+    <button type="submit" class="btn btn-success mt-2 sm:mt-0">Submit</button>
+  </td>
+  </form>
+</tr>
+{% else %}
+<tr>
+    <td colspan="2" class="text-center text-lg text-primary font-bold py-4">
+        <div role="alert" class="alert alert-success">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>You have already solved today's puzzle! 🎉</span>
+        </div>
+    </td>
+</tr>
+{% endif %}
+
