@@ -1,3 +1,5 @@
+- [ ] remove messages as alerts for each cb attempt
+- [ ] remove the message that youve already attempted after the first attempt.
 - [ ] run migrations for teacher resources tables
 - [ ] list resources
 - [x] link back to codefez

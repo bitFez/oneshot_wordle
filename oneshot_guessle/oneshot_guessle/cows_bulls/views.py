@@ -109,7 +109,7 @@ def cb_index(request):
         already_solved = attempts.filter(bulls=5).exists()
 
         if already_solved:
-            messages.warning(request, "You've already solved today's puzzle!")
+            messages.warning(request, "You've solved today's puzzle in {ocb.attempt_number} attempts!")
             return render(request, 'pages/cows_bulls/partials/_messages.html', {
                 'messages': messages.get_messages(request)
             })
@@ -147,17 +147,15 @@ def cb_index(request):
         
         context = {
             'clues': clues,
-            'is_solved_today': bulls == 5
+            'is_solved_today': bulls == 5,
+            'ocb': ocb,
         }
         
+        response = render(request, 'pages/cows_bulls/partials/_clues_table_body.html', context)
         if bulls == 5:
-            # If solved, return both the final guess and the solved message
-            response = render(request, 'pages/cows_bulls/partials/_clues_table_body.html', context)
             response['HX-Trigger'] = 'puzzleSolved'
-            return response
-        else:
-            # For normal guesses, just return the table with added new row
-            return render(request, 'pages/cows_bulls/partials/_clues_table_body.html', context)
+        response['HX-Trigger-After-Swap'] = 'newAttempt'
+        return response
 
     # GET request (initial page load)
     attempted_today = False

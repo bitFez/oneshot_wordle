@@ -27,7 +27,7 @@
             <table class="table w-full text-left">
               {# This tbody will be replaced by HTMX #}
               <tbody id="clues-table-body">
-                {% include 'pages/cows_bulls/partials/_clues_table_body.html' with clue=clue text=text %}
+                {% include 'pages/cows_bulls/partials/_clues_table_body.html' with clues=clues is_solved_today=is_solved_today ocb=ocb %}
               </tbody>
             </table>
           </div>
@@ -45,77 +45,74 @@
 
   <div id="toastContainer" class="toast toast-center"></div>
   
+
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    setupInputs();
-    
-    document.body.addEventListener('htmx:afterSwap', function(event) {
-        if (event.detail.target.id === 'clues-table-body') {
-            setupInputs();
-            
-            // Re-enable submit button after swap
-            const submitButton = document.querySelector('#submitForm button[type="submit"]');
-            if (submitButton) {
-                submitButton.disabled = false;
-                submitButton.textContent = "Submit";
-            }
-            
-            if (event.detail.xhr.getResponseHeader('HX-Trigger') === 'puzzleSolved') {
-                const formRow = document.querySelector("#input-form-row");
-                if (formRow) formRow.remove();
-            }
-        }
-    });
-    
-    // Handle request completion (success or error)
-    document.body.addEventListener('htmx:afterRequest', function(event) {
-        const submitButton = document.querySelector('#submitForm button[type="submit"]');
-        if (submitButton) {
-            submitButton.disabled = false;
-            submitButton.textContent = "Submit";
-        }
-    });
+    initInputHandlers();
 });
 
-// Rest of your functions remain the same...
-function setupInputs() {
-    const inputs = document.querySelectorAll(".digit-input");
-    
-    inputs.forEach(input => {
-        input.removeEventListener("input", handleInput);
-        input.removeEventListener("keydown", handleKeydown);
+function initInputHandlers() {
+    // Input navigation
+    const handleInput = (e) => {
+        const inputs = document.querySelectorAll(".digit-input");
+        const index = Array.from(inputs).indexOf(e.target);
+        if (e.target.value.length === 1 && index < inputs.length - 1) {
+            inputs[index + 1].focus();
+        }
+    };
+
+    const handleKeydown = (e) => {
+        const inputs = document.querySelectorAll(".digit-input");
+        const index = Array.from(inputs).indexOf(e.target);
+        if (e.key === "Backspace" && !e.target.value && index > 0) {
+            inputs[index - 1].focus();
+        }
+    };
+
+    // Setup handlers and clear inputs
+    document.querySelectorAll(".digit-input").forEach(input => {
         input.addEventListener("input", handleInput);
         input.addEventListener("keydown", handleKeydown);
-        input.value = ''; // Clear input values
+        input.value = "";
     });
     
-    if (inputs.length > 0) inputs[0].focus();
+    document.querySelector(".digit-input")?.focus();
 }
 
-function handleInput(e) {
-    const inputs = document.querySelectorAll(".digit-input");
-    const index = Array.from(inputs).indexOf(e.target);
-    if (e.target.value.length === 1 && index < inputs.length - 1) {
-        inputs[index + 1].focus();
-    }
-}
+// Debugging events
+document.body.addEventListener("htmx:afterRequest", (e) => {
+    console.log("Request completed", e.detail);
+});
 
-function handleKeydown(e) {
-    const inputs = document.querySelectorAll(".digit-input");
-    const index = Array.from(inputs).indexOf(e.target);
-    if (e.key === "Backspace" && e.target.value === "" && index > 0) {
-        inputs[index - 1].focus();
+document.body.addEventListener("htmx:afterSwap", (e) => {
+    if (e.detail.target.id === "clues-table-body") {
+        console.log("Table body swapped");
+        initInputHandlers();
     }
-}
+});
 
-function checkSubmissionStatus(form) {
-    const button = form.querySelector('button[type="submit"]');
-    if (button) {
-        button.disabled = true;
-        button.textContent = "Submitting...";
+document.body.addEventListener('htmx:beforeSwap', function(evt) {
+    console.log("About to swap:", evt.detail);
+
+    document.addEventListener("DOMContentLoaded", function() {
+    // Debug HTMX events
+    document.body.addEventListener('htmx:afterRequest', function(evt) {
+        console.log("Request completed", evt.detail);
+    });
+    
+    document.body.addEventListener('htmx:beforeSwap', function(evt) {
+        console.log("Swap content:", evt.detail.target.innerHTML);
+    });
+});
+});
+
+document.body.addEventListener('htmx:afterSwap', function(e) {
+    if (e.detail.target.id === 'clues-table-body') {
+        console.log("Current table body content:", e.detail.target.innerHTML);
+        // Reinitialize inputs
+        initInputHandlers();
     }
-    return true;
-}
+});
 </script>
   {% include 'pages/tangle/partials/modals.html' %}
 {% endblock content %}

@@ -17,22 +17,20 @@
 {# The input form row - only show if not solved yet #}
 {% if not is_solved_today %}
 <tr id="input-form-row">
-  <th>
-    <div class="flex justify-center gap-0">
-      <form id="submitForm"
-            hx-post="{% url 'cows_bulls:cb_index' %}"
-            hx-target="#clues-table-body"
-            hx-swap="innerHTML"
-            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-            onsubmit="return checkSubmissionStatus(this)"
-            class="flex justify-center gap-1"
-            autocomplete="off">
-        <input type="hidden" name="cba_id" value="{{ ocb.id }}">
-        {% csrf_token %}
+  <td colspan="2">
+    <form id="submitForm"
+          hx-post="{% url 'cows_bulls:cb_index' %}"
+          hx-target="#clues-table-body"
+          hx-swap="innerHTML"
+          hx-trigger="submit"
+          class="flex flex-col items-center gap-2">
+      <input type="hidden" name="cba_id" value="{{ ocb.id }}">
+      {% csrf_token %}
       
-        {% for i in "01234" %}
+      <div class="flex justify-center gap-1">
+        {% for i in "12345" %}
           <input type="text"
-                 name="digit{{ forloop.counter }}"
+                 name="digit{{ i }}"
                  maxlength="1"
                  pattern="[0-9]"
                  title="Single digit only"
@@ -42,12 +40,11 @@
                  class="w-10 h-12 bg-white text-neutral text-2xl font-mono text-center rounded-box border border-neutral focus:outline-none focus:ring-2 focus:ring-primary digit-input"
           />
         {% endfor %}
-    </div>
-  </th>
-  <td>
-    <button type="submit" class="btn btn-success mt-2 sm:mt-0">Submit</button>
+      </div>
+      
+      <button type="submit" class="btn btn-success">Submit</button>
+    </form>
   </td>
-  </form>
 </tr>
 {% else %}
 <tr>

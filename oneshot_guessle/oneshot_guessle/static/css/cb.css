@@ -1,0 +1,9 @@
+#clues-table-body {
+    transition: background-color 0.5s;
+}
+.htmx-swapping #clues-table-body {
+    background-color: yellow;
+}
+.htmx-settling #clues-table-body {
+    background-color: lightgreen;
+}
