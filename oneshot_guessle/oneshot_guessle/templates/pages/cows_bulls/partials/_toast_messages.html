@@ -1,0 +1,11 @@
+{% load scrabble_tags %}
+
+{# This div is explicitly targeted by hx-swap="outerHTML" with OOB #}
+<div id="toast-messages-oob" hx-swap-oob="outerHTML:#toast-messages-oob">
+    {% for message in messages %}
+        <script>
+            // Call the showToast function defined in cb_index.html
+            showToast('{{ message|escapejs }}', '{{ message.tags }}');
+        </script>
+    {% endfor %}
+</div>

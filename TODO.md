@@ -1,5 +1,6 @@
+- [ ] change behaviour of cb when not logged in
 - [ ] remove messages as alerts for each cb attempt
-- [ ] remove the message that youve already attempted after the first attempt.
+- [x] remove the message that youve already attempted after the first attempt.
 - [ ] run migrations for teacher resources tables
 - [ ] list resources
 - [x] link back to codefez

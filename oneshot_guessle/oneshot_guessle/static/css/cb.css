@@ -7,3 +7,17 @@
 .htmx-settling #clues-table-body {
     background-color: lightgreen;
 }
+
+.toast {
+    transition: all 0.3s ease;
+}
+
+.toast-enter {
+    opacity: 0;
+    transform: translateX(100%);
+}
+
+.toast-exit {
+    opacity: 0;
+    transform: translateY(-20px);
+}

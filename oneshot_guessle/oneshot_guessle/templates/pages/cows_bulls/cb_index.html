@@ -1,118 +1,126 @@
 {% extends "cb_base.html" %}
+
 {% load static %}
+
 {% load scrabble_tags %}
 
+
+
 {% block content %}
-      {% if attempted %}
-        <div class="alert alert-error rounded-lg shadow mb-4">
-          ⚠️ You have already attempted today's Daily Oneshot 🐄 and 🐂.
-        </div>
-      {% endif %}
-      {# This div will be updated by HTMX if messages are returned #}
-      <div id="messages-container" class="space-y-2 mt-4">
-        {% if messages %}
-          {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-              {{ message }}
-            </div>
-          {% endfor %}
-        {% endif %}
-      </div>
 
-      <div class="bg-base-200 min-h-screen px-4 py-4">
+    <div id="messages-container" class="hidden"></div>
+    
+    <div class="bg-base-200 min-h-screen px-4 py-4">
         <div class="text-center flex flex-col items-center w-full max-w-2xl">
-          <h1 class="text-4xl sm:text-5xl font-bold mb-6">Crack the code!</h1>
+            <h1 class="text-4xl sm:text-5xl font-bold mb-6">Crack the code!</h1>
+            <div class="w-full overflow-x-auto">
 
-          <div class="w-full overflow-x-auto">
-            <table class="table w-full text-left">
-              {# This tbody will be replaced by HTMX #}
-              <tbody id="clues-table-body">
-                {% include 'pages/cows_bulls/partials/_clues_table_body.html' with clues=clues is_solved_today=is_solved_today ocb=ocb %}
-              </tbody>
-            </table>
-          </div>
+                <table class="table w-full text-left">
+                    {# This tbody will be replaced by HTMX #}
+                    <tbody id="clues-table-body">
+                        {% include 'pages/cows_bulls/partials/_clues_table_body.html' with clues=clues is_solved_today=is_solved_today ocb=ocb %}
+                    </tbody>
+                </table>
+            </div>
         </div>
-      </div>
-
-  <div id="resultsModal" class="modal">
-    <div id="resultsModalContent" class="modal-box bg-white shadow rounded p-4">
-      {% if attempted %}
-        {# Consider if this partial is still needed/how it interacts with HTMX updates #}
-        {% include 'pages/tangle/partials/results_modal.html' %}
-      {% endif %}
     </div>
-  </div>
 
-  <div id="toastContainer" class="toast toast-center"></div>
-  
+
+
+
+
+    <div id="toast-container" class="toast toast-bottom toast-center"></div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    initInputHandlers();
-});
-
-function initInputHandlers() {
-    // Input navigation
-    const handleInput = (e) => {
-        const inputs = document.querySelectorAll(".digit-input");
-        const index = Array.from(inputs).indexOf(e.target);
-        if (e.target.value.length === 1 && index < inputs.length - 1) {
-            inputs[index + 1].focus();
-        }
-    };
-
-    const handleKeydown = (e) => {
-        const inputs = document.querySelectorAll(".digit-input");
-        const index = Array.from(inputs).indexOf(e.target);
-        if (e.key === "Backspace" && !e.target.value && index > 0) {
-            inputs[index - 1].focus();
-        }
-    };
-
-    // Setup handlers and clear inputs
-    document.querySelectorAll(".digit-input").forEach(input => {
-        input.addEventListener("input", handleInput);
-        input.addEventListener("keydown", handleKeydown);
-        input.value = "";
-    });
-    
-    document.querySelector(".digit-input")?.focus();
-}
-
-// Debugging events
-document.body.addEventListener("htmx:afterRequest", (e) => {
-    console.log("Request completed", e.detail);
-});
-
-document.body.addEventListener("htmx:afterSwap", (e) => {
-    if (e.detail.target.id === "clues-table-body") {
-        console.log("Table body swapped");
-        initInputHandlers();
-    }
-});
-
-document.body.addEventListener('htmx:beforeSwap', function(evt) {
-    console.log("About to swap:", evt.detail);
 
     document.addEventListener("DOMContentLoaded", function() {
-    // Debug HTMX events
-    document.body.addEventListener('htmx:afterRequest', function(evt) {
-        console.log("Request completed", evt.detail);
-    });
-    
-    document.body.addEventListener('htmx:beforeSwap', function(evt) {
-        console.log("Swap content:", evt.detail.target.innerHTML);
-    });
-});
-});
-
-document.body.addEventListener('htmx:afterSwap', function(e) {
-    if (e.detail.target.id === 'clues-table-body') {
-        console.log("Current table body content:", e.detail.target.innerHTML);
-        // Reinitialize inputs
+        // Initialize input handlers on page load
         initInputHandlers();
+        
+        // Handle messages from Django
+        showInitialMessages();
+    });
+
+    // Initialize input navigation and focus
+    function initInputHandlers() {
+        const inputs = document.querySelectorAll(".digit-input");
+        
+        inputs.forEach((input, index) => {
+            // Move to next input when a digit is entered
+            input.addEventListener("input", (e) => {
+                if (e.target.value.length === 1 && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+            });
+            
+            // Move to previous input on backspace
+            input.addEventListener("keydown", (e) => {
+                if (e.key === "Backspace" && !e.target.value && index > 0) {
+                    inputs[index - 1].focus();
+                }
+            });
+            
+            // Clear inputs (only if they're empty to preserve any submitted values)
+            if (!input.value) {
+                input.value = "";
+            }
+        });
+        
+        // Focus first input if available
+        if (inputs.length > 0) {
+            inputs[0].focus();
+        }
     }
-});
+
+    // Show any Django messages as toasts
+    function showInitialMessages() {
+        {% for message in messages %}
+            showToast('{{ message|escapejs }}', '{{ message.tags }}');
+        {% endfor %}
+    }
+
+    // Toast display function
+    function showToast(message, type='info') {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type} flex shadow-lg mb-2`;
+        toast.innerHTML = `
+            <div>${message}</div>
+            <button class="btn btn-sm btn-ghost" onclick="this.parentElement.remove()">✕</button>
+        `;
+        document.getElementById('toast-container').appendChild(toast);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => toast.remove(), 5000);
+    }
+
+    // Handle HTMX after-swap events
+    document.body.addEventListener('htmx:afterSwap', function(e) {
+        // Reinitialize inputs when clues table updates
+        if (e.detail.target.id === 'clues-table-body') {
+            initInputHandlers();
+        }
+        
+        // Show any messages that came with the response
+        if (e.detail.target.id === 'messages-container') {
+            const alerts = e.detail.target.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                showToast(alert.textContent.trim(), 
+                    alert.className.includes('alert-error') ? 'error' :
+                    alert.className.includes('alert-success') ? 'success' : 'info');
+                alert.remove();
+            });
+        }
+    });
+
 </script>
-  {% include 'pages/tangle/partials/modals.html' %}
+
+
+
+<!-- Add this toast container (position can be adjusted) -->
+
+<div id="toast-container" class="toast toast-top toast-end z-50"></div>
+
+
+ {% include 'pages/tangle/partials/modals.html' %}
+
 {% endblock content %}
