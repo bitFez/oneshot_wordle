@@ -101,16 +101,22 @@
         }
         
         // Show any messages that came with the response
-        if (e.detail.target.id === 'messages-container') {
-            const alerts = e.detail.target.querySelectorAll('.alert');
-            alerts.forEach(alert => {
-                showToast(alert.textContent.trim(), 
-                    alert.className.includes('alert-error') ? 'error' :
-                    alert.className.includes('alert-success') ? 'success' : 'info');
-                alert.remove();
-            });
-        }
+        
     });
+
+    document.body.addEventListener('newAttempt', function () {
+    const messagesContainer = document.querySelector('#messages-container');
+    if (!messagesContainer) return;
+
+    const alerts = messagesContainer.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+        const type = alert.classList.contains('alert-error') ? 'error' :
+                     alert.classList.contains('alert-success') ? 'success' :
+                     'info';
+        showToast(alert.textContent.trim(), type);
+        alert.remove();
+    });
+});
 
 </script>
 

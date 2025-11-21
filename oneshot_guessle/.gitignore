@@ -278,4 +278,4 @@ oneshot_guessle/media/
 .ipython/
 .env
 .envs/*
-!.envs/.local/
+.envs/.local/
