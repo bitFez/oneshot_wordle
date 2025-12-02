@@ -16,10 +16,12 @@ if READ_DOT_ENV_FILE:
     # OS environment variables take precedence over variables from .env
     env.read_env(str(BASE_DIR / ".env"))
 
-G_SHEETS_API = env('GOOGLE_SHEETS_API')
-GSHEET_YEAR10 = env('GSHEET_YEAR10')
+# G_SHEETS_API = env('GOOGLE_SHEETS_API')
+# GSHEET_YEAR10 = env('GSHEET_YEAR10')
+# GSHEET_YEAR2425 = env('GSHEET_YEAR2425')
+GSHEET_YEAR2526 = env('GSHEET_YEAR2526')
 GSHEET_YEAR2425 = env('GSHEET_YEAR2425')
-GSHEET_YEAR9 = env('GSHEET_YEAR9')
+# GSHEET_YEAR9 = env('GSHEET_YEAR9')
 
 # GENERAL
 # ------------------------------------------------------------------------------

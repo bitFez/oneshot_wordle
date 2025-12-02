@@ -6,7 +6,7 @@ from oneshot_guessle.students.views import (student, fakestudent)
 app_name = "students"
 
 urlpatterns = [
-    path("student", student, name="student"),
+    path("student/<str:year>/<str:studentID>/<str:ks>", student, name="student"),
     path('fake/', fakestudent, name='fake'),
     # path('ads.txt', AdsView.as_view()),
 ]

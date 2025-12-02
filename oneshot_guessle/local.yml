@@ -1,4 +1,3 @@
-version: '3'
 
 volumes:
   oneshot_guessle_local_postgres_data: {}

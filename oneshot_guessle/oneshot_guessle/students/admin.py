@@ -8,8 +8,12 @@ from django.urls import path
 from django.utils.encoding import force_str
 
 
-from .models import Student
+from .models import Student, SheetsTab
 
+@admin.register(SheetsTab)
+class SheetsTabAdmin(admin.ModelAdmin):
+    list_display = ['year', 'ks']
+    list_filter = ['year', 'ks']  # Filter by exam year
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):

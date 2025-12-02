@@ -19,7 +19,7 @@
             <!-- Title -->
             <div class="d-flex flex-row justify-content-center text-light">
                 <h1 class="text-uppercase">
-                    Hi, {{user.username}}
+                    Hi Candidate, {{student}}
                 </h1>
             </div>
         </div>
@@ -192,7 +192,7 @@
                 {% if test.topic5 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic5|percentage_format}}</td>{% endif %}
                 {% if test.topic6 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic6|percentage_format}}</td>{% endif %}
                 {% if test.topic7 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic7|percentage_format}}</td>{% endif %}
-                <td class="text-center col-small">{{test.total|percentage_format}}</td>
+                <td class="text-center col-small">{{test.total}}%</td>
                 <td class="text-center col-small">{{test.rank}}</td>
             </tr>
             {% endfor %}

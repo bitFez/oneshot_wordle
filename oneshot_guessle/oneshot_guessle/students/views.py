@@ -2,42 +2,74 @@ from django.shortcuts import render
 from django.shortcuts import render, redirect, get_object_or_404 
 import requests
 from django.conf import settings
+from django.http import Http404
+import traceback, sys
 
 from .results_functions import analysis_table, weekly_tests_table, mock_tests_table
-from .models import Student
+from .models import Student, SheetsTab
 
-SHEETS_API=settings.G_SHEETS_API
-GSHEET_YEAR10 = settings.GSHEET_YEAR10
+# SHEETS_API=settings.G_SHEETS_API
+# GSHEET_YEAR10 = settings.GSHEET_YEAR10
+# GSHEET_YEAR2425 = settings.GSHEET_YEAR2425
+# GSHEET_YEAR9 = settings.GSHEET_YEAR9
+GSHEET_YEAR2526 = settings.GSHEET_YEAR2526
 GSHEET_YEAR2425 = settings.GSHEET_YEAR2425
-GSHEET_YEAR9 = settings.GSHEET_YEAR9
-
 # Create your views here.
 # refactored API call
-def g_sheet_API_call(user, page):
-    year = user.exam_yr
-    
-    # sheetID represents which Google Sheet **Document** is being accessed
-    # 
+def g_sheet_API_call(year, page):
     # This will need to be refactored further if we need to include different schools or departments
-    # A solution in my head currently is either a file in the repo with a list of schools & departments 
-    # with their corresponding GoogleSheet IDs and subjects in a dict or ...
-    # another Google Sheet document which returns a lookup table with all the desired data to other 
-    # GoogleSheet documents 
+    # Currently Github Secrets are used to store the google sheet API call. 
+    # Another method may be to use the model which stores the sheet IDs to also store the URL
     
-    if year == 10:
-        sheetID = GSHEET_YEAR10
-    elif year == 2425:
-        sheetID = GSHEET_YEAR2425
-    else:
-        sheetID = GSHEET_YEAR9
+    try:
+        year_int = int(year)
+    except (TypeError, ValueError):
+        year_int = year
+
+    year_map = {
+        2526: GSHEET_YEAR2526,
+        2425: GSHEET_YEAR2425,
+    }
+    g_sheet = year_map.get(year_int)
+    if not g_sheet:
+        raise Http404(f"No Google Sheet configured for year: {year}")
 
     # pageID represents which sheet within a docoument is being accessed eg. analysis, weekly_tests or mocks
     pageID = page
 
-    # data to return
-    data = requests.get(f'https://gsx2json.com/api?id={sheetID}&sheet={pageID}&api_key={SHEETS_API}&columns=false')
-    dataJSON = data.json()
-    return dataJSON["rows"]
+    # data to return. g_sheet
+    # use a session with retries and a timeout
+    from requests.adapters import HTTPAdapter
+    from urllib3.util.retry import Retry
+    session = requests.Session()
+    retries = Retry(total=3, backoff_factor=0.5, status_forcelist=(429, 500, 502, 503, 504))
+    session.mount("https://", HTTPAdapter(max_retries=retries))
+
+    try:
+        # WARNING: verify=False disables TLS verification; use only in local debugging
+        resp = session.get(f"{g_sheet}?gid={pageID}", timeout=10, verify=False)
+        resp.raise_for_status()
+        dataJSON = resp.json()
+    except requests.exceptions.SSLError:
+        # SSL problem — log and return a friendly 404 in dev
+        traceback.print_exc(file=sys.stdout)
+        raise Http404("SSL error fetching Google Sheet. Ensure container has CA certificates installed.")
+    except requests.exceptions.RequestException:
+        traceback.print_exc(file=sys.stdout)
+        raise Http404("Failed to fetch Google Sheet (network error).")
+    except ValueError:
+        # invalid JSON
+        traceback.print_exc(file=sys.stdout)
+        raise Http404("Invalid JSON returned from Google Sheet API.")
+
+    if isinstance(dataJSON, dict):
+        rows = dataJSON.get("rows", [])
+    elif isinstance(dataJSON, list):
+        rows = dataJSON
+    else:
+        rows = []
+    
+    return rows
 
 # Page for viewing test results
 def fakestudent(request):
@@ -136,13 +168,32 @@ def fakestudent(request):
     return render(request, 'students/student.html', context)
 
 
-def student(request):
-    #
-    # Gets user id from whoever is logged in
-    user = get_object_or_404(Student, pk=request.user.id)
+def student(request, year, studentID,ks):
+    # debug
+    print(f"Year: {year}, Student: {studentID}, KS: {ks}")
     
-    # takes student data from user profile
-    student = user.examNo
+    # # Gets user id from whoever is logged in
+    # # user = get_object_or_404(Student, pk=request.user.id)
+
+    # # Gets list of IDs
+    # sheetIDs = get_object_or_404(SheetsTab, id=year)
+    # print(f"SheetID, {sheetIDs}")
+    # # takes student data from user profile
+    try:
+        # Gets list of IDs
+        sheetIDs = get_object_or_404(SheetsTab, year=year)
+        print(f"SheetID, {sheetIDs}")
+    except Http404:
+        # print helpful context and the exception traceback then re-raise so Django still returns 404
+        print(f"Http404: SheetsTab with id={year} not found", file=sys.stdout)
+        traceback.print_exc(file=sys.stdout)
+        raise
+    except Exception:
+        # print full traceback for any other error then re-raise
+        traceback.print_exc(file=sys.stdout)
+        raise
+    
+    student = studentID #user.examNo
     
     # 
     # Chart data - data is appended in the weekly test for loops for yrs11 & 13
@@ -151,45 +202,45 @@ def student(request):
     chart_data = []
     chart_rank = []
 
-    if user.exam_yr == 13:
+    if ks == 'KS5':
         # gets spreadsheet data from the analysis sheet... (averages of all tests)
-        analysis_rows = g_sheet_API_call(user, 'Analysis')
+        analysis_rows = g_sheet_API_call(year, sheetIDs.week_tests_analysis)
 
         # filters data for student from above get request
-        studentX_d = analysis_table(analysis_rows, 13, student, 'cs')
+        studentX_d = analysis_table(analysis_rows, 'KS5', student, 'cs')
 
         # gets spreadsheet data from the weekly tests sheet
-        data_rows = g_sheet_API_call(user, '6aWeekTests')
+        data_rows = g_sheet_API_call(year, sheetIDs.weekly_tests)
 
         # filters data for each test for selected student ID
         table_d, labels, chart_data, chart_rank= weekly_tests_table(data_rows, 13, student, 'cs')
 
         # gets spreadsheet data from mock tests sheet
-        mock_data_rows = g_sheet_API_call(user, 'Mocks')
+        mock_data_rows = g_sheet_API_call(year, sheetIDs.mocks)
         #print(f"Status code {response.status_code}") # left here for reference
         #print(jprint(data_rows))
 
         # filters data for each test for selected student ID
-        mock_table = mock_tests_table(mock_data_rows, 13, student, 'cs')
+        mock_table = mock_tests_table(mock_data_rows, 'KS5', student, 'cs')
         
     else:
         # gets spreadsheet data from the analysis sheet... (averages of all tests)
-        analysis_rows = g_sheet_API_call(user, 'Analysis')
+        analysis_rows = g_sheet_API_call(year, sheetIDs.week_tests_analysis)
 
         # filters data for student from above get request
-        studentX_d = analysis_table(analysis_rows, 11, student, 'cs')
+        studentX_d = analysis_table(analysis_rows, 'KS4', student, 'cs')
 
         # gets spreadsheet data from the weekly tests sheet
-        data_rows = g_sheet_API_call(user, '6aWeekTests')
+        data_rows = g_sheet_API_call(year, sheetIDs.weekly_tests)
 
         # filters data for each test for selected student ID
         table_d, labels, chart_data, chart_rank= weekly_tests_table(data_rows, 11, student, 'cs')
 
         # gets spreadsheet data from mock tests sheet
-        mock_data_rows = g_sheet_API_call(user, 'Mocks')
+        mock_data_rows = g_sheet_API_call(year, sheetIDs.mocks)
         
         # filters data for each test for selected student ID
-        mock_table = mock_tests_table(mock_data_rows, 11, student, 'cs')
+        mock_table = mock_tests_table(mock_data_rows, 'KS4', student, 'cs')
 
     context = {'tests':table_d, 'analysis':studentX_d, 'mock_table':mock_table, 
                 'student':student, 'chart_data':chart_data, 'labels':labels, 'chart_rank':chart_rank}

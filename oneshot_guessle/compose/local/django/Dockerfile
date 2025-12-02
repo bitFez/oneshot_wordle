@@ -36,12 +36,13 @@ ENV BUILD_ENV ${BUILD_ENVIRONMENT}
 WORKDIR ${APP_HOME}
 
 # Install required system dependencies
+# - ca-certificates: runtime TLS/SSL CA certificates (required for requests to verify HTTPS)
+# - libpq-dev: PostgreSQL client headers (needed by psycopg2)
+# - gettext: translation utilities used by Django (compilemessages / i18n)
 RUN apt-get update && apt-get install --no-install-recommends -y \
-  # psycopg2 dependencies
+  ca-certificates \
   libpq-dev \
-  # Translations dependencies
   gettext \
-  # cleaning up unused files
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && rm -rf /var/lib/apt/lists/*
 

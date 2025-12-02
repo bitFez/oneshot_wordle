@@ -15,3 +15,14 @@ class Student(models.Model):
     
     # def get_absolute_url(self):
     #     return reverse("students:profile_detail", kwargs={'id':self.id})
+
+class SheetsTab(models.Model):
+    year = models.IntegerField()
+    ks = models.CharField(max_length=3)
+    week_tests_analysis = models.CharField(max_length=50)
+    weekly_tests = models.CharField(max_length=50)
+    mocks_analysis = models.CharField(max_length=50)
+    mocks = models.CharField(max_length=50) 
+
+    def __str__(self) -> str:
+        return f"{self.year}-{self.ks}"
