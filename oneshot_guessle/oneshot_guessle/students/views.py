@@ -47,7 +47,8 @@ def g_sheet_API_call(year, page):
 
     try:
         # WARNING: verify=False disables TLS verification; use only in local debugging
-        resp = session.get(f"{g_sheet}?gid={pageID}", timeout=10, verify=False)
+        import certifi
+        resp = session.get(f"{g_sheet}?gid={pageID}", timeout=10, verify=certifi.where())
         resp.raise_for_status()
         dataJSON = resp.json()
     except requests.exceptions.SSLError:

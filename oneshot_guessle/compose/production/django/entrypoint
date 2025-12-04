@@ -4,7 +4,16 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-
+# ensure Python/certifi CA bundle is used for HTTPS requests in the container
+PYTHON_CERT=$(python - <<'PY' 2>/dev/null
+import certifi,sys
+sys.stdout.write(certifi.where())
+PY
+)
+if [ -n "$PYTHON_CERT" ]; then
+  export SSL_CERT_FILE="$PYTHON_CERT"
+  export REQUESTS_CA_BUNDLE="$PYTHON_CERT"
+fi
 
 
 if [ -z "${POSTGRES_USER}" ]; then

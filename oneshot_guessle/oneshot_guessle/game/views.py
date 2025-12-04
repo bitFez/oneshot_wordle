@@ -16,6 +16,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 import json
 from django.forms.formsets import formset_factory
 from django.contrib import messages
+from django.utils import timezone
 from datetime import timedelta, datetime
 from django.contrib.staticfiles.finders import find
 from django.templatetags.static import static
@@ -132,53 +133,90 @@ def guessle(request):
 
     context = {}
     # Get today's todays date
-    current_dateTime =datetime.now(tz=timezone.utc)
-    current_year=current_dateTime.year
-    current_month=current_dateTime.month
-    current_day=current_dateTime.day
-    
-    start_date = datetime(year=current_year, month=current_month, day=current_day, hour=0, minute=0, second=0) # represents 00:00:00
-    end_date = datetime(year=current_year, month=current_month, day=current_day, hour=23, minute=59, second=59) # represents 23:59:59
+    today =timezone.localtime(timezone.now())#datetime.now(tz=timezone.utc)
 
     if request.user.is_authenticated:
         #get user
         user = get_object_or_404(User, pk=request.user.id)
         # Check for number of daily stars
-        stars = Daily_Stars.objects.update_or_create(date__range=(start_date, end_date), user=user)
-        stars = Daily_Stars.objects.filter(date__range=(start_date, end_date), user=user)[0]
+        stars, _ = Daily_Stars.objects.update_or_create(date=today, user=user)
         context['stars'] = stars
         # Check for previous attempts
-        attempts = Guessle_Attempt.objects.filter(date__range=(start_date, end_date), user=user)
+        attempts = Guessle_Attempt.objects.filter(date=today, user=user)
     
     # query if a word has been created already today in the DB.
-    if OneshotWord.objects.filter(date__range=(start_date, end_date)).exists():
-        todaysword = OneshotWord.objects.filter(date__range=(start_date, end_date))[0] 
+    if OneshotWord.objects.filter(date=today).exists():
+        todaysword = OneshotWord.objects.filter(date=today)[0] 
+        todaysGuessle = OneshotWord.objects.filter(date=today)[0]
+        todayclues = getattr(todaysGuessle, "clues", None)
+        TARGET_WORD = todaysGuessle.word
+        # ensure TARGET_WORD is a string (Word may be a model instance)
+        if hasattr(TARGET_WORD, "word"):
+            TARGET_WORD = TARGET_WORD.word
+        elif not isinstance(TARGET_WORD, str):
+            TARGET_WORD = str(TARGET_WORD)
+        
+        # coerce clue fields to plain strings (handle Word model instances)
+        def _clue_text(c):
+            if c is None:
+                return ""
+            if hasattr(c, "word"):
+                return c.word
+            return str(c)
+
+        clues = [
+            _clue_text(getattr(todayclues, "clue1", None)),
+            _clue_text(getattr(todayclues, "clue2", None)),
+            _clue_text(getattr(todayclues, "clue3", None)),
+            _clue_text(getattr(todayclues, "clue4", None)),
+            _clue_text(getattr(todayclues, "clue5", None)),
+        ]
     else:
         # get a new word for today if one doesn't exist
         todaysword = get_random_word()
         # get todays random clues
-        todayclues = get_random_clues(todaysword.word, difficulty="regular")
-        a = OneshotClues.objects.update_or_create(
-            clue1 = todayclues[0],
-            clue2 = todayclues[1],
-            clue3 = todayclues[2],
-            clue4 = todayclues[3],
-            clue5 = todayclues[4]
+        clue_texts = get_random_clues(todaysword.word, difficulty="regular")
+        clues_obj, _ = OneshotClues.objects.update_or_create(
+            clue1 = clue_texts[0],
+            clue2 = clue_texts[1],
+            clue3 = clue_texts[2],
+            clue4 = clue_texts[3],
+            clue5 = clue_texts[4]
         )
-        todayclues = OneshotClues.objects.filter(date__range=(start_date, end_date))[0]
-        clues = [todayclues.clue1,todayclues.clue2,todayclues.clue3,todayclues.clue4,todayclues.clue5]
-        a = OneshotWord.objects.update_or_create(
-            word = todaysword,
-            clues = todayclues
-            )
-        b = Word.objects.get(word=todaysword)
-        b.frequency += 1
-        b.save()
-    todaysGuessle = OneshotWord.objects.all().last()
-    todayclues = todaysGuessle.clues #OneshotClues.objects.filter(date__range=(start_date, end_date))[0]
-    TARGET_WORD = todaysGuessle.word
+        oneshot_obj, _ = OneshotWord.objects.update_or_create(
+            word=todaysword.word,
+            defaults={"clues": clues_obj, "date": today},
+        )
+        # use the created oneshot as today's guessle
+        todaysGuessle = oneshot_obj
+        todayclues = clues_obj
+        TARGET_WORD = todaysGuessle.word
+        if hasattr(TARGET_WORD, "word"):
+            TARGET_WORD = TARGET_WORD.word
+        elif not isinstance(TARGET_WORD, str):
+            TARGET_WORD = str(TARGET_WORD)
+        
+        # coerce clue fields to plain strings (handle Word model instances)
+        def _clue_text(c):
+            if c is None:
+                return ""
+            if hasattr(c, "word"):
+                return c.word
+            return str(c)
 
-    clues = [todayclues.clue1,todayclues.clue2,todayclues.clue3,todayclues.clue4,todayclues.clue5]
+        clues = [
+            _clue_text(getattr(todayclues, "clue1", None)),
+            _clue_text(getattr(todayclues, "clue2", None)),
+            _clue_text(getattr(todayclues, "clue3", None)),
+            _clue_text(getattr(todayclues, "clue4", None)),
+            _clue_text(getattr(todayclues, "clue5", None)),
+        ]
+        # increment frequency on the todaysword instance if present
+        try:
+            todaysword.frequency = (todaysword.frequency or 0) + 1
+            todaysword.save()
+        except Exception:
+            pass
 
     # This section will add each clue to the guessle rows with the correct colour for each letter.
     cluesRow,alphabet = get_clues_rows(clues, TARGET_WORD)
@@ -292,7 +330,7 @@ def guessle(request):
                 
                 att = Guessle_Attempt.objects.update_or_create(
                         user=user,
-                        date=current_dateTime,
+                        date=today,
                         word=todaysGuessle,
                         guess=guess
                     )
@@ -387,49 +425,77 @@ def guessle_easy(request):
 
     context = {}
     # Get today's todays date
-    current_dateTime =datetime.now(tz=timezone.utc)
-    current_year=current_dateTime.year
-    current_month=current_dateTime.month
-    current_day=current_dateTime.day
+    today =timezone.localtime(timezone.now())
     
-    start_date = datetime(year=current_year, month=current_month, day=current_day, hour=0, minute=0, second=0) # represents 00:00:00
-    end_date = datetime(year=current_year, month=current_month, day=current_day, hour=23, minute=59, second=59) # represents 23:59:59
-
     # Check for number of daily stars
-    stars = Daily_Stars.objects.update_or_create(date__range=(start_date, end_date), user=user)
-    stars = Daily_Stars.objects.filter(date__range=(start_date, end_date), user=user)[0]
+    stars, _ = Daily_Stars.objects.update_or_create(date=today, user=user)
     # Check for previous attempts
-    attempts = EasyGuessle_Attempt.objects.filter(date__range=(start_date, end_date), user=user)
+    attempts = EasyGuessle_Attempt.objects.filter(date=today, user=user)
     # print(f"\nAttempt is: {attempts[0].guess}\n")
     # query if a word has been created already today in the DB.
-    if OneshotWordEasy.objects.filter(date__range=(start_date, end_date)).exists():
-        todaysword = OneshotWordEasy.objects.filter(date__range=(start_date, end_date))[0] 
+    if OneshotWordEasy.objects.filter(date=today).exists():
+        todaysword = OneshotWordEasy.objects.filter(date=today)[0] 
     else:
         # get a new word for today if one doesn't exist
         todaysword = get_random_word()
         # get todays random clues
         todayclues = get_random_clues(todaysword.word, difficulty="easy")
-        a = OneshotCluesEasy.objects.update_or_create(
+        clues_obj, _ = OneshotCluesEasy.objects.update_or_create(
             clue1 = todayclues[0],
             clue2 = todayclues[1],
             clue3 = todayclues[2],
             clue4 = todayclues[3],
             clue5 = todayclues[4]
         )
-        todayclues = OneshotCluesEasy.objects.filter(date__range=(start_date, end_date))[0]
-        clues = [todayclues.clue1,todayclues.clue2,todayclues.clue3,todayclues.clue4,todayclues.clue5]
-        a = OneshotWordEasy.objects.update_or_create(
-            word = todaysword,
-            clues = todayclues
-            )
-        b = Word.objects.get(word=todaysword)
-        b.frequency += 1
-        b.save()
+        oneshot_easy, _ = OneshotWordEasy.objects.update_or_create(
+            word=todaysword.word,
+            defaults={"clues": clues_obj, "date": today},
+        )
+        # build plain-string clues list
+        def _clue_text(c):
+            if c is None:
+                return ""
+            if hasattr(c, "word"):
+                return c.word
+            return str(c)
+
+        clues = [
+            _clue_text(getattr(clues_obj, "clue1", None)),
+            _clue_text(getattr(clues_obj, "clue2", None)),
+            _clue_text(getattr(clues_obj, "clue3", None)),
+            _clue_text(getattr(clues_obj, "clue4", None)),
+            _clue_text(getattr(clues_obj, "clue5", None)),
+        ]
+        # increment frequency on the todaysword model if present
+        try:
+            w = Word.objects.get(word=todaysword.word)
+            w.frequency = (w.frequency or 0) + 1
+            w.save()
+        except Exception:
+            pass
+                
     todaysGuessle = OneshotWordEasy.objects.all().last()
     todayclues = todaysGuessle.clues #OneshotClues.objects.filter(date__range=(start_date, end_date))[0]
     TARGET_WORD = todaysGuessle.word
+    if hasattr(TARGET_WORD, "word"):
+        TARGET_WORD = TARGET_WORD.word
+    elif not isinstance(TARGET_WORD, str):
+        TARGET_WORD = str(TARGET_WORD)
+    
+    def _clue_text(c):
+        if c is None:
+            return ""
+        if hasattr(c, "word"):
+            return c.word
+        return str(c)
 
-    clues = [todayclues.clue1,todayclues.clue2,todayclues.clue3,todayclues.clue4,todayclues.clue5]
+    clues = [
+        _clue_text(getattr(todayclues, "clue1", None)),
+        _clue_text(getattr(todayclues, "clue2", None)),
+        _clue_text(getattr(todayclues, "clue3", None)),
+        _clue_text(getattr(todayclues, "clue4", None)),
+        _clue_text(getattr(todayclues, "clue5", None)),
+    ]
 
     # This section will add each clue to the guessle rows with the correct colour for each letter.
     cluesRow,alphabet = get_clues_rows(clues, TARGET_WORD, difficulty="easy")
@@ -507,7 +573,7 @@ def guessle_easy(request):
                 
                 att = EasyGuessle_Attempt.objects.update_or_create(
                         user=user,
-                        date=current_dateTime,
+                        date=today,
                         word=todaysGuessle,
                         guess=guess
                     )
@@ -608,23 +674,16 @@ def guessle_hard(request):
 
         context = {}
         # Get today's todays date
-        current_dateTime =datetime.now(tz=timezone.utc)
-        current_year=current_dateTime.year
-        current_month=current_dateTime.month
-        current_day=current_dateTime.day
+        today =timezone.localtime(timezone.now())
         
-        start_date = datetime(year=current_year, month=current_month, day=current_day, hour=0, minute=0, second=0) # represents 00:00:00
-        end_date = datetime(year=current_year, month=current_month, day=current_day, hour=23, minute=59, second=59) # represents 23:59:59
-
         # Check for number of daily stars
-        stars = Daily_Stars.objects.update_or_create(date__range=(start_date, end_date), user=user)
-        stars = Daily_Stars.objects.filter(date__range=(start_date, end_date), user=user)[0]
+        stars, _ = Daily_Stars.objects.update_or_create(date=today, user=user)
         # Check for previous attempts
-        attempts = HardGuessle_Attempt.objects.filter(date__range=(start_date, end_date), user=user)
+        attempts = HardGuessle_Attempt.objects.filter(date=today, user=user)
         # print(f"\nAttempt is: {attempts[0].guess}\n")
         # query if a word has been created already today in the DB.
-        if OneshotWordHard.objects.filter(date__range=(start_date, end_date)).exists():
-            todaysword = OneshotWordHard.objects.filter(date__range=(start_date, end_date))[0] 
+        if OneshotWordHard.objects.filter(date=today).exists():
+            todaysword = OneshotWordHard.objects.filter(date=today)[0] 
         else:
             # get a new word for today if one doesn't exist
             todaysword = get_random_word(difficulty = "hard")
@@ -637,7 +696,7 @@ def guessle_hard(request):
                 clue4 = todayclues[3],
                 clue5 = todayclues[4]
             )
-            todayclues = OneshotCluesHard.objects.filter(date__range=(start_date, end_date))[0]
+            todayclues = OneshotCluesHard.objects.filter(today)[0]
             clues = [todayclues.clue1,todayclues.clue2,todayclues.clue3,todayclues.clue4,todayclues.clue5]
             a = OneshotWordHard.objects.update_or_create(
                 word = todaysword,
@@ -649,6 +708,10 @@ def guessle_hard(request):
         todaysGuessle = OneshotWordHard.objects.all().last()
         todayclues = todaysGuessle.clues #OneshotClues.objects.filter(date__range=(start_date, end_date))[0]
         TARGET_WORD = todaysGuessle.word
+        if hasattr(TARGET_WORD, "word"):
+            TARGET_WORD = TARGET_WORD.word
+        elif not isinstance(TARGET_WORD, str):
+            TARGET_WORD = str(TARGET_WORD)
         # print(f"Todays word is : {TARGET_WORD}")
         clues = [todayclues.clue1,todayclues.clue2,todayclues.clue3,todayclues.clue4,todayclues.clue5]
 
@@ -734,7 +797,7 @@ def guessle_hard(request):
                     
                     att = HardGuessle_Attempt.objects.update_or_create(
                             user=user,
-                            date=current_dateTime,
+                            date=today,
                             word=todaysGuessle,
                             guess=guess
                         )

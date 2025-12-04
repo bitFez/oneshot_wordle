@@ -66,6 +66,7 @@ RUN addgroup --system django \
 # 'uv' is NOT installed here as it's not needed in the final runtime image, keeping it smaller.
 # The apt cache is purged immediately after installation.
 RUN apt-get update && apt-get install --no-install-recommends -y \
+    ca-certificates \
     libpq-dev \
     gettext \
     # Add any other runtime-specific apt packages here (e.g., nginx if serving static files)
