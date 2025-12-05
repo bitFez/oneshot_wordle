@@ -17,8 +17,9 @@ class Student(models.Model):
     #     return reverse("students:profile_detail", kwargs={'id':self.id})
 
 class SheetsTab(models.Model):
-    year = models.IntegerField()
-    ks = models.CharField(max_length=3)
+    year = models.IntegerField() # eg 2526
+    json_workbook = models.URLField(default=dict, blank=True)
+    ks = models.CharField(max_length=3) # eg ks4
     week_tests_analysis = models.CharField(max_length=50)
     weekly_tests = models.CharField(max_length=50)
     mocks_analysis = models.CharField(max_length=50)

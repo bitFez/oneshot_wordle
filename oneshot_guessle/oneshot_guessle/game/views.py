@@ -689,22 +689,40 @@ def guessle_hard(request):
             todaysword = get_random_word(difficulty = "hard")
             # get todays random clues
             todayclues = get_random_clues(todaysword.word, difficulty="hard")
-            a = OneshotCluesHard.objects.update_or_create(
+            clues_obj, _ = OneshotCluesHard.objects.update_or_create(
                 clue1 = todayclues[0],
                 clue2 = todayclues[1],
                 clue3 = todayclues[2],
                 clue4 = todayclues[3],
                 clue5 = todayclues[4]
             )
-            todayclues = OneshotCluesHard.objects.filter(today)[0]
-            clues = [todayclues.clue1,todayclues.clue2,todayclues.clue3,todayclues.clue4,todayclues.clue5]
-            a = OneshotWordHard.objects.update_or_create(
-                word = todaysword,
-                clues = todayclues
-                )
-            b = WordsHard.objects.get(word=todaysword)
-            b.frequency += 1
-            b.save()
+            oneshot_hard, _ = OneshotWordHard.objects.update_or_create(
+                word=todaysword.word,
+                defaults={"clues": clues_obj, "date": today},
+            )
+            # build plain-string clues list
+            def _clue_text(c):
+                if c is None:
+                    return ""
+                if hasattr(c, "word"):
+                    return c.word
+                return str(c)
+
+            clues = [
+                _clue_text(getattr(clues_obj, "clue1", None)),
+                _clue_text(getattr(clues_obj, "clue2", None)),
+                _clue_text(getattr(clues_obj, "clue3", None)),
+                _clue_text(getattr(clues_obj, "clue4", None)),
+                _clue_text(getattr(clues_obj, "clue5", None)),
+            ]
+            # increment frequency on the todaysword model if present
+            try:
+                w = Word.objects.get(word=todaysword.word)
+                w.frequency = (w.frequency or 0) + 1
+                w.save()
+            except Exception:
+                pass
+        
         todaysGuessle = OneshotWordHard.objects.all().last()
         todayclues = todaysGuessle.clues #OneshotClues.objects.filter(date__range=(start_date, end_date))[0]
         TARGET_WORD = todaysGuessle.word
@@ -712,9 +730,22 @@ def guessle_hard(request):
             TARGET_WORD = TARGET_WORD.word
         elif not isinstance(TARGET_WORD, str):
             TARGET_WORD = str(TARGET_WORD)
-        # print(f"Todays word is : {TARGET_WORD}")
-        clues = [todayclues.clue1,todayclues.clue2,todayclues.clue3,todayclues.clue4,todayclues.clue5]
+        
+        def _clue_text(c):
+            if c is None:
+                return ""
+            if hasattr(c, "word"):
+                return c.word
+            return str(c)
 
+        clues = [
+            _clue_text(getattr(todayclues, "clue1", None)),
+            _clue_text(getattr(todayclues, "clue2", None)),
+            _clue_text(getattr(todayclues, "clue3", None)),
+            _clue_text(getattr(todayclues, "clue4", None)),
+            _clue_text(getattr(todayclues, "clue5", None)),
+        ]
+        
         # This section will add each clue to the guessle rows with the correct colour for each letter.
         cluesRow,alphabet = get_clues_rows(clues, TARGET_WORD, difficulty="hard")
         
