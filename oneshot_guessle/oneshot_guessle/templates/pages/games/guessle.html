@@ -189,41 +189,111 @@
     </div>
     <div>
         <!-- <img src="https://upload.wikimedia.org/wikipedia/commons/d/db/Simple_English_Wiktionary_text_logo.png" alt=""> -->
-        <p id="popup">
-
-        </p>
+        <p id="popup"></p>
     </div>
 
+<!-- container where dictionary result will be rendered -->
+<div id="dictionary-popup" class="my-3"></div>
 
-    {% if attempts %}
-    
-        <script>
-            const target_word = '{{t_word}}';
-            fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${target_word}`)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('popup').innerHTML = `
-                    <div class="container">
-                        <div class="alert alert-info px-5" role="alert">
-                            <h2 class="wordDef">${data[0]["word"]}</h2>
-                            <span class="text-success"><b>Meaning:</b></span> ${data[0]["meanings"][0]["definitions"][0]["definition"]}
-                        </div>
-                    </div>
-                    `;
-                    
-                    // console.log(data)
-                })
-                .catch(error => console.error(error))
-                document.getElementById('popup').innerHTML = `
-                <div class="container">
-                    <div class="alert alert-danger px-5" role="alert">
-                        <span class="text-danger">Whhoaa 😯</span> <br>
-                        <span class="">It seems like this word doesn't appear in the dictionary!</span>
-                    </div>
-                </div>`;
-        </script>
-    {% endif %}
+<!-- metadata element that is updated by server HTML on each render/swap -->
+<div id="game-meta" data-t_word="{{ t_word|default:'' }}" data-attempts="{{ attempts_count|default:0 }}"></div>
 
-    {% endblock content %}
+<script>
+(function () {
+    try {
+        const popupSelector = '#dictionary-popup';
+        const metaSelector = '#game-meta';
+
+        function readMeta() {
+            const meta = document.querySelector(metaSelector);
+            return {
+                target: meta ? (meta.dataset.t_word || '') : '',
+                attempts: meta ? Number(meta.dataset.attempts || 0) : 0
+            };
+        }
+
+        function renderDefinition(data, target) {
+            const popup = document.querySelector(popupSelector);
+            if (!popup) return;
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                popup.innerHTML = `<div class="alert alert-warning">No dictionary entry found for <strong>${target}</strong>.</div>`;
+                return;
+            }
+            const entry = data[0];
+            const word = entry.word || target;
+            const def = (entry.meanings && entry.meanings[0] && entry.meanings[0].definitions && entry.meanings[0].definitions[0] && entry.meanings[0].definitions[0].definition) || '';
+            popup.innerHTML = `<div class="alert alert-info"><h4 class="mb-1">${word}</h4><div><strong>Definition:</strong> ${def}</div></div>`;
+        }
+
+        async function fetchDictionary() {
+            try {
+                const meta = readMeta();
+                const TARGET_WORD = meta.target;
+                const ATTEMPTS_COUNT = meta.attempts;
+                console.debug('fetchDictionary meta', {TARGET_WORD, ATTEMPTS_COUNT});
+                if (!TARGET_WORD || ATTEMPTS_COUNT <= 0) return;
+                const url = `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(TARGET_WORD)}`;
+                console.debug('Fetching dictionary:', url);
+                const r = await fetch(url);
+                console.debug('dictionary fetch status', r.status);
+                if (!r.ok) throw new Error('dictionary fetch failed: ' + r.status);
+                const data = await r.json();
+                console.debug('dictionary data', data);
+                renderDefinition(data, TARGET_WORD);
+            } catch (err) {
+                console.error('dictionary fetch error', err);
+                renderDefinition(null, readMeta().target);
+            }
+        }
+
+        // run on full load
+        document.addEventListener('DOMContentLoaded', fetchDictionary);
+
+        // HTMX events (if HTMX loads): run after swaps
+        document.addEventListener('htmx:afterSwap', fetchDictionary);
+        document.addEventListener('htmx:afterSettle', fetchDictionary);
+
+        // Observe body for added/removed nodes and call fetchDictionary when game-meta or dictionary-popup appear/are replaced
+        const bodyObserver = new MutationObserver((mutations) => {
+            for (const m of mutations) {
+                if (m.addedNodes && m.addedNodes.length) {
+                    for (const n of m.addedNodes) {
+                        if (n.nodeType !== Node.ELEMENT_NODE) continue;
+                        if (n.id === 'game-meta' || n.id === 'dictionary-popup' || n.querySelector && (n.querySelector('#game-meta') || n.querySelector('#dictionary-popup'))) {
+                            // small timeout to let attributes settle if server replaced content
+                            setTimeout(fetchDictionary, 20);
+                            return;
+                        }
+                    }
+                }
+            }
+        });
+        bodyObserver.observe(document.body, { childList: true, subtree: true });
+
+        // If #game-meta exists, observe attribute changes directly (so updates to data-t_word/data-attempts trigger fetch)
+        function observeMetaAttributes() {
+            const meta = document.querySelector(metaSelector);
+            if (!meta) return;
+            const metaObs = new MutationObserver((mutations) => {
+                for (const m of mutations) {
+                    if (m.type === 'attributes' && (m.attributeName === 'data-t_word' || m.attributeName === 'data-attempts')) {
+                        fetchDictionary();
+                        return;
+                    }
+                }
+            });
+            // observe attributes on the meta node only
+            metaObs.observe(meta, { attributes: true, attributeFilter: ['data-t_word', 'data-attempts'] });
+        }
+
+        // run once now and schedule observeMetaAttributes after load (in case meta exists now)
+        setTimeout(() => { fetchDictionary(); observeMetaAttributes(); }, 0);
+    } catch (e) {
+        console.error('guessle init error', e);
+    }
+})();
+</script>
 
 </div>
+
+{% endblock content %}

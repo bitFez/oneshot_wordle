@@ -186,7 +186,9 @@ def guessle(request):
         context['stars'] = stars
         # Check for previous attempts by calendar date
         attempts = Guessle_Attempt.objects.filter(date__date=today_date, user=user).order_by('-date')
-    
+        # add numeric count for templates/JS to use (always present)
+        context['attempts_count'] = attempts.count() if attempts is not None else 0
+
     # query if a word has been created already today in the DB.
     if OneshotWord.objects.filter(date__date=today_date).exists():
         todaysGuessle = OneshotWord.objects.filter(date__date=today_date).first()
@@ -288,6 +290,8 @@ def guessle(request):
     # This section will add each clue to the guessle rows with the correct colour for each letter.
     cluesRow,alphabet = get_clues_rows(clues, TARGET_WORD)
 
+    # ensure target word is always present in context (needed by client JS)
+    context['t_word'] = str(TARGET_WORD or "")
     
     new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.data,prefix='alphabet')
     context['alphabet_formset'] = new_alphabet_formset
@@ -495,7 +499,10 @@ def guessle_easy(request):
     stars = _get_daily_stars_for_date(user, today_dt)
     # Check for previous attempts
     attempts = EasyGuessle_Attempt.objects.filter(date__date=today_date, user=user).order_by('-date')
-    # print(f"\nAttempt is: {attempts[0].guess}\n")
+    
+    # add numeric count for templates/JS to use (always present)
+    context['attempts_count'] = attempts.count() if attempts is not None else 0
+
     # query if a word has been created already today in the DB.
     if OneshotWordEasy.objects.filter(date__date=today_date).exists():
         todaysGuessle = OneshotWordEasy.objects.filter(date__date=today_date)[0] 
@@ -597,7 +604,9 @@ def guessle_easy(request):
     # This section will add each clue to the guessle rows with the correct colour for each letter.
     cluesRow,alphabet = get_clues_rows(clues, TARGET_WORD, difficulty="easy")
     
-
+    # ensure target word is always present in context (needed by client JS)
+    context['t_word'] = str(TARGET_WORD or "")
+    
     new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.data,prefix='alphabet')
     context['alphabet_formset'] = new_alphabet_formset
     context['cluesRow'] = cluesRow
@@ -773,7 +782,10 @@ def guessle_hard(request):
         stars = _get_daily_stars_for_date(user, today_dt)
         # Check for previous attempts
         attempts = HardGuessle_Attempt.objects.filter(date__date=today_date, user=user).order_by('-date')
-        # print(f"\nAttempt is: {attempts[0].guess}\n")
+        
+        # add numeric count for templates/JS to use (always present)
+        context['attempts_count'] = attempts.count() if attempts is not None else 0
+        
         # query if a word has been created already today in the DB.
         if OneshotWordHard.objects.filter(date__date=today_date).exists():
             # get today's saved hard oneshot entry
@@ -877,6 +889,9 @@ def guessle_hard(request):
         # This section will add each clue to the guessle rows with the correct colour for each letter.
         cluesRow,alphabet = get_clues_rows(clues, TARGET_WORD, difficulty="hard")
         
+        # ensure target word is always present in context (needed by client JS)
+        context['t_word'] = str(TARGET_WORD or "")
+    
         new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.data,prefix='alphabet')
         context['alphabet_formset'] = new_alphabet_formset
         context['cluesRow'] = cluesRow
