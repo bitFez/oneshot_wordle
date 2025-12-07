@@ -150,6 +150,19 @@ def scan_for_plurals(request, **kwargs):
         pass
     return HttpResponse("Scanned for plurals and updated the database accordingly. Please check the admin panel to confirm.")
 
+def _get_daily_stars_for_date(user, today_dt):
+    """
+    Return the single Daily_Stars row for `user` for the calendar date of today_dt.
+    Create it if missing. Use date__date to match by day (avoids duplicate rows).
+    """
+    # ensure we compare by date
+    today_date = today_dt.date()
+    stars = Daily_Stars.objects.filter(user=user, date__date=today_date).first()
+    if stars is None:
+        # create a new row; date field has auto_now so it will be set on save
+        stars = Daily_Stars.objects.create(user=user, stars=0)
+    return stars
+
 def guessle(request):   
     #initiate array for alphabet colors
     AlphabetFormSet = formset_factory(AlphabetForm, extra=26, max_num=26)
@@ -168,8 +181,8 @@ def guessle(request):
     if request.user.is_authenticated:
         #get user
         user = get_object_or_404(User, pk=request.user.id)
-        # Check for number of daily stars
-        stars, _ = Daily_Stars.objects.update_or_create(date=today, user=user)
+        # Get or create the single Daily_Stars record for this calendar day
+        stars = _get_daily_stars_for_date(user, today_dt)
         context['stars'] = stars
         # Check for previous attempts by calendar date
         attempts = Guessle_Attempt.objects.filter(date__date=today_date, user=user).order_by('-date')
@@ -479,7 +492,7 @@ def guessle_easy(request):
     today_date = today_dt.date()
     
     # Check for number of daily stars
-    stars, _ = Daily_Stars.objects.update_or_create(date=today, user=user)
+    stars = _get_daily_stars_for_date(user, today_dt)
     # Check for previous attempts
     attempts = EasyGuessle_Attempt.objects.filter(date__date=today_date, user=user).order_by('-date')
     # print(f"\nAttempt is: {attempts[0].guess}\n")
@@ -757,7 +770,7 @@ def guessle_hard(request):
         today_date = today_dt.date()
 
         # Check for number of daily stars
-        stars, _ = Daily_Stars.objects.update_or_create(date=today, user=user)
+        stars = _get_daily_stars_for_date(user, today_dt)
         # Check for previous attempts
         attempts = HardGuessle_Attempt.objects.filter(date__date=today_date, user=user).order_by('-date')
         # print(f"\nAttempt is: {attempts[0].guess}\n")

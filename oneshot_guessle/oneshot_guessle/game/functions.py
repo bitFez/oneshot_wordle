@@ -190,35 +190,60 @@ def get_random_clues(oneshotWord, **kwargs):
 
     return fallback
 
+try:
+    from nltk.corpus import wordnet as wn
+    HAVE_WORDNET = True
+except Exception:
+    HAVE_WORDNET = False
+
 def check_plural(word: str) -> bool:
     """
-    Heuristic plural check using inflect with safe normalisation and common exceptions.
-    Returns True for likely plurals, False otherwise.
+    Return True for tokens we should treat like plurals/invalid targets:
+      - actual plural nouns (inflect detects)
+      - past-tense forms ending with -ed
+      - third-person singular verb forms ending with -s (best-effort via WordNet fallback)
+    This intentionally does NOT special-case very short words because your lists are 5/6 letters.
     """
     if not word:
         return False
 
     w = word.strip()
-
     # strip surrounding punctuation
     w = re.sub(r"^[^\w]+|[^\w]+$", "", w)
 
-    # ignore possessives ("cat's" is singular possessive)
+    # ignore possessives ("cat's" is singular possessive) — keep as non-plural target
     if w.endswith("'s") or w.endswith("’s"):
         return False
 
-    # short tokens are unlikely plurals
-    if len(w) <= 2:
-        return False
+    lw = w.lower()
 
-    # common uncountable/exception words that look plural but are not
-    exceptions = {"news", "series", "species", "information", "offspring", "sheep", "fish"}
-    if w.lower() in exceptions:
-        return False
+    # quick reject: probable past-tense verbs
+    if lw.endswith("ed"):
+        return True
 
-    # Use inflect on the lowercased token (inflect expects lowercase for best results)
+    # inflect: True if token is a plural noun
     try:
-        return bool(p.singular_noun(w.lower()))
+        if p.singular_noun(lw):
+            return True
     except Exception:
-        # on any unexpected error, treat as non-plural to avoid excluding words
-        return False
+        pass
+
+    # if token ends with 's' it might be a 3rd-person verb form (annuls) — try WordNet if available
+    if lw.endswith("s"):
+        # check WordNet for verb senses of the token or its stem (drop final 's')
+        stem = lw[:-1]
+        if HAVE_WORDNET:
+            try:
+                if wn.synsets(lw, pos=wn.VERB) or wn.synsets(stem, pos=wn.VERB):
+                    return True
+            except Exception:
+                # fall back to simple heuristic below
+                pass
+        # simple heuristic fallback: treat most -s endings as invalid (exclude) only if the stem looks like a verb:
+        # we conservatively treat common endings that are NOT plural nouns as verbs (e.g. words ending 'ss','us','is')
+        if any(lw.endswith(suf) for suf in ("ss", "us", "is")):
+            return False
+        # treat other -s endings as likely verb-form for purposes of excluding from daily target
+        return True
+
+    return False
