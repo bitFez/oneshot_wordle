@@ -68,11 +68,11 @@ def load_words(request):
     
     if settings.DEBUG:
         file_ = find('dicts/6-letter-words.txt')
-        with open(file_) as f:
-            data =f.read()
+        with open(file_, 'r', encoding='utf8') as f:
+            data =f.read().splitlines()
     else:
         with open(r'oneshot_guessle/game/dicts/6-letter-words.txt') as f:
-            data = f.readlines() # json.load(f)
+            data = [line.rstrip('\n') for line in f]
     
     new6Words = 0
     lenOfData = len(data)
@@ -91,10 +91,36 @@ def load_words(request):
 
 def get_random_word(**kwargs):
     difficulty = kwargs.get('difficulty', None)
-    if difficulty == "hard":
-        return WordsHard.objects.filter(Q(lastOccurance__lte=datetime.now() - timedelta(days=730)) | Q(frequency=0)).order_by('?')[0]
-    else:
-        return Word.objects.filter(Q(lastOccurance__lte=datetime.now() - timedelta(days=730)) | Q(frequency=0)).order_by('?')[0]
+    cutoff = datetime.now() - timedelta(days=730)
+    Model = WordsHard if difficulty == "hard" else Word
+    base_qs = Model.objects.filter(
+        Q(lastOccurance__lte=cutoff) | Q(frequency=0),
+        proper_noun=False,  # exclude proper nouns for target word
+    )
+    # Try a few random candidates and use check_plural to avoid plurals.
+    for _ in range(10):
+        candidate = base_qs.order_by('?').first()
+        if not candidate:
+            break
+        word_text = getattr(candidate, "word", str(candidate))
+        try:
+            if not check_plural(word_text):
+                return candidate
+        except Exception:
+            # if the plural check fails for any reason, skip this candidate
+            continue
+
+    # Fallback: scan through the queryset for the first non-plural
+    for candidate in base_qs:
+        word_text = getattr(candidate, "word", str(candidate))
+        try:
+            if not check_plural(word_text):
+                return candidate
+        except Exception:
+            continue
+
+    # Last resort: return any random word (may be plural/proper)
+    return Model.objects.order_by('?').first()
 
 def scan_for_plurals(request, **kwargs):
     difficulty = kwargs.get('diff', None)
@@ -133,7 +159,11 @@ def guessle(request):
 
     context = {}
     # Get today's todays date
-    today =timezone.localtime(timezone.now())#datetime.now(tz=timezone.utc)
+    today_dt = timezone.localtime(timezone.now())
+    # Get current datetime and its date for daily lookups
+    today_dt = timezone.localtime(timezone.now())
+    today = today_dt  # keep variable name used elsewhere for created datetimes
+    today_date = today_dt.date()
 
     if request.user.is_authenticated:
         #get user
@@ -141,13 +171,13 @@ def guessle(request):
         # Check for number of daily stars
         stars, _ = Daily_Stars.objects.update_or_create(date=today, user=user)
         context['stars'] = stars
-        # Check for previous attempts
-        attempts = Guessle_Attempt.objects.filter(date=today, user=user)
+        # Check for previous attempts by calendar date
+        attempts = Guessle_Attempt.objects.filter(date__date=today_date, user=user).order_by('-date')
     
     # query if a word has been created already today in the DB.
-    if OneshotWord.objects.filter(date=today).exists():
-        todaysword = OneshotWord.objects.filter(date=today)[0] 
-        todaysGuessle = OneshotWord.objects.filter(date=today)[0]
+    if OneshotWord.objects.filter(date__date=today_date).exists():
+        todaysGuessle = OneshotWord.objects.filter(date__date=today_date).first()
+        todaysword = todaysGuessle
         todayclues = getattr(todaysGuessle, "clues", None)
         TARGET_WORD = todaysGuessle.word
         # ensure TARGET_WORD is a string (Word may be a model instance)
@@ -176,6 +206,30 @@ def guessle(request):
         todaysword = get_random_word()
         # get todays random clues
         clue_texts = get_random_clues(todaysword.word, difficulty="regular")
+        # Debug + normalize: ensure we have a list of full-word strings
+        # print("DEBUG get_random_clues returned (type):", type(clue_texts), "repr:", repr(clue_texts))
+        if isinstance(clue_texts, str):
+            # defensive: if a string was returned, wrap into list (string indexed -> single chars bug)
+            # prefer to split on whitespace if that is a possible format, else treat as single word
+            if " " in clue_texts:
+                clue_texts = clue_texts.split()
+            else:
+                clue_texts = [clue_texts]
+        # ensure list length >=5: if not, expand with fallback (fetch from DB)
+        if not isinstance(clue_texts, (list, tuple)) or len(clue_texts) < 5:
+            qs = WordsHard.objects if False else Word.objects  # regular -> Word
+            fallback = []
+            for cand in qs.filter():  # simplest fallback
+                w = str(getattr(cand, "word", cand)).lower()
+                if w != str(todaysword.word).lower() and len(w) == len(str(todaysword.word)):
+                    fallback.append(w)
+                    if len(fallback) == 5:
+                        break
+            # merge keeping existing items first
+            clue_texts = list(clue_texts) + [c for c in fallback if c not in clue_texts]
+        # final trim/pad to length 5
+        clue_texts = (clue_texts + [""]*5)[:5]
+ 
         clues_obj, _ = OneshotClues.objects.update_or_create(
             clue1 = clue_texts[0],
             clue2 = clue_texts[1],
@@ -305,17 +359,21 @@ def guessle(request):
                     
                     user.dayscorrect+=1
                     # check for attempt yesterday
-                    yesterday_start = start_date - timedelta(1)
-                    yesterday_end = end_date - timedelta(1)
+                    yesterday_date = (today_dt - timedelta(days=1)).date()
+                    yesterday_qs = Guessle_Attempt.objects.filter(date__date=yesterday_date, user=user)
+                    if yesterday_qs.exists():
+                        yesterday_attempt = yesterday_qs.first()
+                        # check yesterday's word against the attempt
+                        prev_word = getattr(yesterday_attempt.word, "word", yesterday_attempt.word)
+                        if str(yesterday_attempt.guess) == str(prev_word):
+                            user.streak = (user.streak or 0) + 1
+                            if user.streak > (user.highestStreak or 0):
+                                user.highestStreak = user.streak
+                        else:
+                            user.streak = 0
                     
-                    try:
-                        yesterday_attempt = Guessle_Attempt.objects.filter(date__range=(yesterday_start, yesterday_end), user=user)[0]
-                        if yesterday_attempt.exists():
-                            if yesterday_attempt.guess == yesterday_attempt.word:
-                                user.streak +=1
-                                if user.streak > user.highestStreak:
-                                    user.highestStreak = user.streak
-                    except:
+                    # if an attempt doesnt exist for yesterday, streak = 0
+                    else:
                         user.streak = 0
                     
                     context['stars'] = stars
@@ -341,13 +399,6 @@ def guessle(request):
             context['form'] = form
             context['alphabet_formset'] = alphabet_formset
 
-                # else:
-                #     messages.add_message(request=request, level=messages.ERROR, message = 'Chances over. word is '+TARGET_WORD)
-                #     context['guess_formset'] = guess_formset
-                #     context['form'] = form
-                #     context['alphabet_formset'] = alphabet_formset
-
-        # else:
             print(form.errors)
             print(form.non_field_errors)
             print(guess_formset.errors)
@@ -357,37 +408,34 @@ def guessle(request):
     
     
     else:
-        try:
-            # print("Not a post request")
-            if (attempts.exists() == True) & (attempts[0].guess == todaysGuessle.word):
-                # print(f"\n todays word {todaysGuessle.word} - The guess {attempts[0].guess} \nattempt exists and is equal to todays word")
-                messages.add_message(request=request, level=messages.ERROR, message=f"You have already attempted today's Guessle")
-                form = GuessleForm()
-                form.fields['attempts_left'].initial= 0
-                form.fields['attempt_number'].initial = 0
-                attempt_number = 0
-                row, alphabet=guess_result(attempts[0].guess, todaysGuessle.word, alphabet)
-                cluesRow.append(row)
-                context['cluesRow'] = cluesRow
-                context['attempts'] = attempts
-            elif (attempts.exists() == True) & (attempts[0].guess != todaysGuessle.word):
-                # print(f"\n todays word {todaysGuessle.word} - The guess {attempts[0].guess} \nattempt exists and is not equal to todays word")
-                messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's Guessle")
-                form = GuessleForm()
-                form.fields['attempts_left'].initial= 0
-                attempt_number = 0
-                row, alphabet=guess_result(attempts[0].guess, todaysGuessle.word, alphabet)
-                cluesRow.append(row)
-                context['cluesRow'] = cluesRow
-                context['attempts'] = attempts
-            # else:
-                # print(f"We do this if there is no attempt!")
-                # initiate the forms
-                
-                # form = GuessleForm(initial={})
-                # form.fields['attempts_left'].initial= 1
-        except:
-            pass
+        # not a POST: if the user already attempted today show their attempt and coloured result
+        previous_attempt = attempts.first() if attempts.exists() else None
+        if previous_attempt:
+            # show message and populate the form with the previous guess (readonly behaviour)
+            messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's Guessle")
+            # pre-fill form with the user's previous guess and zero attempts left
+            form = GuessleForm(initial={
+                'guess':previous_attempt.guess,
+                'attempts_left':0,
+                'attempt_number': 0,
+            })
+            attempt_number = 0
+            # compute coloured row & alphabet from the previous guess
+            row, alphabet = guess_result(previous_attempt.guess, TARGET_WORD, alphabet)
+            cluesRow.append(row)
+            context['cluesRow'] = cluesRow
+            context['attempts'] = attempts
+            # prepare small readonly formsets (keeps template expectation of formsets)
+            guess_formset = GuessFormSet(prefix='guess')
+            alphabet_formset = AlphabetFormSet(prefix='alphabet')
+            context['form'] = form
+            context['guess_formset'] = guess_formset
+            context['alphabet_formset'] = alphabet_formset
+            # render immediately so we don't override the form below
+            user.save()
+            return render(request, 'pages/games/guessle.html', context)
+            
+        # if no previous attempts: prepare a fresh form for the user
         attempt_number = 1
         form = GuessleForm(initial={})
         form.fields['attempts_left'].initial= 1
@@ -406,6 +454,7 @@ def guessle(request):
         context['form'] = form
         context['guess_formset'] = guess_formset
         context['alphabet_formset'] = alphabet_formset
+   
     context['t_word'] = TARGET_WORD
         
 
@@ -425,32 +474,91 @@ def guessle_easy(request):
 
     context = {}
     # Get today's todays date
-    today =timezone.localtime(timezone.now())
+    today_dt = timezone.localtime(timezone.now())
+    today = today_dt 
+    today_date = today_dt.date()
     
     # Check for number of daily stars
     stars, _ = Daily_Stars.objects.update_or_create(date=today, user=user)
     # Check for previous attempts
-    attempts = EasyGuessle_Attempt.objects.filter(date=today, user=user)
+    attempts = EasyGuessle_Attempt.objects.filter(date__date=today_date, user=user).order_by('-date')
     # print(f"\nAttempt is: {attempts[0].guess}\n")
     # query if a word has been created already today in the DB.
-    if OneshotWordEasy.objects.filter(date=today).exists():
-        todaysword = OneshotWordEasy.objects.filter(date=today)[0] 
+    if OneshotWordEasy.objects.filter(date__date=today_date).exists():
+        todaysGuessle = OneshotWordEasy.objects.filter(date__date=today_date)[0] 
+        todaysword = todaysGuessle
+        todayclues = getattr(todaysGuessle, "clues", None)
+        TARGET_WORD = todaysGuessle.word
+        # ensure TARGET_WORD is a string (Word may be a model instance)
+        if hasattr(TARGET_WORD, "word"):
+            TARGET_WORD = TARGET_WORD.word
+        elif not isinstance(TARGET_WORD, str):
+            TARGET_WORD = str(TARGET_WORD)
+        
+        # coerce clue fields to plain strings (handle Word model instances)
+        def _clue_text(c):
+            if c is None:
+                return ""
+            if hasattr(c, "word"):
+                return c.word
+            return str(c)
+
+        clues = [
+            _clue_text(getattr(todayclues, "clue1", None)),
+            _clue_text(getattr(todayclues, "clue2", None)),
+            _clue_text(getattr(todayclues, "clue3", None)),
+            _clue_text(getattr(todayclues, "clue4", None)),
+            _clue_text(getattr(todayclues, "clue5", None)),
+        ]
     else:
         # get a new word for today if one doesn't exist
         todaysword = get_random_word()
         # get todays random clues
-        todayclues = get_random_clues(todaysword.word, difficulty="easy")
+        clue_texts = get_random_clues(todaysword.word, difficulty="easy")
+        # Debug + normalize: ensure we have a list of full-word strings
+        # print("DEBUG get_random_clues returned (type):", type(clue_texts), "repr:", repr(clue_texts))
+        if isinstance(clue_texts, str):
+            # defensive: if a string was returned, wrap into list (string indexed -> single chars bug)
+            # prefer to split on whitespace if that is a possible format, else treat as single word
+            if " " in clue_texts:
+                clue_texts = clue_texts.split()
+            else:
+                clue_texts = [clue_texts]
+        # ensure list length >=5: if not, expand with fallback (fetch from DB)
+        if not isinstance(clue_texts, (list, tuple)) or len(clue_texts) < 5:
+            qs = WordsHard.objects if False else Word.objects  # regular -> Word
+            fallback = []
+            for cand in qs.filter():  # simplest fallback
+                w = str(getattr(cand, "word", cand)).lower()
+                if w != str(todaysword.word).lower() and len(w) == len(str(todaysword.word)):
+                    fallback.append(w)
+                    if len(fallback) == 5:
+                        break
+            # merge keeping existing items first
+            clue_texts = list(clue_texts) + [c for c in fallback if c not in clue_texts]
+        # final trim/pad to length 5
+        clue_texts = (clue_texts + [""]*5)[:5]
+ 
         clues_obj, _ = OneshotCluesEasy.objects.update_or_create(
-            clue1 = todayclues[0],
-            clue2 = todayclues[1],
-            clue3 = todayclues[2],
-            clue4 = todayclues[3],
-            clue5 = todayclues[4]
+            clue1 = clue_texts[0],
+            clue2 = clue_texts[1],
+            clue3 = clue_texts[2],
+            clue4 = clue_texts[3],
+            clue5 = clue_texts[4]
         )
-        oneshot_easy, _ = OneshotWordEasy.objects.update_or_create(
+        oneshot_obj, _ = OneshotWordEasy.objects.update_or_create(
             word=todaysword.word,
             defaults={"clues": clues_obj, "date": today},
         )
+        # use the created oneshot as today's guessle
+        todaysGuessle = oneshot_obj
+        todayclues = clues_obj
+        TARGET_WORD = todaysGuessle.word
+        if hasattr(TARGET_WORD, "word"):
+            TARGET_WORD = TARGET_WORD.word
+        elif not isinstance(TARGET_WORD, str):
+            TARGET_WORD = str(TARGET_WORD)
+            
         # build plain-string clues list
         def _clue_text(c):
             if c is None:
@@ -460,46 +568,23 @@ def guessle_easy(request):
             return str(c)
 
         clues = [
-            _clue_text(getattr(clues_obj, "clue1", None)),
-            _clue_text(getattr(clues_obj, "clue2", None)),
-            _clue_text(getattr(clues_obj, "clue3", None)),
-            _clue_text(getattr(clues_obj, "clue4", None)),
-            _clue_text(getattr(clues_obj, "clue5", None)),
+            _clue_text(getattr(todayclues, "clue1", None)),
+            _clue_text(getattr(todayclues, "clue2", None)),
+            _clue_text(getattr(todayclues, "clue3", None)),
+            _clue_text(getattr(todayclues, "clue4", None)),
+            _clue_text(getattr(todayclues, "clue5", None)),
         ]
-        # increment frequency on the todaysword model if present
+        # increment frequency on the todaysword instance if present
         try:
-            w = Word.objects.get(word=todaysword.word)
-            w.frequency = (w.frequency or 0) + 1
-            w.save()
+            todaysword.frequency = (todaysword.frequency or 0) + 1
+            todaysword.save()
         except Exception:
             pass
                 
-    todaysGuessle = OneshotWordEasy.objects.all().last()
-    todayclues = todaysGuessle.clues #OneshotClues.objects.filter(date__range=(start_date, end_date))[0]
-    TARGET_WORD = todaysGuessle.word
-    if hasattr(TARGET_WORD, "word"):
-        TARGET_WORD = TARGET_WORD.word
-    elif not isinstance(TARGET_WORD, str):
-        TARGET_WORD = str(TARGET_WORD)
-    
-    def _clue_text(c):
-        if c is None:
-            return ""
-        if hasattr(c, "word"):
-            return c.word
-        return str(c)
-
-    clues = [
-        _clue_text(getattr(todayclues, "clue1", None)),
-        _clue_text(getattr(todayclues, "clue2", None)),
-        _clue_text(getattr(todayclues, "clue3", None)),
-        _clue_text(getattr(todayclues, "clue4", None)),
-        _clue_text(getattr(todayclues, "clue5", None)),
-    ]
-
     # This section will add each clue to the guessle rows with the correct colour for each letter.
     cluesRow,alphabet = get_clues_rows(clues, TARGET_WORD, difficulty="easy")
     
+
     new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.data,prefix='alphabet')
     context['alphabet_formset'] = new_alphabet_formset
     context['cluesRow'] = cluesRow
@@ -507,6 +592,7 @@ def guessle_easy(request):
     context['coloured_alpha'] = alphabet
     context['stars'] = stars
     context['difficulty'] = 'easy'
+    
     # Dealing with the post of a guess
     if request.method == 'POST':   
         
@@ -553,7 +639,6 @@ def guessle_easy(request):
                 new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.cleaned_data,prefix='alphabet')
 
                 context['form'] = form
-                # context['guess_formset'] = new_guess_formset
                 context['alphabet_formset'] = new_alphabet_formset
                 context['cluesRow'] = cluesRow
 
@@ -583,12 +668,6 @@ def guessle_easy(request):
                 context['form'] = form
                 context['alphabet_formset'] = alphabet_formset
 
-            # else:
-            #     messages.add_message(request=request, level=messages.ERROR, message = 'Chances over. word is '+TARGET_WORD)
-            #     context['guess_formset'] = guess_formset
-            #     context['form'] = form
-            #     context['alphabet_formset'] = alphabet_formset
-
         else:
             print(form.errors)
             print(form.non_field_errors)
@@ -599,37 +678,33 @@ def guessle_easy(request):
     
     
     else:
-        try:
-            # print("Not a post request")
-            if (attempts.exists() == True) & (attempts[0].guess == todaysGuessle.word):
-                # print(f"\n todays word {todaysGuessle.word} - The guess {attempts[0].guess} \nattempt exists and is equal to todays word")
-                messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's easy Guessle")
-                form = GuessleForm()
-                form.fields['attempts_left'].initial= 0
-                form.fields['attempt_number'].initial = 0
-                attempt_number = 0
-                row,alphabet=guess_result(attempts[0].guess, todaysGuessle.word,alphabet)
-                cluesRow.append(row)
-                context['cluesRow'] = cluesRow
-                context['attempts'] = attempts
-            elif (attempts.exists() == True) & (attempts[0].guess != todaysGuessle.word):
-                # print(f"\n todays word {todaysGuessle.word} - The guess {attempts[0].guess} \nattempt exists and is not equal to todays word")
-                messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's easy Guessle")
-                form = GuessleForm()
-                form.fields['attempts_left'].initial= 0
-                attempt_number = 0
-                row, alphabet=guess_result(attempts[0].guess, todaysGuessle.word, alphabet)
-                cluesRow.append(row)
-                context['cluesRow'] = cluesRow
-                context['attempts'] = attempts
-            # else:
-                # print(f"We do this if there is no attempt!")
-                # initiate the forms
-                
-                # form = GuessleForm(initial={})
-                # form.fields['attempts_left'].initial= 1
-        except:
-            pass
+        # not a POST: if the user already attempted today show their attempt and coloured result
+        previous_attempt = attempts.first() if attempts.exists() else None
+        if previous_attempt:
+            # show message and populate the form with the previous guess (readonly behaviour)
+            messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's easy Guessle")
+            # pre-fill form with the user's previous guess and zero attempts left
+            form = GuessleForm(initial={
+                'guess':previous_attempt.guess,
+                'attempts_left':0,
+                'attempt_number': 0,
+            })
+            attempt_number = 0
+            # compute coloured row & alphabet from the previous guess
+            row, alphabet = guess_result(previous_attempt.guess, TARGET_WORD, alphabet)
+            cluesRow.append(row)
+            context['cluesRow'] = cluesRow
+            context['attempts'] = attempts
+            # prepare small readonly formsets (keeps template expectation of formsets)
+            guess_formset = GuessFormSet(prefix='guess')
+            alphabet_formset = AlphabetFormSet(prefix='alphabet')
+            context['form'] = form
+            context['guess_formset'] = guess_formset
+            context['alphabet_formset'] = alphabet_formset
+            # render immediately so we don't override the form below
+            user.save()
+            return render(request, 'pages/games/guessle.html', context)
+            
         attempt_number = 1
         form = GuessleForm(initial={})
         form.fields['attempts_left'].initial= 1
@@ -650,6 +725,9 @@ def guessle_easy(request):
         context['alphabet_formset'] = alphabet_formset
         context['stars'] = stars
 
+    context['t_word'] = TARGET_WORD
+
+
     #send back the html template
     user.save()
     return render(request, 'pages/games/guessle.html', context)
@@ -661,7 +739,7 @@ def supporter(request):
 def guessle_hard(request):
     #get user
     user = get_object_or_404(User, pk=request.user.id)
-    print(f"User support: {user.supporter}")
+    # print(f"User support: {user.supporter}")
     if user.supporter == False:
         return HttpResponseRedirect(reverse("game:supporterredirect"))
     else:
@@ -674,32 +752,93 @@ def guessle_hard(request):
 
         context = {}
         # Get today's todays date
-        today =timezone.localtime(timezone.now())
-        
+        today_dt = timezone.localtime(timezone.now())
+        today = today_dt  # keep variable name used elsewhere for created datetimes
+        today_date = today_dt.date()
+
         # Check for number of daily stars
         stars, _ = Daily_Stars.objects.update_or_create(date=today, user=user)
         # Check for previous attempts
-        attempts = HardGuessle_Attempt.objects.filter(date=today, user=user)
+        attempts = HardGuessle_Attempt.objects.filter(date__date=today_date, user=user).order_by('-date')
         # print(f"\nAttempt is: {attempts[0].guess}\n")
         # query if a word has been created already today in the DB.
-        if OneshotWordHard.objects.filter(date=today).exists():
-            todaysword = OneshotWordHard.objects.filter(date=today)[0] 
+        if OneshotWordHard.objects.filter(date__date=today_date).exists():
+            # get today's saved hard oneshot entry
+            todaysGuessle = OneshotWordHard.objects.filter(date__date=today_date)[0] 
+            todaysword = todaysGuessle
+            todayclues = getattr(todaysGuessle, "clues", None)
+            TARGET_WORD = getattr(todaysGuessle, "word", todaysGuessle)
+            # normalise today's TARGET_WORD to a plain string
+            if hasattr(TARGET_WORD, "word"):
+                TARGET_WORD = TARGET_WORD.word
+            elif not isinstance(TARGET_WORD, str):
+                TARGET_WORD = str(TARGET_WORD)
+            
+            # coerce clue fields to plain strings (handle Word model instances)
+            def _clue_text(c):
+                if c is None:
+                    return ""
+                if hasattr(c, "word"):
+                    return c.word
+                return str(c)
+
+            clues = [
+                _clue_text(getattr(todayclues, "clue1", None)),
+                _clue_text(getattr(todayclues, "clue2", None)),
+                _clue_text(getattr(todayclues, "clue3", None)),
+                _clue_text(getattr(todayclues, "clue4", None)),
+                _clue_text(getattr(todayclues, "clue5", None)),
+            ]
         else:
             # get a new word for today if one doesn't exist
             todaysword = get_random_word(difficulty = "hard")
             # get todays random clues
-            todayclues = get_random_clues(todaysword.word, difficulty="hard")
+            clue_texts = get_random_clues(todaysword.word, difficulty="hard")
+            # Debug + normalize: ensure we have a list of full-word strings
+            # print("DEBUG get_random_clues returned (type):", type(clue_texts), "repr:", repr(clue_texts))
+            if isinstance(clue_texts, str):
+                # defensive: if a string was returned, wrap into list (string indexed -> single chars bug)
+                # prefer to split on whitespace if that is a possible format, else treat as single word
+                if " " in clue_texts:
+                    clue_texts = clue_texts.split()
+                else:
+                    clue_texts = [clue_texts]
+            # ensure list length >=5: if not, expand with fallback (fetch from DB)
+            if not isinstance(clue_texts, (list, tuple)) or len(clue_texts) < 5:
+                qs = WordsHard.objects if False else Word.objects  # regular -> Word
+                fallback = []
+                for cand in qs.filter():  # simplest fallback
+                    w = str(getattr(cand, "word", cand)).lower()
+                    if w != str(todaysword.word).lower() and len(w) == len(str(todaysword.word)):
+                        fallback.append(w)
+                        if len(fallback) == 5:
+                            break
+                # merge keeping existing items first
+                clue_texts = list(clue_texts) + [c for c in fallback if c not in clue_texts]
+            # final trim/pad to length 5
+            clue_texts = (clue_texts + [""]*5)[:5]
+            
             clues_obj, _ = OneshotCluesHard.objects.update_or_create(
-                clue1 = todayclues[0],
-                clue2 = todayclues[1],
-                clue3 = todayclues[2],
-                clue4 = todayclues[3],
-                clue5 = todayclues[4]
+                clue1 = clue_texts[0],
+                clue2 = clue_texts[1],
+                clue3 = clue_texts[2],
+                clue4 = clue_texts[3],
+                clue5 = clue_texts[4]
             )
-            oneshot_hard, _ = OneshotWordHard.objects.update_or_create(
+            oneshot_obj, _ = OneshotWordHard.objects.update_or_create(
                 word=todaysword.word,
                 defaults={"clues": clues_obj, "date": today},
             )
+
+            # use the created oneshot as today's guessle
+            todaysGuessle = oneshot_obj
+            todayclues = clues_obj
+            TARGET_WORD = todaysGuessle.word
+            if hasattr(TARGET_WORD, "word"):
+                TARGET_WORD = TARGET_WORD.word
+            elif not isinstance(TARGET_WORD, str):
+                TARGET_WORD = str(TARGET_WORD)
+
             # build plain-string clues list
             def _clue_text(c):
                 if c is None:
@@ -709,42 +848,18 @@ def guessle_hard(request):
                 return str(c)
 
             clues = [
-                _clue_text(getattr(clues_obj, "clue1", None)),
-                _clue_text(getattr(clues_obj, "clue2", None)),
-                _clue_text(getattr(clues_obj, "clue3", None)),
-                _clue_text(getattr(clues_obj, "clue4", None)),
-                _clue_text(getattr(clues_obj, "clue5", None)),
+                _clue_text(getattr(todayclues, "clue1", None)),
+                _clue_text(getattr(todayclues, "clue2", None)),
+                _clue_text(getattr(todayclues, "clue3", None)),
+                _clue_text(getattr(todayclues, "clue4", None)),
+                _clue_text(getattr(todayclues, "clue5", None)),
             ]
             # increment frequency on the todaysword model if present
             try:
-                w = Word.objects.get(word=todaysword.word)
-                w.frequency = (w.frequency or 0) + 1
-                w.save()
+                todaysword.frequency = (todaysword.frequency or 0) + 1
+                todaysword.save()
             except Exception:
                 pass
-        
-        todaysGuessle = OneshotWordHard.objects.all().last()
-        todayclues = todaysGuessle.clues #OneshotClues.objects.filter(date__range=(start_date, end_date))[0]
-        TARGET_WORD = todaysGuessle.word
-        if hasattr(TARGET_WORD, "word"):
-            TARGET_WORD = TARGET_WORD.word
-        elif not isinstance(TARGET_WORD, str):
-            TARGET_WORD = str(TARGET_WORD)
-        
-        def _clue_text(c):
-            if c is None:
-                return ""
-            if hasattr(c, "word"):
-                return c.word
-            return str(c)
-
-        clues = [
-            _clue_text(getattr(todayclues, "clue1", None)),
-            _clue_text(getattr(todayclues, "clue2", None)),
-            _clue_text(getattr(todayclues, "clue3", None)),
-            _clue_text(getattr(todayclues, "clue4", None)),
-            _clue_text(getattr(todayclues, "clue5", None)),
-        ]
         
         # This section will add each clue to the guessle rows with the correct colour for each letter.
         cluesRow,alphabet = get_clues_rows(clues, TARGET_WORD, difficulty="hard")
@@ -756,6 +871,7 @@ def guessle_hard(request):
         context['coloured_alpha'] = alphabet
         context['stars'] = stars
         context['difficulty'] = 'hard'
+       
         # Dealing with the post of a guess
         if request.method == 'POST':   
             
@@ -779,7 +895,6 @@ def guessle_hard(request):
             GuessFormSet = formset_factory(GuessFormHard, extra=1, max_num=1)
             #read the forms from copy of request.POST to make them mutable
             guess_formset = GuessFormSet(request.POST.copy(), form_kwargs={'empty_permitted': False}, prefix='guess')
-            
             alphabet_formset = AlphabetFormSet(request.POST.copy(), form_kwargs={'empty_permitted': False}, prefix='alphabet')
             form = GuessleFormHard(request.POST.copy())
             
@@ -807,11 +922,9 @@ def guessle_hard(request):
                     new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.cleaned_data,prefix='alphabet')
 
                     context['form'] = form
-                    # context['guess_formset'] = new_guess_formset
                     context['alphabet_formset'] = new_alphabet_formset
                     context['cluesRow'] = cluesRow
-                    context['alphabet'] = alphabet
-                    print(alphabet)
+                    
                     if guess == TARGET_WORD:
                         messages.add_message(request=request, level=messages.SUCCESS, message='You Guessled in one Shot!! ')
                         todaysGuessle.attempts+=1
@@ -838,12 +951,6 @@ def guessle_hard(request):
                     context['form'] = form
                     context['alphabet_formset'] = alphabet_formset
 
-                # else:
-                #     messages.add_message(request=request, level=messages.ERROR, message = 'Chances over. word is '+TARGET_WORD)
-                #     context['guess_formset'] = guess_formset
-                #     context['form'] = form
-                #     context['alphabet_formset'] = alphabet_formset
-
             else:
                 print(form.errors)
                 print(form.non_field_errors)
@@ -854,37 +961,33 @@ def guessle_hard(request):
         
         
         else:
-            try:
-                # print("Not a post request")
-                if (attempts.exists() == True) & (attempts[0].guess == todaysGuessle.word):
-                    # print(f"\n todays word {todaysGuessle.word} - The guess {attempts[0].guess} \nattempt exists and is equal to todays word")
-                    messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's hard Guessle")
-                    form = GuessleFormHard()
-                    form.fields['attempts_left'].initial= 0
-                    form.fields['attempt_number'].initial = 0
-                    attempt_number = 0
-                    row, alphabet=guess_result(attempts[0].guess, todaysGuessle.word, alphabet)
-                    cluesRow.append(row)
-                    context['cluesRow'] = cluesRow
-                    context['attempts'] = attempts
-                elif (attempts.exists() == True) & (attempts[0].guess != todaysGuessle.word):
-                    # print(f"\n todays word {todaysGuessle.word} - The guess {attempts[0].guess} \nattempt exists and is not equal to todays word")
-                    messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's hard Guessle")
-                    form = GuessleFormHard()
-                    form.fields['attempts_left'].initial= 0
-                    attempt_number = 0
-                    row, alphabet=guess_result(attempts[0].guess, todaysGuessle.word, alphabet)
-                    cluesRow.append(row)
-                    context['cluesRow'] = cluesRow
-                    context['attempts'] = attempts
-                # else:
-                    # print(f"We do this if there is no attempt!")
-                    # initiate the forms
-                    
-                    # form = GuessleForm(initial={})
-                    # form.fields['attempts_left'].initial= 1
-            except:
-                pass
+            # not a POST: if the user already attempted today show their attempt and coloured result
+            previous_attempt = attempts.first() if attempts.exists() else None
+            if previous_attempt:
+                # show message and populate the form with the previous guess (readonly behaviour)
+                messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's hard Guessle")
+                # pre-fill form with the user's previous guess and zero attempts left
+                form = GuessleForm(initial={
+                    'guess':previous_attempt.guess,
+                    'attempts_left':0,
+                    'attempt_number': 0,
+                })
+                attempt_number = 0
+                # compute coloured row & alphabet from the previous guess
+                row, alphabet = guess_result(previous_attempt.guess, TARGET_WORD, alphabet)
+                cluesRow.append(row)
+                context['cluesRow'] = cluesRow
+                context['attempts'] = attempts
+                # prepare small readonly formsets (keeps template expectation of formsets)
+                guess_formset = GuessFormSet(prefix='guess')
+                alphabet_formset = AlphabetFormSet(prefix='alphabet')
+                context['form'] = form
+                context['guess_formset'] = guess_formset
+                context['alphabet_formset'] = alphabet_formset
+                # render immediately so we don't override the form below
+                user.save()
+                return render(request, 'pages/games/guessle.html', context)
+        
             attempt_number = 1
             form = GuessleFormHard(initial={})
             form.fields['attempts_left'].initial= 1
@@ -904,6 +1007,8 @@ def guessle_hard(request):
             context['guess_formset_hard'] = guess_formset
             context['alphabet_formset'] = alphabet_formset
             context['stars'] = stars
+
+        context['t_word'] = TARGET_WORD
 
         #send back the html template
         user.save()

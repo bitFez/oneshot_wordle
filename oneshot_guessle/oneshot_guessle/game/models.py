@@ -5,8 +5,8 @@ User = get_user_model()
 # Create your models here.
 class OneshotClues(models.Model):
     class Meta: 
-        verbose_name = "Clue"
-        verbose_name_plural = "Clues"
+        verbose_name = "Oneshot Regular Clue"
+        verbose_name_plural = "Oneshot Regular Clues"
     clue1 = models.CharField(max_length=5)
     clue2 = models.CharField(max_length=5)
     clue3 = models.CharField(max_length=5)
@@ -19,8 +19,8 @@ class OneshotClues(models.Model):
 
 class OneshotCluesEasy(models.Model):
     class Meta: 
-        verbose_name = "Easy Clue"
-        verbose_name_plural = "Easy Clues"
+        verbose_name = "Oneshot Easy Clue"
+        verbose_name_plural = "OneshotEasy Clues"
     clue1 = models.CharField(max_length=5)
     clue2 = models.CharField(max_length=5)
     clue3 = models.CharField(max_length=5)
@@ -33,8 +33,8 @@ class OneshotCluesEasy(models.Model):
 
 class OneshotCluesHard(models.Model):
     class Meta: 
-        verbose_name = "Hard Clue"
-        verbose_name_plural = "Hard Clues"
+        verbose_name = "Oneshot Hard Clue"
+        verbose_name_plural = "Oneshot Hard Clues"
     clue1 = models.CharField(max_length=6)
     clue2 = models.CharField(max_length=6)
     clue3 = models.CharField(max_length=6)
@@ -47,8 +47,8 @@ class OneshotCluesHard(models.Model):
 
 class OneshotWord(models.Model):
     class Meta: 
-        verbose_name = "Oneshot Daily Word"
-        verbose_name_plural = "Oneshot Daily Words"
+        verbose_name = "Oneshot Regular Daily Word"
+        verbose_name_plural = "Oneshot Regular Daily Words"
 
     word = models.CharField(max_length=5)
     date = models.DateTimeField(auto_now_add=True)
@@ -89,9 +89,10 @@ class OneshotWordHard(models.Model):
     
 
 class Word(models.Model):
+    """ 5 letter words """
     class Meta: 
-        verbose_name = "Word"
-        verbose_name_plural = "Words"
+        verbose_name = "5 Letter Word"
+        verbose_name_plural = "5 Letter Words"
 
     word = models.CharField(max_length=5)
     frequency = models.PositiveBigIntegerField(default=0)
@@ -102,9 +103,10 @@ class Word(models.Model):
         return self.word
 
 class WordsHard(models.Model):
+    """ 6 letter words """
     class Meta: 
-        verbose_name = "Hard Word"
-        verbose_name_plural = "Hard Words"
+        verbose_name = "6 letter Word (Hard)"
+        verbose_name_plural = "6 letter Words (Hard)"
 
     word = models.CharField(max_length=6)
     frequency = models.PositiveBigIntegerField(default=0)
@@ -116,8 +118,8 @@ class WordsHard(models.Model):
 
 class Guessle_Attempt(models.Model):
     class Meta: 
-        verbose_name = "Word Attempt"
-        verbose_name_plural = "Word Attempts"
+        verbose_name = "Regular Guessle Word Attempt"
+        verbose_name_plural = "Regular Guessle Word Attempts"
     word = models.ForeignKey(OneshotWord, on_delete=models.CASCADE)
     guess = models.CharField(max_length=5)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -128,8 +130,8 @@ class Guessle_Attempt(models.Model):
 
 class EasyGuessle_Attempt(models.Model):
     class Meta: 
-        verbose_name = "Easy Word Attempt"
-        verbose_name_plural = "Easy Words Attempts"
+        verbose_name = "Easy Guessle Word Attempt"
+        verbose_name_plural = "Easy Guessle Words Attempts"
     word = models.ForeignKey(OneshotWordEasy, on_delete=models.CASCADE)
     guess = models.CharField(max_length=5)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -137,8 +139,8 @@ class EasyGuessle_Attempt(models.Model):
 
 class HardGuessle_Attempt(models.Model):
     class Meta: 
-        verbose_name = "Hard Word Attempt"
-        verbose_name_plural = "Hard Words Attempts"
+        verbose_name = "Hard Guessle Word Attempt"
+        verbose_name_plural = "Hard Guessle Words Attempts"
     word = models.ForeignKey(OneshotWordHard, on_delete=models.CASCADE)
     guess = models.CharField(max_length=6)
     user = models.ForeignKey(User, on_delete=models.CASCADE)

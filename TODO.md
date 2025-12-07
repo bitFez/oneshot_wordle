@@ -7,3 +7,4 @@
 - [ ] list resources
 - [ ] load students as KS instead of year group.
 
+- [ ] New star entries being added daily on the backend rather than incrementing the daily count 

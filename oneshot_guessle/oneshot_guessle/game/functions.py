@@ -1,4 +1,5 @@
 from .models import Word,WordsHard
+import re
 import inflect
 
 p = inflect.engine()
@@ -58,112 +59,166 @@ def get_clues_rows(clues, TARGET_WORD, **kwargs):
                 25:{'colour':'secondary', 'letter':'z','id':'id_alphabet-25-l_color'}
                 }
     cluesRow = []
-    for clue in range(0,5):
-        cows,bulls=[],[]
-        row='<div class="btn-group">'
-        word = clues[clue]                
-        for j in range(0,rowLen):
-            if word[j] == TARGET_WORD[j]:
-                letter= '<button class="form-control clue_form_size btn btn-success fw-bold text-center text-light disabled" type="text", size="1">'+word[j].upper()+'</button>'
-                alphabet[ord(word[j])-97]["colour"]="success"
-                bulls.append(word[j])
-                row+=letter
-            elif (word[j] in TARGET_WORD) and (word[j] not in cows) and (word[j] not in bulls):
-                letter= '<button class="form-control clue_form_size btn btn-warning fw-bold text-center text-light disabled" type="text", size="1">'+word[j].upper()+'</button>'
-                if alphabet[ord(word[j])-97]["colour"]=="secondary":
-                    alphabet[ord(word[j])-97]["colour"]="warning"
-                row+=letter
-                cows.append(word[j])
-            else:
-                letter= '<button class="form-control clue_form_size btn btn-secondary fw-bold text-center text-light disabled" type="text", size="1">'+word[j].upper()+'</button>'
-                if alphabet[ord(word[j])-97]["colour"]=="secondary":
-                    alphabet[ord(word[j])-97]["colour"]="dark"
-                row+=letter
-        row+='</div><br>'
 
+    # normalize target once
+    target_text = getattr(TARGET_WORD, "word", TARGET_WORD)
+    target_text = str(target_text or "").lower()
+    target_len = len(target_text)
+
+    for clue_index in range(0, 5):
+        cows, bulls = [], []
+        row = '<div class="btn-group">'
+
+        # normalize candidate (could be model instance or plain string)
+        item = clues[clue_index]
+        word_text = getattr(item, "word", item)
+        word_text = str(word_text or "").lower()
+
+        # compare only up to the min of target_len and actual candidate length
+        compare_len = min(len(word_text), target_len, rowLen)
+
+        for j in range(0, compare_len):
+            ch = word_text[j]
+            if ch == target_text[j]:
+                letter = '<button class="form-control clue_form_size btn btn-success fw-bold text-center text-light disabled" type="text" size="1">' + ch.upper() + '</button>'
+                alphabet[ord(ch) - 97]["colour"] = "success"
+                bulls.append(ch)
+                row += letter
+            elif (ch in target_text) and (ch not in cows) and (ch not in bulls):
+                letter = '<button class="form-control clue_form_size btn btn-warning fw-bold text-center text-light disabled" type="text" size="1">' + ch.upper() + '</button>'
+                if alphabet[ord(ch) - 97]["colour"] == "secondary":
+                    alphabet[ord(ch) - 97]["colour"] = "warning"
+                row += letter
+                cows.append(ch)
+            else:
+                letter = '<button class="form-control clue_form_size btn btn-secondary fw-bold text-center text-light disabled" type="text" size="1">' + ch.upper() + '</button>'
+                if alphabet[ord(ch) - 97]["colour"] == "secondary":
+                    alphabet[ord(ch) - 97]["colour"] = "dark"
+                row += letter
+
+        # if word shorter than rowLen, pad remaining positions with empty/neutral buttons
+        if compare_len < rowLen:
+            for _ in range(compare_len, rowLen):
+                row += '<button class="form-control clue_form_size btn btn-secondary fw-bold text-center text-light disabled" type="text" size="1">&nbsp;</button>'
+
+        row += '</div><br>'
         cluesRow.append(row)
+
     return cluesRow, alphabet
 
 def get_random_clues(oneshotWord, **kwargs):
-    difficulty= kwargs.get('difficulty', None)
-    if difficulty=="easy":
-        bulls_diff = 2
-        cows_diff = 2
-    elif difficulty=="hard":
-        bulls_diff = 2
-        cows_diff = 3
-    else:
-        bulls_diff = 1
-        cows_diff = 3
-
-    cows,bulls = [], []
-    newclue=5
-    # checks to make sure that there are no more than 1 correct placed guesses
-    # and no more than 2 incorrect placed guesses
-    cows_list = len(cows)
-    bulls_list = len(bulls)
-    while not(bulls_list == bulls_diff and cows_list ==cows_diff):
-        cows,bulls = [], []
-        if difficulty=="hard":
-            clues = WordsHard.objects.order_by('?')
-        else:
-            clues = Word.objects.order_by('?')
-        
-        clue1,clue2,clue3,clue4,clue5 = clues[0],clues[1],clues[2],clues[3],clues[4]
-        
-        # This makes sure that none of the clues are the same as the daily word
-        while clue1==oneshotWord:
-            clue1=clues[newclue]
-            newclue+=1
-        while clue2==oneshotWord:
-            clue2=clues[newclue]
-            newclue+=1
-        while clue3==oneshotWord:
-            clue3=clues[newclue]
-            newclue+=1
-        while clue4==oneshotWord:
-            clue4=clues[newclue]
-            newclue+=1
-        while clue5==oneshotWord:
-            clue5=clues[newclue]
-            newclue+=1
-        clues_list = [clue1,clue2,clue3,clue4,clue5]
-        
-        print(f"oneshotword: {oneshotWord} -- Clues: {clues_list}")
-        # checking for cows (letters that are in the word but not in the correct place
-        for word in clues_list:
-            for letter in word.word:
-                if letter in oneshotWord:
-                    if letter not in cows:
-                        cows.append(letter)
-        
-        # checking for bulls (letters in a word that are in the correct place)
-        for word in clues_list:
-            
-            for char in range(0,len(oneshotWord)):
-                # checks if each character in the clues are in the same place as the daily word
-                if word.word[char]==oneshotWord[char]:
-                    # makes sure the letter is not already in the list of bulls
-                    # before adding the word to the list
-                    if word.word[char] not in bulls:
-                        bulls.append(word.word[char])
-                        # Checks if the bull is already in the cows. It should be!
-                        if word.word[char] in cows:
-                            # find the index position of the cow and remove it.
-                            placement = cows.index(word.word[char])
-                            cows.pop(placement)
-                            
-        cows_list = len(cows)
-        bulls_list = len(bulls)                        
-        
-        # print(f"Cows: {cows_list} -- Bulls: {bulls_list}")
-    return clues_list
-
-def check_plural(word:str) -> bool:
-    """Check if a word is plural and singular noun or not.
-        eg
-        'cats' -> True
-        'cat' -> False
     """
-    return bool(p.singular_noun(word))
-    
+        This function will cycle through clues until it produces a clues list that matches the 
+        setting for the difficulty of the word. eg:
+        easy: 2 yellow, 2 green clues
+        normal: 1 green, 2 yellow clues
+        hard: 2 green ,3 yellow clues
+    """
+    difficulty = kwargs.get("difficulty", None)
+    if difficulty == "easy":
+        bulls_diff, cows_diff = 2, 2
+    elif difficulty == "hard":
+        bulls_diff, cows_diff = 2, 3
+    else:
+        bulls_diff, cows_diff = 1, 3
+
+    # This normalises the target word to a plain string. If the object 
+    # is a model instance, it extracts the word as a string from the model.
+    target = getattr(oneshotWord, "word", oneshotWord)
+    target = str(target).lower()
+    target_len = len(target)
+
+    qs = WordsHard.objects if difficulty == "hard" else Word.objects
+
+    max_attempts = 50
+    attempt = 0
+    while attempt < max_attempts:
+        attempt += 1
+
+        # sample a number of random candidates (slice to avoid huge query materialisation)
+        sample = list(qs.order_by("?")[:20])
+        # build clues_list of candidates that are not the target and same length as target
+        clues_list = []
+        for cand in sample:
+            cand_word = str(getattr(cand, "word", cand)).lower()
+            if cand_word == target:
+                continue
+            if len(cand_word) != target_len:
+                continue
+            # store the plain word string (simpler for downstream rendering)
+            clues_list.append(cand_word)
+            if len(clues_list) == 5:
+                break
+
+        # if we didn't collect 5 valid clues, try again
+        if len(clues_list) < 5:
+            continue
+
+        # compute cows (unique letters in candidates that appear in target) and bulls (correct-position letters)
+        cows = []
+        bulls = []
+        for cand in clues_list:
+            cand_word = str(getattr(cand, "word", cand)).lower()
+            # cows: any letter in candidate that's in target (add uniquely)
+            for letter in cand_word:
+                if letter in target and letter not in cows:
+                    cows.append(letter)
+            # bulls: same-position matches (safe because lengths match)
+            for i in range(target_len):
+                if cand_word[i] == target[i] and cand_word[i] not in bulls:
+                    bulls.append(cand_word[i])
+                    # ensure bull not counted also as cow
+                    if cand_word[i] in cows:
+                        cows.remove(cand_word[i])
+
+        if len(bulls) == bulls_diff and len(cows) == cows_diff:
+            # ensure we return a list of strings
+            assert isinstance(clues_list, (list, tuple)), "get_random_clues must return a list"
+            return list(clues_list)
+
+    # fallback: gather the first 5 matching-length non-target words from DB
+    fallback = []
+    for cand in qs.all():
+        cand_word = str(getattr(cand, "word", cand)).lower()
+        if cand_word == target:
+            continue
+        if len(cand_word) != target_len:
+            continue
+        fallback.append(cand_word)
+        if len(fallback) == 5:
+            break
+
+    return fallback
+
+def check_plural(word: str) -> bool:
+    """
+    Heuristic plural check using inflect with safe normalisation and common exceptions.
+    Returns True for likely plurals, False otherwise.
+    """
+    if not word:
+        return False
+
+    w = word.strip()
+
+    # strip surrounding punctuation
+    w = re.sub(r"^[^\w]+|[^\w]+$", "", w)
+
+    # ignore possessives ("cat's" is singular possessive)
+    if w.endswith("'s") or w.endswith("’s"):
+        return False
+
+    # short tokens are unlikely plurals
+    if len(w) <= 2:
+        return False
+
+    # common uncountable/exception words that look plural but are not
+    exceptions = {"news", "series", "species", "information", "offspring", "sheep", "fish"}
+    if w.lower() in exceptions:
+        return False
+
+    # Use inflect on the lowercased token (inflect expects lowercase for best results)
+    try:
+        return bool(p.singular_noun(w.lower()))
+    except Exception:
+        # on any unexpected error, treat as non-plural to avoid excluding words
+        return False
