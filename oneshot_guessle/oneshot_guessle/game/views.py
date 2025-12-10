@@ -171,6 +171,10 @@ def guessle(request):
     GuessFormSet = formset_factory(GuessForm, extra=1, max_num=1)
 
     context = {}
+    # ensure these exist for anonymous users so later code can safely call .exists()/first()
+    attempts = Guessle_Attempt.objects.none()
+    stars = None
+
     # Get today's todays date
     today_dt = timezone.localtime(timezone.now())
     # Get current datetime and its date for daily lookups
@@ -449,7 +453,8 @@ def guessle(request):
             context['guess_formset'] = guess_formset
             context['alphabet_formset'] = alphabet_formset
             # render immediately so we don't override the form below
-            user.save()
+            if request.user.is_authenticated:
+                user.save()
             return render(request, 'pages/games/guessle.html', context)
             
         # if no previous attempts: prepare a fresh form for the user
