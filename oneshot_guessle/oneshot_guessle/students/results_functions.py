@@ -2,15 +2,18 @@
 
 subjects = {
     'cs':{
-        'KS4':['1. Algorithms', '2. Programming', '3. Computer Systems', '4. Data rep', '5. Security', '6. Networks',
-            '7. ethics & Leg', '%', 'Rank'],
+        'KS4':['1.1 System Architecture','1.2 Memory & Storage','1.3 Networks','1.4 Network Security',
+               '1.5 System Software','1.6 ELCE','2.1 Algorithms','2.2 Programming fundamentals',
+               '2.3 Producing Robust Programs','2.4 Boolean Logic','2.5 Languages and IDEs'],
+            # '1. Algorithms', '2. Programming', '3. Computer Systems', '4. Data rep', '5. Security', '6. Networks',
+            # '7. ethics & Leg', '%', 'Rank'],
         'KS5':['1.1 IO & Storage', '1.2 Software & Development', '1.3 Exchanging Data','1.4 Datatypes & Algorithms', 
             '1.5 legal & moral issues', '2.1 Computation Thinking', '2.2 Problem Solving', '%', 'Rank']
     }
 }
 
 
-def analysis_table(data, year, student, subject):
+def analysis_table(data, ks, student, subject):
     # default returned structure if no row matches
     studentX_d = {
         'atopic1': 0,
@@ -20,11 +23,15 @@ def analysis_table(data, year, student, subject):
         'atopic5': 0,
         'atopic6': 0,
         'atopic7': 0,
+        'atopic8': 0,
+        'atopic9': 0,
+        'atopic10': 0,
+        'atopic11': 0,
         'aAv': 0,
         'aRank': 0,
     }
 
-    keys = subjects.get(subject, {}).get(year, [])
+    keys = subjects.get(subject, {}).get(ks, [])
     if not keys or not data:
         return studentX_d
 
@@ -61,6 +68,10 @@ def analysis_table(data, year, student, subject):
                 'atopic5': extract_value(row, keys[4]),
                 'atopic6': extract_value(row, keys[5]),
                 'atopic7': extract_value(row, keys[6]),
+                'atopic8': extract_value(row, keys[7]),
+                'atopic9': extract_value(row, keys[8]),
+                'atopic10': extract_value(row, keys[9]),
+                'atopic11': extract_value(row, keys[10]),
                 'aAv': extract_value(row, keys[7]),
                 'aRank': extract_value(row, keys[8]),
             }
@@ -92,8 +103,8 @@ def weekly_tests_table(data, year, student, subject):
 
         if str(exam_id_val) == str(student):
             test_no = row.get('Test No') if isinstance(row, dict) else (row[1] if len(row) > 1 else None)
-            total_val = row.get(keys[7], 0) if isinstance(row, dict) else 0
-            rank_val = row.get(keys[8], 0) if isinstance(row, dict) else 0
+            total_val = row.get('Total') if isinstance(row, dict) else 0
+            rank_val = row.get('Rank') if isinstance(row, dict) else 0
 
             rowd = {
                 'testNO': test_no,
@@ -104,6 +115,10 @@ def weekly_tests_table(data, year, student, subject):
                 'topic5': row.get(keys[4], 0) if isinstance(row, dict) else 0,
                 'topic6': row.get(keys[5], 0) if isinstance(row, dict) else 0,
                 'topic7': row.get(keys[6], 0) if isinstance(row, dict) else 0,
+                'topic8': row.get(keys[7], 0) if isinstance(row, dict) else 0,
+                'topic9': row.get(keys[8], 0) if isinstance(row, dict) else 0,
+                'topic10': row.get(keys[9], 0) if isinstance(row, dict) else 0,
+                'topic11': row.get(keys[10], 0) if isinstance(row, dict) else 0,
                 'total': f"{total_val}",
                 'rank': rank_val
             }
@@ -136,7 +151,7 @@ def mock_tests_table(data, year, student, subject):
             continue
 
         if str(exam_id_val) == str(student):
-            total_val = row.get(keys[7], 0) if isinstance(row, dict) else 0
+            total_val = row.get('Total') if isinstance(row, dict) else 0
             mock_row = {
                 'testName': row.get('Test Name', '') if isinstance(row, dict) else '',
                 'topic1': row.get(keys[0], 0) if isinstance(row, dict) else 0,
@@ -146,8 +161,12 @@ def mock_tests_table(data, year, student, subject):
                 'topic5': row.get(keys[4], 0) if isinstance(row, dict) else 0,
                 'topic6': row.get(keys[5], 0) if isinstance(row, dict) else 0,
                 'topic7': row.get(keys[6], 0) if isinstance(row, dict) else 0,
+                'topic8': row.get(keys[7], 0) if isinstance(row, dict) else 0,
+                'topic9': row.get(keys[8], 0) if isinstance(row, dict) else 0,
+                'topic10': row.get(keys[9], 0) if isinstance(row, dict) else 0,
+                'topic11': row.get(keys[10], 0) if isinstance(row, dict) else 0,
                 'total': f"{total_val}",
-                'rank': row.get(keys[8], 0) if isinstance(row, dict) else 0
+                'rank': row.get('Rank') if isinstance(row, dict) else 0
             }
             mock_table.append(mock_row)
     return mock_table
