@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.shortcuts import render, redirect, get_object_or_404 
-import requests
+import requests, json
 from django.http import Http404
 import traceback, sys
 
@@ -155,7 +155,7 @@ def fakestudent(request):
 
 
 def student(request, year, studentID,ks):
-    
+    context = {}
     try:
         # Gets list of IDs
         sheetIDs = get_object_or_404(SheetsTab, year=year)
@@ -171,7 +171,9 @@ def student(request, year, studentID,ks):
         raise
     
     student = studentID #user.examNo
-    
+    debug_mode = request.GET.get("debug", "0") == "1"
+    debug_info = []
+
     # 
     # Chart data - data is appended in the weekly test for loops for yrs11 & 13
     #
@@ -190,7 +192,12 @@ def student(request, year, studentID,ks):
         data_rows = g_sheet_API_call(sheetIDs.json_workbook, sheetIDs.year, sheetIDs.weekly_tests)
 
         # filters data for each test for selected student ID
-        table_d, labels, chart_data, chart_rank= weekly_tests_table(data_rows, 13, student, 'cs')
+        table_d, labels, chart_data, chart_rank= weekly_tests_table(data_rows, "KS5", student, 'cs')
+        context['weekly_table'] = table_d
+        # pass JSON-serialised strings so template JS can parse reliably
+        context['weekly_labels_json'] = json.dumps(labels)
+        context['weekly_chart_data_json'] = json.dumps(chart_data)
+        context['weekly_chart_rank_json'] = json.dumps(chart_rank)
 
         # gets spreadsheet data from mock tests sheet
         mock_data_rows = g_sheet_API_call(sheetIDs.json_workbook, sheetIDs.year, sheetIDs.mocks)
@@ -209,16 +216,29 @@ def student(request, year, studentID,ks):
 
         # gets spreadsheet data from the weekly tests sheet
         data_rows = g_sheet_API_call(sheetIDs.json_workbook, sheetIDs.year, sheetIDs.weekly_tests)
-
+        """ data_rows
+        [
+        {'name': 'am', 'exam_ID': 8516, 'class': 1103, 'Test No': 1, 'Q1': 1, 'Q2': 2, 'Q3': 2, 'Q4': 1, 'Q5': 2, 'Q6': 1, 'Total': 9, 'Max_marks': 21, '%': 42.9, 'grade': 3, 'Rank': 1, '1.3 Networks': 0.42857142857142855, '2.1 Algorithms': 0.42857142857142855}, 
+        {'name': 'ma', 'exam_ID': 4321, 'class': 1103, 'Test No': 1, 'Q1': 1, 'Q2': 2, 'Q3': 3, 'Q4': 1, 'Q5': 1, 'Q6': 0, 'Total': 8, 'Max_marks': 21, '%': 38.1, 'grade': 3, '1.3 Networks': 0.5, '2.1 Algorithms': 0.14285714285714285}, 
+        {'name': 'am', 'exam_ID': 8516, 'class': 1103, 'Test No': 2, 'Q1': 3, 'Q2': 2, 'Q3': 1, 'Q4': 5, 'Q5': 2, 'Q6': 1, 'Total': 14, 'Max_marks': 24, '%': 58.3, 'grade': 5, 'Rank': 1, '2.1 Algorithms': 0.4117647058823529, '2.2 Programming fundamentals': 1}, 
+        {'name': 'ma', 'exam_ID': 4321, 'class': 1103, 'Test No': 2, 'Q1': 1, 'Q2': 0, 'Q3': 2, 'Q4': 1, 'Q5': 2, 'Q6': 4, 'Total': 10, 'Max_marks': 24, '%': 41.7, 'grade': 3, '2.1 Algorithms': 0.5294117647058824, '2.2 Programming fundamentals': 0.14285714285714285}]
+        """
+        
         # filters data for each test for selected student ID
-        table_d, labels, chart_data, chart_rank= weekly_tests_table(data_rows, 11, student, 'cs')
-
+        table_d, labels, chart_data, chart_rank= weekly_tests_table(data_rows, "KS4", student, 'cs')
         # gets spreadsheet data from mock tests sheet
         mock_data_rows = g_sheet_API_call(sheetIDs.json_workbook, sheetIDs.year, sheetIDs.mocks)
         
         # filters data for each test for selected student ID
         mock_table = mock_tests_table(mock_data_rows, 'KS4', student, 'cs')
-
-    context = {'tests':table_d, 'analysis':studentX_d, 'mock_table':mock_table, 
-                'student':student, 'chart_data':chart_data, 'labels':labels, 'chart_rank':chart_rank}
+    
+    # context = {'tests':table_d, 'analysis':studentX_d, 'mock_table':mock_table, 
+    #             'student':student, 'chart_data':chart_data, 'labels':labels, 'chart_rank':chart_rank}
+    context['analysis'] = studentX_d
+    context['tests'] = table_d
+    context['mock_table'] = mock_table
+    context['student'] = student
+    context['chart_data'] = chart_data
+    context['labels'] = labels
+    context['chart_rank'] = chart_rank
     return render(request, 'students/student.html', context)
