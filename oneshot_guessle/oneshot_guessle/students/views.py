@@ -158,7 +158,7 @@ def student(request, year, studentID,ks):
     context = {}
     try:
         # Gets list of IDs
-        sheetIDs = get_object_or_404(SheetsTab, year=year)
+        sheetIDs = get_object_or_404(SheetsTab, year=year, ks=ks)
         # print(f"SheetID, {sheetIDs}")
     except Http404:
         # print helpful context and the exception traceback then re-raise so Django still returns 404
@@ -181,7 +181,7 @@ def student(request, year, studentID,ks):
     chart_data = []
     chart_rank = []
 
-    if ks == 'KS5':
+    if ks == 'ks5':
         # gets spreadsheet data from the analysis sheet... (averages of all tests)
         analysis_rows = g_sheet_API_call(sheetIDs.json_workbook, sheetIDs.year, sheetIDs.week_tests_analysis)
 

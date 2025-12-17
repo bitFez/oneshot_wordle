@@ -85,14 +85,14 @@ def weekly_tests_table(data, year, student, subject):
 
     keys = subjects.get(subject, {}).get(year, [])
     # debug: show what keys we expect for this subject/year
-    print(f"[weekly_tests_table] year={year!r} subject={subject!r} keys={keys!r} rows={len(data) if data else 0}")
+    # print(f"[weekly_tests_table] year={year!r} subject={subject!r} keys={keys!r} rows={len(data) if data else 0}")
 
     if not keys or not data:
-        print("[weekly_tests_table] no keys or data — returning empty")
+        # print("[weekly_tests_table] no keys or data — returning empty")
         return table_d, labels, chart_data, chart_rank
 
     student_str = str(student).strip()
-    print(f"[weekly_tests_table] matching student identifier: {student_str!r}")
+    # print(f"[weekly_tests_table] matching student identifier: {student_str!r}")
 
     for idx, row in enumerate(data):
         exam_id_val = None
@@ -106,7 +106,7 @@ def weekly_tests_table(data, year, student, subject):
             exam_id_val = row[0]
 
         # debug: show row id values
-        print(f"[weekly_tests_table] row#{idx} exam_ID={exam_id_val!r} class={class_val!r} name={name_val!r}")
+        # print(f"[weekly_tests_table] row#{idx} exam_ID={exam_id_val!r} class={class_val!r} name={name_val!r}")
 
         if exam_id_val is None and class_val is None and name_val is None:
             continue
@@ -122,7 +122,7 @@ def weekly_tests_table(data, year, student, subject):
         if not matched and name_val is not None and str(name_val).strip().lower() == student_str.lower():
             matched = True
 
-        print(f"[weekly_tests_table] row#{idx} matched={matched}")
+        # print(f"[weekly_tests_table] row#{idx} matched={matched}")
 
         if not matched:
             continue
@@ -164,7 +164,7 @@ def weekly_tests_table(data, year, student, subject):
         chart_rank.append(rank_val)
         table_d.append(rowd)
 
-    print(f"[weekly_tests_table] returning {len(table_d)} matched rows")
+    # print(f"[weekly_tests_table] returning {len(table_d)} matched rows")
     return table_d, labels, chart_data, chart_rank
 
 def mock_tests_table(data, year, student, subject):
