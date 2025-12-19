@@ -5,47 +5,38 @@ subjects = {
         'KS4':['1.1 System Architecture','1.2 Memory & Storage','1.3 Networks','1.4 Network Security',
                '1.5 System Software','1.6 ELCE','2.1 Algorithms','2.2 Programming fundamentals',
                '2.3 Producing Robust Programs','2.4 Boolean Logic','2.5 Languages and IDEs', '%', 'Rank'],
+        # KS5 headers aligned to the sheet export (no trailing spaces)
         'KS5':['1.1 IO & Storage', '1.2 Software & Development', '1.3 Exchanging Data','1.4 Datatypes & Algorithms', 
             '1.5 legal & moral issues', '2.1 Computation Thinking', '2.2 Problem Solving', '%', 'Rank']
     }
 }
 
+# ============ KS4 Functions ============
 
-def analysis_table(data, ks, student, subject):
-    # default returned structure if no row matches
+def analysis_table_ks4(data, student, subject):
+    """Analysis table for KS4 (11 topics + % + Rank)"""
     studentX_d = {
-        'atopic1': 0,
-        'atopic2': 0,
-        'atopic3': 0,
-        'atopic4': 0,
-        'atopic5': 0,
-        'atopic6': 0,
-        'atopic7': 0,
-        'atopic8': 0,
-        'atopic9': 0,
-        'atopic10': 0,
-        'atopic11': 0,
-        'aAv': 0,
-        'aRank': 0,
+        'atopic1': 0, 'atopic2': 0, 'atopic3': 0, 'atopic4': 0, 'atopic5': 0,
+        'atopic6': 0, 'atopic7': 0, 'atopic8': 0, 'atopic9': 0, 'atopic10': 0,
+        'atopic11': 0, 'aAv': 0, 'aRank': 0,
     }
 
-    keys = subjects.get(subject, {}).get(ks, [])
-    if not keys or not data:
+    if not data:
         return studentX_d
+
+    keys = subjects.get(subject, {}).get('KS4', [])
 
     def extract_value(row, key):
         if isinstance(row, dict):
             return row.get(key, 0)
         elif isinstance(row, (list, tuple)):
             try:
-                # if key is an int-like string, try to convert; otherwise cannot map reliably
                 return row[int(key)]
             except Exception:
                 return 0
         return 0
 
     for row in data:
-        # find exam id
         if isinstance(row, dict):
             exam_id_val = row.get('exam_ID') or row.get('exam_id') or row.get('examNo') or row.get('Exam ID')
         elif isinstance(row, (list, tuple)) and len(row) > 0:
@@ -57,7 +48,6 @@ def analysis_table(data, ks, student, subject):
             continue
 
         if str(exam_id_val) == str(student):
-            # build the dict from keys safely
             studentX_d = {
                 'atopic1': extract_value(row, keys[0]),
                 'atopic2': extract_value(row, keys[1]),
@@ -77,24 +67,75 @@ def analysis_table(data, ks, student, subject):
 
     return studentX_d
 
-def weekly_tests_table(data, year, student, subject):
+def analysis_table_ks5(data, student, subject):
+    """Analysis table for KS5 (7 topics + % + Rank)"""
+    studentX_d = {
+        'atopic1': 0, 'atopic2': 0, 'atopic3': 0, 'atopic4': 0, 'atopic5': 0,
+        'atopic6': 0, 'atopic7': 0, 'atopic8': 0, 'atopic9': 0, 'atopic10': 0,
+        'atopic11': 0, 'aAv': 0, 'aRank': 0,
+    }
+
+    if not data:
+        return studentX_d
+
+    keys = subjects.get(subject, {}).get('KS5', [])
+
+    def extract_value(row, key):
+        if isinstance(row, dict):
+            return row.get(key, 0)
+        elif isinstance(row, (list, tuple)):
+            try:
+                return row[int(key)]
+            except Exception:
+                return 0
+        return 0
+
+    for row in data:
+        if isinstance(row, dict):
+            exam_id_val = row.get('exam_ID') or row.get('exam_id') or row.get('examNo') or row.get('Exam ID')
+        elif isinstance(row, (list, tuple)) and len(row) > 0:
+            exam_id_val = row[0]
+        else:
+            continue
+
+        if exam_id_val is None:
+            continue
+
+        if str(exam_id_val) == str(student):
+            studentX_d = {
+                'atopic1': extract_value(row, keys[0]),
+                'atopic2': extract_value(row, keys[1]),
+                'atopic3': extract_value(row, keys[2]),
+                'atopic4': extract_value(row, keys[3]),
+                'atopic5': extract_value(row, keys[4]),
+                'atopic6': extract_value(row, keys[5]),
+                'atopic7': extract_value(row, keys[6]),
+                'atopic8': 0,
+                'atopic9': 0,
+                'atopic10': 0,
+                'atopic11': 0,
+                'aAv': extract_value(row, keys[7]),
+                'aRank': extract_value(row, keys[8]),
+            }
+            break
+
+    return studentX_d
+
+def weekly_tests_table_ks4(data, student, subject):
+    """Weekly tests table for KS4 (11 topics)"""
     table_d = []
     labels = []
     chart_data = []
     chart_rank = []
 
-    keys = subjects.get(subject, {}).get(year, [])
-    # debug: show what keys we expect for this subject/year
-    # print(f"[weekly_tests_table] year={year!r} subject={subject!r} keys={keys!r} rows={len(data) if data else 0}")
-
+    keys = subjects.get(subject, {}).get('KS4', [])
     if not keys or not data:
-        # print("[weekly_tests_table] no keys or data — returning empty")
         return table_d, labels, chart_data, chart_rank
 
     student_str = str(student).strip()
-    # print(f"[weekly_tests_table] matching student identifier: {student_str!r}")
 
-    for idx, row in enumerate(data):
+    for row in enumerate(data):
+        idx, row = row[0], row[1]
         exam_id_val = None
         class_val = None
         name_val = None
@@ -104,9 +145,6 @@ def weekly_tests_table(data, year, student, subject):
             name_val = row.get('name') or row.get('Name')
         elif isinstance(row, (list, tuple)) and len(row) > 0:
             exam_id_val = row[0]
-
-        # debug: show row id values
-        # print(f"[weekly_tests_table] row#{idx} exam_ID={exam_id_val!r} class={class_val!r} name={name_val!r}")
 
         if exam_id_val is None and class_val is None and name_val is None:
             continue
@@ -121,8 +159,6 @@ def weekly_tests_table(data, year, student, subject):
             matched = True
         if not matched and name_val is not None and str(name_val).strip().lower() == student_str.lower():
             matched = True
-
-        # print(f"[weekly_tests_table] row#{idx} matched={matched}")
 
         if not matched:
             continue
@@ -140,19 +176,19 @@ def weekly_tests_table(data, year, student, subject):
 
         rowd = {
             'testNO': test_no,
-            'topic1': _get_topic(row, keys[0]) if len(keys) > 0 else 0,
-            'topic2': _get_topic(row, keys[1]) if len(keys) > 1 else 0,
-            'topic3': _get_topic(row, keys[2]) if len(keys) > 2 else 0,
-            'topic4': _get_topic(row, keys[3]) if len(keys) > 3 else 0,
-            'topic5': _get_topic(row, keys[4]) if len(keys) > 4 else 0,
-            'topic6': _get_topic(row, keys[5]) if len(keys) > 5 else 0,
-            'topic7': _get_topic(row, keys[6]) if len(keys) > 6 else 0,
-            'topic8': _get_topic(row, keys[7]) if len(keys) > 7 else 0,
-            'topic9': _get_topic(row, keys[8]) if len(keys) > 8 else 0,
-            'topic10': _get_topic(row, keys[9]) if len(keys) > 9 else 0,
-            'topic11': _get_topic(row, keys[10]) if len(keys) > 10 else 0,
+            'topic1': _get_topic(row, keys[0]),
+            'topic2': _get_topic(row, keys[1]),
+            'topic3': _get_topic(row, keys[2]),
+            'topic4': _get_topic(row, keys[3]),
+            'topic5': _get_topic(row, keys[4]),
+            'topic6': _get_topic(row, keys[5]),
+            'topic7': _get_topic(row, keys[6]),
+            'topic8': _get_topic(row, keys[7]),
+            'topic9': _get_topic(row, keys[8]),
+            'topic10': _get_topic(row, keys[9]),
+            'topic11': _get_topic(row, keys[10]),
             'total': f"{total_val}",
-            'perc':f"{perc}",
+            'perc': f"{perc}",
             'rank': rank_val
         }
 
@@ -164,43 +200,278 @@ def weekly_tests_table(data, year, student, subject):
         chart_rank.append(rank_val)
         table_d.append(rowd)
 
-    # print(f"[weekly_tests_table] returning {len(table_d)} matched rows")
     return table_d, labels, chart_data, chart_rank
 
-def mock_tests_table(data, year, student, subject):
+def weekly_tests_table_ks5(data, student, subject):
+    """Weekly tests table for KS5 (7 topics)"""
+    table_d = []
+    labels = []
+    chart_data = []
+    chart_rank = []
+
+    keys = subjects.get(subject, {}).get('KS5', [])
+    if not keys or not data:
+        return table_d, labels, chart_data, chart_rank
+
+    student_str = str(student).strip()
+
+    for row in enumerate(data):
+        idx, row = row[0], row[1]
+        exam_id_val = None
+        class_val = None
+        name_val = None
+        if isinstance(row, dict):
+            exam_id_val = row.get('exam_ID') or row.get('exam_id') or row.get('examNo') or row.get('Exam ID')
+            class_val = row.get('class') or row.get('Class')
+            name_val = row.get('name') or row.get('Name')
+        elif isinstance(row, (list, tuple)) and len(row) > 0:
+            exam_id_val = row[0]
+
+        if exam_id_val is None and class_val is None and name_val is None:
+            continue
+
+        matched = False
+        try:
+            if exam_id_val is not None and str(exam_id_val).strip() == student_str:
+                matched = True
+        except Exception:
+            pass
+        if not matched and class_val is not None and str(class_val).strip() == student_str:
+            matched = True
+        if not matched and name_val is not None and str(name_val).strip().lower() == student_str.lower():
+            matched = True
+
+        if not matched:
+            continue
+
+        test_no = row.get('Test No') if isinstance(row, dict) else (row[1] if len(row) > 1 else None)
+        total_val = row.get('Total') if isinstance(row, dict) else 0
+        perc = row.get('%') if isinstance(row, dict) else 0
+        rank_val = row.get('Rank') if isinstance(row, dict) else 0
+
+        def _get_topic(r, k):
+            try:
+                return r.get(k, 0) if isinstance(r, dict) else 0
+            except Exception:
+                return 0
+
+        rowd = {
+            'testNO': test_no,
+            'topic1': _get_topic(row, keys[0]),
+            'topic2': _get_topic(row, keys[1]),
+            'topic3': _get_topic(row, keys[2]),
+            'topic4': _get_topic(row, keys[3]),
+            'topic5': _get_topic(row, keys[4]),
+            'topic6': _get_topic(row, keys[5]),
+            'topic7': _get_topic(row, keys[6]),
+            'topic8': 0,
+            'topic9': 0,
+            'topic10': 0,
+            'topic11': 0,
+            'total': f"{total_val}",
+            'perc': f"{perc}",
+            'rank': rank_val
+        }
+
+        labels.append(test_no)
+        try:
+            chart_data.append(float(total_val))
+        except Exception:
+            chart_data.append(0)
+        chart_rank.append(rank_val)
+        table_d.append(rowd)
+
+    return table_d, labels, chart_data, chart_rank
+
+def mock_tests_table_ks4(data, student, subject):
+    """Mock tests table for KS4 (11 topics)"""
     mock_table = []
-    keys = subjects.get(subject, {}).get(year, [])
+    keys = subjects.get(subject, {}).get('KS4', [])
+    
     if not keys or not data:
         return mock_table
 
     for row in data:
         if isinstance(row, dict):
-            exam_id_val = row.get('exam_ID') or row.get('exam_id') or row.get('examNo') or row.get('Exam ID')
+            norm = {}
+            for k, v in row.items():
+                if isinstance(k, str):
+                    stripped = k.strip()
+                    norm[stripped] = v
+                    norm[stripped.lower()] = v
+                else:
+                    norm[k] = v
+            def get_norm(key):
+                if key in norm:
+                    return norm[key]
+                key_s = key.strip()
+                if key_s in norm:
+                    return norm[key_s]
+                key_l = key_s.lower()
+                if key_l in norm:
+                    return norm[key_l]
+                for nk in norm.keys():
+                    if isinstance(nk, str) and nk.lower().startswith(key_l):
+                        return norm[nk]
+                return None
+
+            exam_id_val = (
+                get_norm('exam_ID') or get_norm('exam id') or get_norm('exam_id')
+                or get_norm('examNo') or get_norm('Exam ID') or get_norm('exam_ID ')
+            )
+            rank_val = get_norm('Rank')
+            total_val = get_norm('Total')
+
+            test_name_val = get_norm('Test Name')
+            if test_name_val is None:
+                for nk in norm.keys():
+                    if isinstance(nk, str) and nk.lower().startswith('test name'):
+                        test_name_val = norm[nk]
+                        break
+
+            def topic_val(pos):
+                if pos >= len(keys):
+                    return 0
+                v = get_norm(keys[pos])
+                return v if v is not None else 0
+
         elif isinstance(row, (list, tuple)) and len(row) > 0:
             exam_id_val = row[0]
+            rank_val = row[2] if len(row) > 2 else None
+            total_val = row[1] if len(row) > 1 else None
+            test_name_val = row[3] if len(row) > 3 else ''
+            def topic_val(pos):
+                return row[pos + 4] if len(row) > pos + 4 else 0
         else:
             continue
 
         if exam_id_val is None:
             continue
 
-        if str(exam_id_val) == str(student):
-            total_val = row.get('Total') if isinstance(row, dict) else 0
+        if str(exam_id_val).strip() == str(student).strip():
             mock_row = {
-                'testName': row.get('Test Name', '') if isinstance(row, dict) else '',
-                'topic1': row.get(keys[0], 0) if isinstance(row, dict) else 0,
-                'topic2': row.get(keys[1], 0) if isinstance(row, dict) else 0,
-                'topic3': row.get(keys[2], 0) if isinstance(row, dict) else 0,
-                'topic4': row.get(keys[3], 0) if isinstance(row, dict) else 0,
-                'topic5': row.get(keys[4], 0) if isinstance(row, dict) else 0,
-                'topic6': row.get(keys[5], 0) if isinstance(row, dict) else 0,
-                'topic7': row.get(keys[6], 0) if isinstance(row, dict) else 0,
-                'topic8': row.get(keys[7], 0) if isinstance(row, dict) else 0,
-                'topic9': row.get(keys[8], 0) if isinstance(row, dict) else 0,
-                'topic10': row.get(keys[9], 0) if isinstance(row, dict) else 0,
-                'topic11': row.get(keys[10], 0) if isinstance(row, dict) else 0,
+                'testName': test_name_val or '',
+                'topic1': topic_val(0),
+                'topic2': topic_val(1),
+                'topic3': topic_val(2),
+                'topic4': topic_val(3),
+                'topic5': topic_val(4),
+                'topic6': topic_val(5),
+                'topic7': topic_val(6),
+                'topic8': topic_val(7),
+                'topic9': topic_val(8),
+                'topic10': topic_val(9),
+                'topic11': topic_val(10),
                 'total': f"{total_val}",
-                'rank': row.get('Rank') if isinstance(row, dict) else 0
+                'rank': rank_val or 0,
             }
             mock_table.append(mock_row)
     return mock_table
+
+def mock_tests_table_ks5(data, student, subject):
+    """Mock tests table for KS5 (7 topics)"""
+    mock_table = []
+    keys = subjects.get(subject, {}).get('KS5', [])
+    
+    if not keys or not data:
+        return mock_table
+
+    for row in data:
+        if isinstance(row, dict):
+            norm = {}
+            for k, v in row.items():
+                if isinstance(k, str):
+                    stripped = k.strip()
+                    norm[stripped] = v
+                    norm[stripped.lower()] = v
+                else:
+                    norm[k] = v
+            def get_norm(key):
+                if key in norm:
+                    return norm[key]
+                key_s = key.strip()
+                if key_s in norm:
+                    return norm[key_s]
+                key_l = key_s.lower()
+                if key_l in norm:
+                    return norm[key_l]
+                for nk in norm.keys():
+                    if isinstance(nk, str) and nk.lower().startswith(key_l):
+                        return norm[nk]
+                return None
+
+            exam_id_val = (
+                get_norm('exam_ID') or get_norm('exam id') or get_norm('exam_id')
+                or get_norm('examNo') or get_norm('Exam ID') or get_norm('exam_ID ')
+            )
+            rank_val = get_norm('Rank')
+            total_val = get_norm('Total')
+
+            test_name_val = get_norm('Test Name')
+            if test_name_val is None:
+                for nk in norm.keys():
+                    if isinstance(nk, str) and nk.lower().startswith('test name'):
+                        test_name_val = norm[nk]
+                        break
+
+            def topic_val(pos):
+                if pos >= len(keys):
+                    return 0
+                v = get_norm(keys[pos])
+                return v if v is not None else 0
+
+        elif isinstance(row, (list, tuple)) and len(row) > 0:
+            exam_id_val = row[0]
+            rank_val = row[2] if len(row) > 2 else None
+            total_val = row[1] if len(row) > 1 else None
+            test_name_val = row[3] if len(row) > 3 else ''
+            def topic_val(pos):
+                return row[pos + 4] if len(row) > pos + 4 else 0
+        else:
+            continue
+
+        if exam_id_val is None:
+            continue
+
+        if str(exam_id_val).strip() == str(student).strip():
+            mock_row = {
+                'testName': test_name_val or '',
+                'topic1': topic_val(0),
+                'topic2': topic_val(1),
+                'topic3': topic_val(2),
+                'topic4': topic_val(3),
+                'topic5': topic_val(4),
+                'topic6': topic_val(5),
+                'topic7': topic_val(6),
+                'topic8': 0,
+                'topic9': 0,
+                'topic10': 0,
+                'topic11': 0,
+                'total': f"{total_val}",
+                'rank': rank_val or 0,
+            }
+            mock_table.append(mock_row)
+    return mock_table
+
+# ============ Legacy wrapper functions (for backwards compatibility) ============
+
+def analysis_table(data, ks, student, subject):
+    """Wrapper that delegates to KS4 or KS5 version"""
+    if ks.upper() == 'KS5':
+        return analysis_table_ks5(data, student, subject)
+    else:
+        return analysis_table_ks4(data, student, subject)
+
+def weekly_tests_table(data, year, student, subject):
+    """Wrapper that delegates to KS4 or KS5 version"""
+    if year.upper() == 'KS5':
+        return weekly_tests_table_ks5(data, student, subject)
+    else:
+        return weekly_tests_table_ks4(data, student, subject)
+
+def mock_tests_table(data, year, student, subject):
+    """Wrapper that delegates to KS4 or KS5 version"""
+    if year.upper() == 'KS5':
+        return mock_tests_table_ks5(data, student, subject)
+    else:
+        return mock_tests_table_ks4(data, student, subject)

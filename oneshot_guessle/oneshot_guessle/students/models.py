@@ -5,19 +5,8 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 # Create your models here.
-class Student(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    examNo = models.IntegerField(null=True)
-    exam_yr = models.IntegerField(null=True)
-
-    def __str__(self):
-        return self.user.username
-    
-    # def get_absolute_url(self):
-    #     return reverse("students:profile_detail", kwargs={'id':self.id})
-
 class SheetsTab(models.Model):
-    year = models.IntegerField() # eg 2526
+    year = models.IntegerField() # eg 2527
     json_workbook = models.URLField(default=dict, blank=True)
     ks = models.CharField(max_length=3) # eg ks4
     week_tests_analysis = models.CharField(max_length=50)

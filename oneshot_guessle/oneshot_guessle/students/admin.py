@@ -8,17 +8,17 @@ from django.urls import path
 from django.utils.encoding import force_str
 
 
-from .models import Student, SheetsTab
+from .models import SheetsTab
 
 @admin.register(SheetsTab)
 class SheetsTabAdmin(admin.ModelAdmin):
     list_display = ['year', 'ks']
     list_filter = ['year', 'ks']  # Filter by exam year
 
-@admin.register(Student)
-class StudentAdmin(admin.ModelAdmin):
-    list_display = ['user', 'examNo', 'exam_yr']
-    list_filter = ['user', 'examNo','exam_yr']  # Filter by exam year
+# @admin.register(Student)
+# class StudentAdmin(admin.ModelAdmin):
+#     list_display = ['user', 'examNo', 'exam_yr']
+#     list_filter = ['user', 'examNo','exam_yr']  # Filter by exam year
     # actions=['bulk_update_exam_no_confirmed']
 
     # def get_urls(self):

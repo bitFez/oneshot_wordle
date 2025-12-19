@@ -54,7 +54,17 @@ def g_sheet_API_call(sheet, year, page):
         rows = dataJSON
     else:
         rows = []
-    
+
+    # normalise header keys (strip whitespace) once at source to avoid trailing-space issues downstream
+    def _clean_row(r):
+        if not isinstance(r, dict):
+            return r
+        cleaned = {}
+        for k, v in r.items():
+            cleaned[k.strip() if isinstance(k, str) else k] = v
+        return cleaned
+
+    rows = [_clean_row(r) for r in rows]
     return rows
 
 # Page for viewing test results
@@ -159,7 +169,6 @@ def student(request, year, studentID,ks):
     try:
         # Gets list of IDs
         sheetIDs = get_object_or_404(SheetsTab, year=year, ks=ks)
-        # print(f"SheetID, {sheetIDs}")
     except Http404:
         # print helpful context and the exception traceback then re-raise so Django still returns 404
         # print(f"Http404: SheetsTab with id={year} not found", file=sys.stdout)
@@ -183,7 +192,7 @@ def student(request, year, studentID,ks):
 
     if ks == 'ks5':
         # gets spreadsheet data from the analysis sheet... (averages of all tests)
-        analysis_rows = g_sheet_API_call(sheetIDs.json_workbook, sheetIDs.year, sheetIDs.week_tests_analysis)
+        analysis_rows = g_sheet_API_call(sheetIDs.json_workbook, year, sheetIDs.week_tests_analysis)
 
         # filters data for student from above get request
         studentX_d = analysis_table(analysis_rows, 'KS5', student, 'cs')
@@ -216,13 +225,6 @@ def student(request, year, studentID,ks):
 
         # gets spreadsheet data from the weekly tests sheet
         data_rows = g_sheet_API_call(sheetIDs.json_workbook, sheetIDs.year, sheetIDs.weekly_tests)
-        """ data_rows
-        [
-        {'name': 'am', 'exam_ID': 8516, 'class': 1103, 'Test No': 1, 'Q1': 1, 'Q2': 2, 'Q3': 2, 'Q4': 1, 'Q5': 2, 'Q6': 1, 'Total': 9, 'Max_marks': 21, '%': 42.9, 'grade': 3, 'Rank': 1, '1.3 Networks': 0.42857142857142855, '2.1 Algorithms': 0.42857142857142855}, 
-        {'name': 'ma', 'exam_ID': 4321, 'class': 1103, 'Test No': 1, 'Q1': 1, 'Q2': 2, 'Q3': 3, 'Q4': 1, 'Q5': 1, 'Q6': 0, 'Total': 8, 'Max_marks': 21, '%': 38.1, 'grade': 3, '1.3 Networks': 0.5, '2.1 Algorithms': 0.14285714285714285}, 
-        {'name': 'am', 'exam_ID': 8516, 'class': 1103, 'Test No': 2, 'Q1': 3, 'Q2': 2, 'Q3': 1, 'Q4': 5, 'Q5': 2, 'Q6': 1, 'Total': 14, 'Max_marks': 24, '%': 58.3, 'grade': 5, 'Rank': 1, '2.1 Algorithms': 0.4117647058823529, '2.2 Programming fundamentals': 1}, 
-        {'name': 'ma', 'exam_ID': 4321, 'class': 1103, 'Test No': 2, 'Q1': 1, 'Q2': 0, 'Q3': 2, 'Q4': 1, 'Q5': 2, 'Q6': 4, 'Total': 10, 'Max_marks': 24, '%': 41.7, 'grade': 3, '2.1 Algorithms': 0.5294117647058824, '2.2 Programming fundamentals': 0.14285714285714285}]
-        """
         
         # filters data for each test for selected student ID
         table_d, labels, chart_data, chart_rank= weekly_tests_table(data_rows, "KS4", student, 'cs')
@@ -241,4 +243,8 @@ def student(request, year, studentID,ks):
     context['chart_data'] = chart_data
     context['labels'] = labels
     context['chart_rank'] = chart_rank
-    return render(request, 'students/student.html', context)
+    context['ks'] = ks
+    
+    # Select template based on KS level
+    template_name = 'students/student_ks5.html' if ks == 'ks5' else 'students/student_ks4.html'
+    return render(request, template_name, context)
