@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static i18n %}
 {% load custom_filters %}
-{% block head %}<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>{% endblock %}
+{% block head_extra %}<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>{% endblock %}
 {% block css %}<link rel="stylesheet" href="{% static 'css/guessle.css' %}">{%load word_tags%}{% endblock %}
 
 {% block content %}
@@ -125,27 +125,8 @@
         </table>
 
         <br>
-    
-        <div class="col side_add_cols">
-            <!-- Google Ad - side / vertical -->
-            {% if not user.is_authenticated or user.no_ads is False %}
-                {% include "pages/ads/side_ad.html" %}
-            {% endif %}   
-        </div>
-        
-        <div id="weekly-chart-wrap" class="my-3">
-            <div class="card text-bg-secondary"></div>
-                <div class="card-body">
-                    <canvas id="weeklyChart" width="600" height="300"></canvas>
-                </div>
-            </div>
-        </div>
-        
-        <div id="weekly-chart-meta"
-            data-labels="{{ weekly_labels_json|default:'[]'|escapejs }}"
-            data-data="{{ weekly_chart_data_json|default:'[]'|escapejs }}">
-        </div>
-        <br>
+
+        {# Chart row moved outside analysis block so charts render even when analysis missing #}
     {% else %}
         <div class="alert alert-dark" role="alert">
             Weekly Tests and results analysis will appear here once you have completed some weekly tests.
@@ -153,6 +134,53 @@
         <hr>
     {% endif %}
     <!-- Mock results table -->
+
+    {# Charts: render weekly and mock charts even if analysis block is not present #}
+    <div class="row my-2 w-100">
+        {% if has_weekly_chart and has_mock_chart %}
+            <div class="col-md-6 py-1">
+                <div id="weekly-chart-wrap" class="my-3">
+                    <div class="card text-bg-secondary">Weekly Test Results</div>
+                    <div class="card-body">
+                        <canvas id="weeklyChart" width="600" height="300"></canvas>
+                    </div>
+                </div>
+                <div id="weekly-chart-meta" data-labels='{{ weekly_labels_json|default:"[]" }}' data-data='{{ weekly_chart_data_json|default:"[]" }}' data-rank='{{ weekly_chart_rank_json|default:"[]" }}'></div>
+            </div>
+            <div class="col-md-6 py-1">
+                <div id="mock-chart-wrap" class="my-3">
+                    <div class="card text-bg-secondary">Mock Test Results</div>
+                    <div class="card-body">
+                        <canvas id="mockChart" width="600" height="300"></canvas>
+                    </div>
+                </div>
+                <div id="mock-chart-meta" data-labels='{{ mock_labels_json|default:"[]" }}' data-data='{{ mock_chart_data_json|default:"[]" }}' data-rank='{{ mock_chart_rank_json|default:"[]" }}'></div>
+            </div>
+        {% else %}
+            {% if has_weekly_chart %}
+                <div class="col-md-12 py-1">
+                    <div id="weekly-chart-wrap" class="my-3">
+                        <div class="card text-bg-secondary">Weekly Test Results</div>
+                        <div class="card-body">
+                            <canvas id="weeklyChart" width="600" height="300"></canvas>
+                        </div>
+                    </div>
+                    <div id="weekly-chart-meta" data-labels='{{ weekly_labels_json|default:"[]" }}' data-data='{{ weekly_chart_data_json|default:"[]" }}' data-rank='{{ weekly_chart_rank_json|default:"[]" }}'></div>
+                </div>
+            {% endif %}
+            {% if has_mock_chart %}
+                <div class="col-md-12 py-1">
+                    <div id="mock-chart-wrap" class="my-3">
+                        <div class="card text-bg-secondary">Mock Test Results</div>
+                        <div class="card-body">
+                            <canvas id="mockChart" width="600" height="300"></canvas>
+                        </div>
+                    </div>
+                    <div id="mock-chart-meta" data-labels='{{ mock_labels_json|default:"[]" }}' data-data='{{ mock_chart_data_json|default:"[]" }}' data-rank='{{ mock_chart_rank_json|default:"[]" }}'></div>
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
     {% if mock_table %}
         <h3 class="text-light">Results of mock tests</h3>
         <table class="table table-dark table-striped table-bordered">
@@ -206,14 +234,15 @@
 (function(){
     function readMeta(){
         const meta = document.getElementById('weekly-chart-meta');
-        if (!meta) return { labels: [], data: [] };
+        if (!meta) return { labels: [], data: [], rank: [] };
         try {
             const labels = JSON.parse(meta.dataset.labels || '[]');
             const data = JSON.parse(meta.dataset.data || '[]');
-            return { labels, data };
+            const rank = JSON.parse(meta.dataset.rank || '[]');
+            return { labels, data, rank };
         } catch (e) {
             console.error('weekly chart meta parse error', e);
-            return { labels: [], data: [] };
+            return { labels: [], data: [], rank: [] };
         }
     }
 
@@ -222,6 +251,8 @@
             const meta = readMeta();
             const labels = meta.labels || [];
             const dataPoints = meta.data || [];
+            const rankPoints = meta.rank || [];
+            console.debug('renderWeeklyChart (KS4):', { labelsLen: labels.length, dataLen: dataPoints.length, rankLen: rankPoints.length, labels, dataPoints, rankPoints, canvas: !!document.getElementById('weeklyChart') });
             const wrap = document.getElementById('weekly-chart-wrap');
             const canvas = document.getElementById('weeklyChart');
             if (!canvas || !labels.length || !dataPoints.length) {
@@ -241,21 +272,37 @@
                 window.weeklyChart.destroy();
             }
             window.weeklyChart = new Chart(ctx, {
-                type: 'bar',
+                type: 'line',
                 data: {
                     labels: labels,
-                    datasets: [{
-                        label: 'Total marks',
-                        data: dataPoints,
-                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1
-                    }]
+                    datasets: [
+                        {
+                            label: 'Percentage',
+                            data: dataPoints,
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            yAxisID: 'y',
+                            tension: 0.2
+                        },
+                        {
+                            label: 'Rank',
+                            data: rankPoints,
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            yAxisID: 'y1',
+                            tension: 0.2
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true } }
+                    interaction: { mode: 'index', intersect: false },
+                    stacked: false,
+                    scales: {
+                        y: { beginAtZero: true, suggestedMax: 100, title: { display: true, text: 'Percentage' } },
+                        y1: { position: 'right', reverse: true, grid: { drawOnChartArea: false }, title: { display: true, text: 'Rank (lower is better)' } }
+                    }
                 }
             });
         } catch (err) {
@@ -265,12 +312,12 @@
 
     // run on full load
     document.addEventListener('DOMContentLoaded', function(){
-        setTimeout(renderWeeklyChart, 0);
+        setTimeout(function(){ renderWeeklyChart(); if (window.renderMockChart) window.renderMockChart(); }, 0);
     });
 
     // HTMX swaps / partial updates
-    document.addEventListener('htmx:afterSwap', function(){ setTimeout(renderWeeklyChart, 10); });
-    document.addEventListener('htmx:afterSettle', function(){ setTimeout(renderWeeklyChart, 10); });
+    document.addEventListener('htmx:afterSwap', function(){ setTimeout(function(){ renderWeeklyChart(); if (window.renderMockChart) window.renderMockChart(); }, 10); });
+    document.addEventListener('htmx:afterSettle', function(){ setTimeout(function(){ renderWeeklyChart(); if (window.renderMockChart) window.renderMockChart(); }, 10); });
 
     // Observe DOM additions so chart renders if fragment is injected without HTMX events
     const obs = new MutationObserver((mutations) => {
@@ -282,11 +329,70 @@
                         setTimeout(renderWeeklyChart, 10);
                         return;
                     }
+                    if (n.id === 'mock-chart-meta' || n.querySelector && n.querySelector('#mock-chart-meta')) {
+                        setTimeout(function(){ if (window.renderMockChart) window.renderMockChart(); }, 10);
+                        return;
+                    }
                 }
             }
         }
     });
     obs.observe(document.body, { childList: true, subtree: true });
+})();
+</script>
+
+<script>
+// mock chart renderer for KS4
+(function(){
+    function readMockMeta(){
+        const meta = document.getElementById('mock-chart-meta');
+        if (!meta) return { labels: [], data: [], rank: [] };
+        try {
+            const labels = JSON.parse(meta.dataset.labels || '[]');
+            const data = JSON.parse(meta.dataset.data || '[]');
+            const rank = JSON.parse(meta.dataset.rank || '[]');
+            return { labels, data, rank };
+        } catch (e) {
+            console.error('mock chart meta parse error', e);
+            return { labels: [], data: [], rank: [] };
+        }
+    }
+
+    window.renderMockChart = function(){
+        try {
+            const meta = readMockMeta();
+            const labels = meta.labels || [];
+            const dataPoints = meta.data || [];
+            const rankPoints = meta.rank || [];
+            console.debug('renderMockChart (KS4):', { labelsLen: labels.length, dataLen: dataPoints.length, rankLen: rankPoints.length, labels, dataPoints, rankPoints, canvas: !!document.getElementById('mockChart') });
+            const wrap = document.getElementById('mock-chart-wrap');
+            const canvas = document.getElementById('mockChart');
+            if (!canvas || !labels.length || !dataPoints.length) {
+                if (wrap) wrap.style.display = 'none';
+                return;
+            }
+            if (wrap) wrap.style.display = '';
+            if (typeof Chart === 'undefined') return;
+            const ctx = canvas.getContext('2d');
+            if (window.mockChart && typeof window.mockChart.destroy === 'function') window.mockChart.destroy();
+            window.mockChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Percentage', data: dataPoints, borderColor: 'rgba(75,192,192,1)', backgroundColor: 'rgba(75,192,192,0.2)', yAxisID: 'y', tension: 0.2 },
+                        { label: 'Rank', data: rankPoints, borderColor: 'rgba(153,102,255,1)', backgroundColor: 'rgba(153,102,255,0.2)', yAxisID: 'y1', tension: 0.2 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: { y: { beginAtZero: true, suggestedMax: 100, title: { display: true, text: 'Percentage' } }, y1: { position: 'right', reverse: true, grid: { drawOnChartArea: false }, title: { display: true, text: 'Rank' } } }
+                }
+            });
+        } catch (err) { console.error('renderMockChart error', err); }
+    };
 })();
 </script>
 

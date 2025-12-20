@@ -193,10 +193,14 @@ def weekly_tests_table_ks4(data, student, subject):
         }
 
         labels.append(test_no)
+        # prefer percentage for charting; fallback to total if percent not numeric
         try:
-            chart_data.append(float(total_val))
+            chart_data.append(float(perc))
         except Exception:
-            chart_data.append(0)
+            try:
+                chart_data.append(float(total_val))
+            except Exception:
+                chart_data.append(0)
         chart_rank.append(rank_val)
         table_d.append(rowd)
 
@@ -274,10 +278,14 @@ def weekly_tests_table_ks5(data, student, subject):
         }
 
         labels.append(test_no)
+        # prefer percentage for charting; fallback to total if percent not numeric
         try:
-            chart_data.append(float(total_val))
+            chart_data.append(float(perc))
         except Exception:
-            chart_data.append(0)
+            try:
+                chart_data.append(float(total_val))
+            except Exception:
+                chart_data.append(0)
         chart_rank.append(rank_val)
         table_d.append(rowd)
 

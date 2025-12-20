@@ -190,6 +190,17 @@ def guessle(request):
         context['stars'] = stars
         # Check for previous attempts by calendar date
         attempts = Guessle_Attempt.objects.filter(date__date=today_date, user=user).order_by('-date')
+        # check if there was an attempt yesterday
+        yesterday_date = (today_dt - timedelta(days=1)).date()
+        yesterday_qs = Guessle_Attempt.objects.filter(date__date=yesterday_date, user=user)
+        if yesterday_qs.exists():
+            yesterday_attempt = yesterday_qs.first()            
+            prev_word = getattr(yesterday_attempt.word, "word", yesterday_attempt.word)
+            if str(yesterday_attempt.guess) != str(prev_word):
+                user.streak = 0
+        else:
+            user.streak = 0
+
         # add numeric count for templates/JS to use (always present)
         context['attempts_count'] = attempts.count() if attempts is not None else 0
 
@@ -380,23 +391,13 @@ def guessle(request):
                     
                     user.dayscorrect+=1
                     # check for attempt yesterday
-                    yesterday_date = (today_dt - timedelta(days=1)).date()
-                    yesterday_qs = Guessle_Attempt.objects.filter(date__date=yesterday_date, user=user)
-                    if yesterday_qs.exists():
-                        yesterday_attempt = yesterday_qs.first()
-                        # check yesterday's word against the attempt
-                        prev_word = getattr(yesterday_attempt.word, "word", yesterday_attempt.word)
-                        if str(yesterday_attempt.guess) == str(prev_word):
-                            user.streak = (user.streak or 0) + 1
-                            if user.streak > (user.highestStreak or 0):
-                                user.highestStreak = user.streak
-                        else:
-                            user.streak = 0
-                    
-                    # if an attempt doesnt exist for yesterday, streak = 0
-                    else:
-                        user.streak = 0
-                    
+                    # check yesterday's word against the attempt
+                    # prev_word = getattr(yesterday_attempt.word, "word", yesterday_attempt.word)
+                    if str(yesterday_attempt.guess) == str(prev_word):
+                        user.streak = (user.streak or 0) + 1
+                        if user.streak > (user.highestStreak or 0):
+                            user.highestStreak = user.streak
+                                   
                     context['stars'] = stars
                     
                     

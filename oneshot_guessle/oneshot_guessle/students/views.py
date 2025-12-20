@@ -1,5 +1,12 @@
-from django.shortcuts import render
-from django.shortcuts import render, redirect, get_object_or_404 
+"""Students views: fetch Google Sheets, build student tables and provide
+context for templates (charts + tables).
+
+This module contains lightweight helpers that call out to a Google Sheets
+JSON endpoint, normalise the rows, and assemble chart-friendly JSON for the
+frontend Chart.js initialisers.
+"""
+
+from django.shortcuts import render, redirect, get_object_or_404
 import requests, json
 from django.http import Http404
 import traceback, sys
@@ -12,8 +19,18 @@ from .models import SheetsTab
 # If no API call can be made, a Http404 error is raised.
 
 
-# refactored API call
 def g_sheet_API_call(sheet, year, page):
+    """Fetch a Google Sheet JSON endpoint and return a list of rows.
+
+    Parameters
+    - sheet: URL to the Sheets JSON export
+    - year: user-facing year (used only in error messages)
+    - page: gid or page identifier to append to the querystring
+
+    Returns a list of rows (list of dicts or list entries). Header keys are
+    normalised by stripping whitespace to avoid downstream issues.
+    Raises Http404 on network/JSON errors so calling views can render a 404.
+    """
         
     g_sheet = sheet
     if not g_sheet:
@@ -67,8 +84,11 @@ def g_sheet_API_call(sheet, year, page):
     rows = [_clean_row(r) for r in rows]
     return rows
 
-# Page for viewing test results
 def fakestudent(request):
+    """Local dev helper that returns a fake student page with mock data.
+
+    Kept for development / manual testing only.
+    """
     user = 'HealthyRabbit235'
     chart_data = []
     labels = []
@@ -190,6 +210,7 @@ def student(request, year, studentID,ks):
     chart_data = []
     chart_rank = []
 
+    # --- collect weekly & mock test rows depending on KS level ---
     if ks == 'ks5':
         # gets spreadsheet data from the analysis sheet... (averages of all tests)
         analysis_rows = g_sheet_API_call(sheetIDs.json_workbook, year, sheetIDs.week_tests_analysis)
@@ -202,11 +223,9 @@ def student(request, year, studentID,ks):
 
         # filters data for each test for selected student ID
         table_d, labels, chart_data, chart_rank= weekly_tests_table(data_rows, "KS5", student, 'cs')
+        
+        # weekly table for template
         context['weekly_table'] = table_d
-        # pass JSON-serialised strings so template JS can parse reliably
-        context['weekly_labels_json'] = json.dumps(labels)
-        context['weekly_chart_data_json'] = json.dumps(chart_data)
-        context['weekly_chart_rank_json'] = json.dumps(chart_rank)
 
         # gets spreadsheet data from mock tests sheet
         mock_data_rows = g_sheet_API_call(sheetIDs.json_workbook, sheetIDs.year, sheetIDs.mocks)
@@ -234,8 +253,7 @@ def student(request, year, studentID,ks):
         # filters data for each test for selected student ID
         mock_table = mock_tests_table(mock_data_rows, 'KS4', student, 'cs')
     
-    # context = {'tests':table_d, 'analysis':studentX_d, 'mock_table':mock_table, 
-    #             'student':student, 'chart_data':chart_data, 'labels':labels, 'chart_rank':chart_rank}
+    # --- build the final template context ---
     context['analysis'] = studentX_d
     context['tests'] = table_d
     context['mock_table'] = mock_table
@@ -244,6 +262,47 @@ def student(request, year, studentID,ks):
     context['labels'] = labels
     context['chart_rank'] = chart_rank
     context['ks'] = ks
+    # JSON strings for template JS (used by Chart.js initializer)
+    # Single unified assignment here covers both KS4 and KS5 branches.
+    context['weekly_labels_json'] = json.dumps(labels)
+    context['weekly_chart_data_json'] = json.dumps(chart_data)
+    context['weekly_chart_rank_json'] = json.dumps(chart_rank)
+    # Prepare mock chart data (labels, data, rank) for template if mock_table present
+    mock_labels = []
+    mock_chart_data = []
+    mock_chart_rank = []
+    if mock_table:
+        for i, m in enumerate(mock_table):
+            # label: prefer testName
+            lbl = m.get('testName') if isinstance(m, dict) else None
+            if not lbl:
+                lbl = f"Mock {i+1}"
+            mock_labels.append(lbl)
+            # data: prefer 'total' or 'perc' if present
+            val = None
+            if isinstance(m, dict):
+                val = m.get('total') or m.get('perc') or m.get('percentage')
+            try:
+                if val is None:
+                    mock_chart_data.append(0)
+                else:
+                    mock_chart_data.append(float(val))
+            except Exception:
+                mock_chart_data.append(0)
+            # rank
+            try:
+                r = m.get('rank') if isinstance(m, dict) else None
+                mock_chart_rank.append(int(r) if r is not None else 0)
+            except Exception:
+                mock_chart_rank.append(0)
+
+    context['mock_labels_json'] = json.dumps(mock_labels)
+    context['mock_chart_data_json'] = json.dumps(mock_chart_data)
+    context['mock_chart_rank_json'] = json.dumps(mock_chart_rank)
+
+    # Flags for template layout
+    context['has_weekly_chart'] = bool(chart_data)
+    context['has_mock_chart'] = bool(mock_chart_data)
     
     # Select template based on KS level
     template_name = 'students/student_ks5.html' if ks == 'ks5' else 'students/student_ks4.html'
