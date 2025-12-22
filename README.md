@@ -66,6 +66,21 @@ The following details how to deploy this application.
 
 See detailed [cookiecutter-django Docker documentation](http://cookiecutter-django.readthedocs.io/en/latest/deployment-with-docker.html).
 
+### Requirements workflow (pip-tools)
+
+This project separates top-level dependency intent from pinned installs.
+
+- Edit `requirements/top_level_deps.in` to change or bump top-level packages (e.g. `Django==6.0`).
+- Run the compiler to regenerate the pinned `requirements/base.txt` used for builds:
+
+```bash
+./scripts/compile_requirements.sh
+# or on Windows PowerShell
+./scripts/compile_requirements.ps1
+```
+
+The build and docker image use `requirements/base.txt` for reproducible installs. Keep `top_level_deps.in` minimal — list only direct dependencies you maintain.
+
 
 ### More game ideas
 - Oneshot Guess who

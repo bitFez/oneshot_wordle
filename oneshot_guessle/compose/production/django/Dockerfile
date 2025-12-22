@@ -2,13 +2,13 @@
 ARG PYTHON_VERSION=3.12-slim-bookworm # <--- CHANGE THIS LINE
 
 # Define the base Python image. This will be aliased as 'python' for multi-stage builds.
-FROM python:${PYTHON_VERSION} as python
+FROM python:${PYTHON_VERSION} AS python
 
 # ---
 
 # Python build stage
 # This stage is responsible for installing build tools and creating Python wheels.
-FROM python as python-build-stage
+FROM python AS python-build-stage
 
 # Define the build environment, defaulting to 'production'.
 ARG BUILD_ENVIRONMENT=production
@@ -44,7 +44,7 @@ RUN pip wheel --wheel-dir /usr/src/app/wheels \
 # Python 'run' stage
 # This stage builds the final, lean image for running your application in production.
 # It also uses 'python' as its base image.
-FROM python as python-run-stage
+FROM python AS python-run-stage
 
 # Define arguments for the build environment and application home directory.
 ARG BUILD_ENVIRONMENT=production
