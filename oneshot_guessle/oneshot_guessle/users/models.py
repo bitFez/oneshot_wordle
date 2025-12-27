@@ -26,8 +26,6 @@ class User(AbstractUser):
     totalTanglePointsEver = IntegerField(default=0)
     cows_bulls_points = IntegerField(default=0)
     cows_bulls_attempts = IntegerField(default=0)
-    cows_bulls_points = IntegerField(default=0)
-    cows_bulls_attempts = IntegerField(default=0)
     colourTone = BooleanField(default=False) # True == High Vis 
     colourMode = BooleanField(default=False) # True == Dark mode
     # easystreak = IntegerField(default=0)
