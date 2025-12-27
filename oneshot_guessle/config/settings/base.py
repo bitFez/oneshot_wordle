@@ -83,6 +83,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "oneshot_guessle.users",
     # Your stuff: custom apps go here
+    "oneshot_guessle.core",
     "oneshot_guessle.game",
     "oneshot_guessle.students",
     "oneshot_guessle.teacher_resources",
