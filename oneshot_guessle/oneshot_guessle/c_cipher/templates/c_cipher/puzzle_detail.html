@@ -1,0 +1,30 @@
+{% load static %}
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{{ puzzle.title }}</title>
+</head>
+<body>
+  <h1>{{ puzzle.title }}</h1>
+  <div>
+    <p>{{ puzzle.description }}</p>
+  </div>
+
+  {% if message %}
+    <p><strong>{{ message }}</strong></p>
+  {% endif %}
+
+  {% if existing %}
+    <p>You submitted: {{ existing.answer }} — {% if existing.is_correct %}Correct{% else %}Incorrect{% endif %}</p>
+  {% else %}
+    <form method="post">
+      {% csrf_token %}
+      <label for="answer">Answer</label>
+      <input id="answer" name="answer" />
+      <button type="submit">Submit</button>
+    </form>
+  {% endif %}
+
+</body>
+</html>
