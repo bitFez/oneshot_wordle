@@ -5,6 +5,6 @@
 - [ ] list resources
 - [x] link back to codefez
 - [ ] list resources
-- [ ] load students as KS instead of year group.
+- [X] load students as KS instead of year group.
 
 - [x] New star entries being added daily on the backend rather than incrementing the daily count 

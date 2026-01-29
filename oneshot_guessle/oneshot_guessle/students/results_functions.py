@@ -7,7 +7,7 @@ subjects = {
                '2.3 Producing Robust Programs','2.4 Boolean Logic','2.5 Languages and IDEs', '%', 'Rank'],
         # KS5 headers aligned to the sheet export (no trailing spaces)
         'KS5':['1.1 IO & Storage', '1.2 Software & Development', '1.3 Exchanging Data','1.4 Datatypes & Algorithms', 
-            '1.5 legal & moral issues', '2.1 Computation Thinking', '2.2 Problem Solving', '%', 'Rank']
+            '1.5 legal & moral issues', '2.1 Computation Thinking', '2.2 Problem Solving','2.3 Algorithms' , '%', 'Rank']
     }
 }
 
@@ -110,12 +110,12 @@ def analysis_table_ks5(data, student, subject):
                 'atopic5': extract_value(row, keys[4]),
                 'atopic6': extract_value(row, keys[5]),
                 'atopic7': extract_value(row, keys[6]),
-                'atopic8': 0,
+                'atopic8': extract_value(row, keys[7]),
                 'atopic9': 0,
                 'atopic10': 0,
                 'atopic11': 0,
-                'aAv': extract_value(row, keys[7]),
-                'aRank': extract_value(row, keys[8]),
+                'aAv': extract_value(row, keys[8]),
+                'aRank': extract_value(row, keys[9]),
             }
             break
 
@@ -268,7 +268,7 @@ def weekly_tests_table_ks5(data, student, subject):
             'topic5': _get_topic(row, keys[4]),
             'topic6': _get_topic(row, keys[5]),
             'topic7': _get_topic(row, keys[6]),
-            'topic8': 0,
+            'topic8': _get_topic(row, keys[7]),
             'topic9': 0,
             'topic10': 0,
             'topic11': 0,
@@ -451,7 +451,7 @@ def mock_tests_table_ks5(data, student, subject):
                 'topic5': topic_val(4),
                 'topic6': topic_val(5),
                 'topic7': topic_val(6),
-                'topic8': 0,
+                'topic8': topic_val(7),
                 'topic9': 0,
                 'topic10': 0,
                 'topic11': 0,
