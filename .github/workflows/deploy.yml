@@ -16,9 +16,7 @@ jobs:
           username: ${{ secrets.HETZNER_USER }}
           key: ${{ secrets.HETZNER_SSH_KEY }}
           port: ${{ secrets.HETZNER_PORT }}
-          script: |
-            cd /root/oneshot_wordle/oneshot_guessle
-            bash deploy.sh
+          script: cd /root/oneshot_wordle/oneshot_guessle && bash deploy.sh
 
 env:
   YR10_MOCKS: ${{ secrets.YR10_MOCKS }}
