@@ -5,6 +5,14 @@ A version of wordle where you only have one chance to guess the day's word!
 [![Built with Cookiecutter Django](https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg?logo=cookiecutter)](https://github.com/cookiecutter/cookiecutter-django/)
 [![Black code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
+## Deployment
+
+This project uses GitHub Actions for automatic deployment to Hetzner server.
+
+**When you push to `main` branch**, the application automatically deploys to production.
+
+For setup instructions, see [DEPLOYMENT_SETUP.md](DEPLOYMENT_SETUP.md).
+
 ## Settings
 
 Moved to [settings](http://cookiecutter-django.readthedocs.io/en/latest/settings.html).

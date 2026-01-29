@@ -1,5 +1,3 @@
-
-
 subjects = {
     'cs':{
         'KS4':['1.1 System Architecture','1.2 Memory & Storage','1.3 Networks','1.4 Network Security',
@@ -7,9 +5,27 @@ subjects = {
                '2.3 Producing Robust Programs','2.4 Boolean Logic','2.5 Languages and IDEs', '%', 'Rank'],
         # KS5 headers aligned to the sheet export (no trailing spaces)
         'KS5':['1.1 IO & Storage', '1.2 Software & Development', '1.3 Exchanging Data','1.4 Datatypes & Algorithms', 
-            '1.5 legal & moral issues', '2.1 Computation Thinking', '2.2 Problem Solving', '%', 'Rank']
+            '1.5 legal & moral issues', '2.1 Computation Thinking', '2.2 Problem Solving','2.3 Algorithms' , '%', 'Rank']
     }
 }
+
+
+def _get_by_prefix(row, key, default=0):
+    if not isinstance(row, dict) or not isinstance(key, str):
+        return default
+
+    if key in row:
+        return row.get(key, default)
+
+    prefix = key.strip().split(" ")[0]
+    if not prefix:
+        return default
+
+    for k, v in row.items():
+        if isinstance(k, str) and k.strip().startswith(prefix):
+            return v
+
+    return default
 
 # ============ KS4 Functions ============
 
@@ -82,7 +98,7 @@ def analysis_table_ks5(data, student, subject):
 
     def extract_value(row, key):
         if isinstance(row, dict):
-            return row.get(key, 0)
+            return _get_by_prefix(row, key, 0)
         elif isinstance(row, (list, tuple)):
             try:
                 return row[int(key)]
@@ -110,12 +126,12 @@ def analysis_table_ks5(data, student, subject):
                 'atopic5': extract_value(row, keys[4]),
                 'atopic6': extract_value(row, keys[5]),
                 'atopic7': extract_value(row, keys[6]),
-                'atopic8': 0,
+                'atopic8': extract_value(row, keys[7]),
                 'atopic9': 0,
                 'atopic10': 0,
                 'atopic11': 0,
-                'aAv': extract_value(row, keys[7]),
-                'aRank': extract_value(row, keys[8]),
+                'aAv': extract_value(row, keys[8]),
+                'aRank': extract_value(row, keys[9]),
             }
             break
 
@@ -255,7 +271,7 @@ def weekly_tests_table_ks5(data, student, subject):
 
         def _get_topic(r, k):
             try:
-                return r.get(k, 0) if isinstance(r, dict) else 0
+                return _get_by_prefix(r, k, 0) if isinstance(r, dict) else 0
             except Exception:
                 return 0
 
@@ -268,7 +284,7 @@ def weekly_tests_table_ks5(data, student, subject):
             'topic5': _get_topic(row, keys[4]),
             'topic6': _get_topic(row, keys[5]),
             'topic7': _get_topic(row, keys[6]),
-            'topic8': 0,
+            'topic8': _get_topic(row, keys[7]),
             'topic9': 0,
             'topic10': 0,
             'topic11': 0,
@@ -426,6 +442,8 @@ def mock_tests_table_ks5(data, student, subject):
                 if pos >= len(keys):
                     return 0
                 v = get_norm(keys[pos])
+                if v is None:
+                    v = _get_by_prefix(row, keys[pos], 0)
                 return v if v is not None else 0
 
         elif isinstance(row, (list, tuple)) and len(row) > 0:
@@ -451,7 +469,7 @@ def mock_tests_table_ks5(data, student, subject):
                 'topic5': topic_val(4),
                 'topic6': topic_val(5),
                 'topic7': topic_val(6),
-                'topic8': 0,
+                'topic8': topic_val(7),
                 'topic9': 0,
                 'topic10': 0,
                 'topic11': 0,

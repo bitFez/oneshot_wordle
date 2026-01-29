@@ -1,3 +1,25 @@
+name: Deploy to Hetzner
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Hetzner Server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: ${{ secrets.HETZNER_USER }}
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          port: ${{ secrets.HETZNER_PORT }}
+          script: |
+            cd /root/oneshot_wordle/oneshot_guessle
+            bash deploy.sh
+
 env:
   YR10_MOCKS: ${{ secrets.YR10_MOCKS }}
   YR11_MOCKS: ${{ secrets.YR11_MOCKS }}

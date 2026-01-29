@@ -89,6 +89,7 @@ LOCAL_APPS = [
     "oneshot_guessle.teacher_resources",
     "oneshot_guessle.tangle",
     "oneshot_guessle.cows_bulls",
+    "oneshot_guessle.c_cipher",
 
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -142,7 +143,6 @@ MIDDLEWARE = [
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "allauth.account.middleware.AccountMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
