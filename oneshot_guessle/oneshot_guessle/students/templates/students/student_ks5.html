@@ -68,7 +68,7 @@
                     {% if analysis.atopic6 == "#DIV/0!" %}<td class="text-center">-</td>{% else %}<td class="text-center">{{analysis.atopic6|percentage_format}}</td>{% endif %}
                     {% if analysis.atopic7 == "#DIV/0!" %}<td class="text-center">-</td>{% else %}<td class="text-center">{{analysis.atopic7|percentage_format}}</td>{% endif %}
                     <td class="text-center col-small">{{analysis.aAv|floatformat:1}}%</td>
-                    <td class="text-center col-small">{{analysis.aRank}}</td>
+                    <td class="text-center col-small">{{analysis.aRank|floatformat:0}}</td>
                 </tr>
             </tbody>
         </table>
