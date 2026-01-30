@@ -118,7 +118,7 @@
                         {% if test.topic10 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic10|percentage_format}}</td>{% endif %}
                         {% if test.topic11 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic11|percentage_format}}</td>{% endif %}
                         <td class="text-center col-small">{{test.perc|floatformat:1}}%</td>
-                        <td class="text-center col-small">{{test.rank}}</td>
+                        <td class="text-center col-small">{{test.rank|floatformat:0}}</td>
                     </tr>
                 {% endfor %}
             </tbody>
@@ -216,7 +216,7 @@
                     {% if test.topic10 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic10|percentage_format}}</td>{% endif %}
                     {% if test.topic11 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic11|percentage_format}}</td>{% endif %}
                     <td class="text-center col-small">{{test.total|floatformat:1}}%</td>
-                    <td class="text-center col-small">{{test.rank}}</td>
+                    <td class="text-center col-small">{{test.rank|floatformat:0}}</td>
                 </tr>
                 {% endfor %}
             </tbody>
