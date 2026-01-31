@@ -174,6 +174,8 @@ def guessle(request):
     # ensure these exist for anonymous users so later code can safely call .exists()/first()
     attempts = Guessle_Attempt.objects.none()
     stars = None
+    yesterday_attempt = None
+    prev_word = None
 
     # Get today's todays date
     today_dt = timezone.localtime(timezone.now())
@@ -392,11 +394,11 @@ def guessle(request):
                     user.dayscorrect+=1
                     # check for attempt yesterday
                     # check yesterday's word against the attempt
-                    # prev_word = getattr(yesterday_attempt.word, "word", yesterday_attempt.word)
-                    if str(yesterday_attempt.guess) == str(prev_word):
-                        user.streak = (user.streak or 0) + 1
-                        if user.streak > (user.highestStreak or 0):
-                            user.highestStreak = user.streak
+                    if yesterday_attempt is not None and prev_word is not None:
+                        if str(yesterday_attempt.guess) == str(prev_word):
+                            user.streak = (user.streak or 0) + 1
+                            if user.streak > (user.highestStreak or 0):
+                                user.highestStreak = user.streak
                                    
                     context['stars'] = stars
                     

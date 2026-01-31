@@ -17,7 +17,9 @@
 
   {% if existing %}
     <p>You submitted: {{ existing.answer }} — {% if existing.is_correct %}Correct{% else %}Incorrect{% endif %}</p>
-  {% else %}
+  {% endif %}
+
+  {% if not existing or not existing.is_correct %}
     <form method="post">
       {% csrf_token %}
       <label for="answer">Answer</label>

@@ -1,5 +1,4 @@
 from django.shortcuts import render, get_object_or_404
-from django.db import IntegrityError
 from django.http import HttpResponse
 from django.conf import settings
 
@@ -28,22 +27,31 @@ def c_puzzle_preview(request, slug):
 
     message = None
 
+    existing = None
+    if user:
+        existing = Submission.objects.filter(puzzle=puzzle, user=user).first()
+
     if request.method == 'POST':
         if not user:
             return HttpResponse('Login required to submit', status=403)
         answer = request.POST.get('answer', '')
         is_correct = puzzle.check_answer(answer)
-        try:
-            sub = Submission.objects.create(puzzle=puzzle, user=user, answer=answer, is_correct=is_correct)
-        except IntegrityError:
-            # user already submitted
-            message = 'You have already submitted for this puzzle.'
-        else:
-            message = 'Correct!' if is_correct else 'Incorrect.'
 
-    existing = None
-    if user:
-        existing = Submission.objects.filter(puzzle=puzzle, user=user).first()
+        if existing and existing.is_correct:
+            message = 'You have already solved this puzzle.'
+        else:
+            if existing:
+                existing.answer = answer
+                existing.is_correct = is_correct
+                existing.save(update_fields=["answer", "is_correct"])
+            else:
+                existing = Submission.objects.create(
+                    puzzle=puzzle,
+                    user=user,
+                    answer=answer,
+                    is_correct=is_correct,
+                )
+            message = 'Correct!' if is_correct else 'Incorrect. Try again.'
 
     return render(request, 'c_cipher/puzzle_detail.html', {
         'puzzle': puzzle,

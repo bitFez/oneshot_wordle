@@ -164,3 +164,9 @@ You can modify this file to:
 - Add pre-deployment checks
 - Send notifications on success/failure
 - Run tests before deploying
+
+## docker cleanup commands:
+```bash
+docker system prune -f --volumes  # Remove unused resource
+docker image prune -a --filter "until=720h" -f  # Remove images older than 30 days
+```

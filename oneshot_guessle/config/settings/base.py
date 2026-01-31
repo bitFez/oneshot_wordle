@@ -2,6 +2,7 @@
 Base settings to build other settings files upon.
 """
 from pathlib import Path
+import importlib.util
 import environ
 import mimetypes
 
@@ -149,6 +150,13 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
 ]
+
+if importlib.util.find_spec("allauth.account.middleware") is None:
+    MIDDLEWARE = [
+        middleware
+        for middleware in MIDDLEWARE
+        if middleware != "allauth.account.middleware.AccountMiddleware"
+    ]
 
 # STATIC
 # ------------------------------------------------------------------------------
