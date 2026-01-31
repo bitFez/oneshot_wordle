@@ -1,0 +1,48 @@
+{% load static i18n %}
+<!doctype html>
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}" data-theme="c_cipher">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{% block title %}Code Mubarek{% endblock title %}</title>
+
+	<link rel="icon" href="{% static 'images/favicons/favicon.ico' %}">
+
+	<link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+	<link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+	<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+	<link rel="stylesheet" href="{% static 'css/c_cipher.css' %}">
+
+	{% block head_extra %}{% endblock head_extra %}
+</head>
+<body class="min-h-screen bg-base-300 text-base-content font-mono">
+	<main class="min-h-screen flex items-center justify-center p-4">
+		<div class="mockup-window c-cipher-window bg-base-300 border border-base-200 shadow-2xl w-full max-w-5xl">
+			<div class="bg-base-100 px-6 py-6">
+				<div class="flex items-center justify-between mb-4">
+					<div class="text-lg font-semibold tracking-wide">
+						{% block header_title %}Code Mubarek{% endblock header_title %}
+					</div>
+					<div class="text-xs opacity-70">Advent-style challenge</div>
+				</div>
+
+				{% if messages %}
+					<div class="space-y-2 mb-4">
+						{% for message in messages %}
+							<div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %}">
+								<span>{{ message }}</span>
+							</div>
+						{% endfor %}
+					</div>
+				{% endif %}
+
+				{% block content %}{% endblock content %}
+			</div>
+		</div>
+	</main>
+
+	{% block scripts %}{% endblock scripts %}
+</body>
+</html>

@@ -21,6 +21,7 @@ fontawesomefree==6.4.0
 hiredis==3.2.1
 importlib-metadata==6.5.0
 ipdb==0.13.11
+Markdown==3.6
 pillow>=11.3.0
 pipdeptree==2.26.1
 pre-commit==3.0.4

@@ -1,32 +1,42 @@
-{% load static %}
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>{{ puzzle.title }}</title>
-</head>
-<body>
-  <h1>{{ puzzle.title }}</h1>
-  <div>
-    <p>{{ puzzle.description }}</p>
+{% extends "pages/c_cipher/c_base.html" %}
+{% load i18n markdown_filters %}
+
+{% block title %}{{ puzzle.title }}{% endblock title %}
+{% block header_title %}{{ puzzle.title }}{% endblock header_title %}
+
+{% block content %}
+  <div class="space-y-6">
+    <div class="card bg-base-200 border border-base-300">
+      <div class="card-body">
+        <div class="markdown-content opacity-90">
+          {{ puzzle.description|markdownify }}
+        </div>
+      </div>
+    </div>
+
+    {% if message %}
+      <div class="alert {% if existing and existing.is_correct %}alert-success{% else %}alert-error{% endif %}">
+        <span>{{ message }}</span>
+      </div>
+    {% endif %}
+
+    {% if existing %}
+      <div class="badge badge-outline">
+        {% translate "Last submission" %}: {{ existing.answer }} — {% if existing.is_correct %}{% translate "Correct" %}{% else %}{% translate "Incorrect" %}{% endif %}
+      </div>
+    {% endif %}
+
+    {% if not existing or not existing.is_correct %}
+      <form method="post" class="space-y-3">
+        {% csrf_token %}
+        <label class="form-control w-full">
+          <div class="label">
+            <span class="label-text">{% translate "Answer" %}</span>
+          </div>
+          <input id="answer" name="answer" class="input input-bordered w-full" placeholder="{% translate "Type your guess" %}" />
+        </label>
+        <button type="submit" class="btn btn-primary">{% translate "Submit" %}</button>
+      </form>
+    {% endif %}
   </div>
-
-  {% if message %}
-    <p><strong>{{ message }}</strong></p>
-  {% endif %}
-
-  {% if existing %}
-    <p>You submitted: {{ existing.answer }} — {% if existing.is_correct %}Correct{% else %}Incorrect{% endif %}</p>
-  {% endif %}
-
-  {% if not existing or not existing.is_correct %}
-    <form method="post">
-      {% csrf_token %}
-      <label for="answer">Answer</label>
-      <input id="answer" name="answer" />
-      <button type="submit">Submit</button>
-    </form>
-  {% endif %}
-
-</body>
-</html>
+{% endblock content %}

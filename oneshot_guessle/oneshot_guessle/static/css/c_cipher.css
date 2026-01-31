@@ -1,30 +1,25 @@
-
-@plugin "daisyui";
-@plugin "daisyui/theme" {
-  name: "c_cipher";
-  default: false;
-  prefersdark: false;
-  color-scheme: "light";
-  --color-base-100: oklch(55% 0.016 285.938);
-  --color-base-200: oklch(37% 0.013 285.805);
-  --color-base-300: oklch(27% 0.006 286.033);
-  --color-base-content: oklch(84% 0.238 128.85);
-  --color-primary: oklch(0% 0 0);
-  --color-primary-content: oklch(100% 0 0);
-  --color-secondary: oklch(22.45% 0.075 37.85);
-  --color-secondary-content: oklch(90% 0.076 70.697);
-  --color-accent: oklch(46.44% 0.111 37.85);
-  --color-accent-content: oklch(90% 0.076 70.697);
-  --color-neutral: oklch(55% 0.195 38.402);
-  --color-neutral-content: oklch(98% 0.016 73.684);
-  --color-info: oklch(62% 0.214 259.815);
-  --color-info-content: oklch(95% 0.045 203.388);
-  --color-success: oklch(43% 0.095 166.913);
-  --color-success-content: oklch(90% 0.076 70.697);
-  --color-warning: oklch(82% 0.189 84.429);
-  --color-warning-content: oklch(41% 0.112 45.904);
-  --color-error: oklch(70% 0.191 22.216);
-  --color-error-content: oklch(39% 0.141 25.723);
+[data-theme="c_cipher"] {
+  color-scheme: dark;
+  --color-base-100: oklch(18% 0.02 220);
+  --color-base-200: oklch(14% 0.02 220);
+  --color-base-300: oklch(10% 0.02 220);
+  --color-base-content: oklch(90% 0.05 140);
+  --color-primary: oklch(78% 0.18 145);
+  --color-primary-content: oklch(18% 0.02 220);
+  --color-secondary: oklch(65% 0.12 200);
+  --color-secondary-content: oklch(12% 0.02 220);
+  --color-accent: oklch(72% 0.16 90);
+  --color-accent-content: oklch(12% 0.02 220);
+  --color-neutral: oklch(26% 0.02 220);
+  --color-neutral-content: oklch(90% 0.05 140);
+  --color-info: oklch(65% 0.12 230);
+  --color-info-content: oklch(12% 0.02 220);
+  --color-success: oklch(62% 0.12 150);
+  --color-success-content: oklch(12% 0.02 220);
+  --color-warning: oklch(78% 0.14 85);
+  --color-warning-content: oklch(12% 0.02 220);
+  --color-error: oklch(65% 0.18 25);
+  --color-error-content: oklch(12% 0.02 220);
   --radius-selector: 1rem;
   --radius-field: 0.5rem;
   --radius-box: 1rem;
@@ -33,4 +28,96 @@
   --border: 2px;
   --depth: 1;
   --noise: 1;
+}
+
+[data-theme="c_cipher"] body {
+  background: radial-gradient(1200px 600px at 20% 0%, #112126, #0b0f12 50%, #090c0f 100%);
+}
+
+[data-theme="c_cipher"] .c-cipher-window {
+  background: #0f1418;
+  border-color: #1c2a30;
+}
+
+[data-theme="c_cipher"] .mockup-window::before {
+  background: #121b20;
+}
+
+[data-theme="c_cipher"] .alert {
+  border-color: #1f2f36;
+}
+
+/* Markdown rendering styles */
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+  font-weight: bold;
+  margin: 1rem 0;
+}
+
+.markdown-content h1 { font-size: 1.875rem; }
+.markdown-content h2 { font-size: 1.5rem; }
+.markdown-content h3 { font-size: 1.25rem; }
+.markdown-content h4 { font-size: 1.125rem; }
+.markdown-content h5 { font-size: 1rem; }
+.markdown-content h6 { font-size: 0.875rem; }
+
+.markdown-content p {
+  margin: 0.5rem 0;
+  line-height: 1.625;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  margin: 0.5rem 0;
+  margin-left: 1rem;
+}
+
+.markdown-content li {
+  margin: 0.25rem 0;
+}
+
+.markdown-content code {
+  background: oklch(14% 0.02 220);
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.markdown-content pre {
+  background: oklch(14% 0.02 220);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin: 0.5rem 0;
+  overflow-x: auto;
+  border: 1px solid oklch(26% 0.02 220);
+}
+
+.markdown-content pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  display: block;
+}
+
+.markdown-content a {
+  color: oklch(72% 0.16 90);
+  transition: color 0.2s, text-decoration 0.2s;
+}
+
+.markdown-content a:hover {
+  color: oklch(78% 0.18 145);
+  text-decoration: underline;
+}
+
+.markdown-content blockquote {
+  border-left: 4px solid oklch(78% 0.18 145);
+  padding-left: 1rem;
+  font-style: italic;
+  opacity: 0.8;
+  margin: 0.5rem 0;
 }

@@ -144,6 +144,8 @@ markupsafe==2.1.2
     # via
     #   jinja2
     #   werkzeug
+markdown==3.6
+    # via -r requirements/top_level_deps.in
 matplotlib-inline==0.1.6
     # via ipython
 mccabe==0.7.0
