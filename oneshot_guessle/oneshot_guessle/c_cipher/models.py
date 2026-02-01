@@ -2,15 +2,29 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth import get_user_model
+import re
 
 User = get_user_model()
+
+
+def default_answer_flags():
+    return ["trim", "lowercase"]
 
 class Puzzle(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)  # e.g., "2026-01-21"
     release_at = models.DateTimeField(db_index=True)
     description = models.TextField(blank=True)
+    success_message = models.TextField(blank=True)
     accepted_answers = models.JSONField(default=list)  # canonical answers
+    answer_flags = models.JSONField(
+        default=default_answer_flags,
+        blank=True,
+        help_text=(
+            "Answer normalization flags. Available: trim, lowercase, collapse_spaces, strip_all_spaces. "
+            "Example: [\"trim\", \"lowercase\"]"
+        ),
+    )
     prerequisites = models.ManyToManyField(
         "self", symmetrical=False, blank=True, related_name="unlocks"
     )
@@ -22,8 +36,26 @@ class Puzzle(models.Model):
         return timezone.now() >= self.release_at
 
     def check_answer(self, raw_answer: str) -> bool:
-        norm = raw_answer.strip().lower()
-        return any(norm == a.strip().lower() for a in self.accepted_answers)
+        # Answer flags control normalization. For example:
+        # - trim: removes only leading/trailing whitespace
+        # - collapse_spaces: reduces internal whitespace runs to a single space
+        # - strip_all_spaces: removes all whitespace everywhere
+        flags = set(self.answer_flags or [])
+
+        def normalize(text: str) -> str:
+            base = str(text or "")
+            if "trim" in flags:
+                base = base.strip()
+            if "lowercase" in flags:
+                base = base.lower()
+            if "collapse_spaces" in flags:
+                base = re.sub(r"\s+", " ", base)
+            if "strip_all_spaces" in flags:
+                base = re.sub(r"\s+", "", base)
+            return base
+
+        norm = normalize(raw_answer)
+        return any(norm == normalize(a) for a in self.accepted_answers)
 
     def is_available_for(self, user):
         from django.utils import timezone

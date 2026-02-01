@@ -53,8 +53,15 @@ def c_puzzle_preview(request, slug):
                 )
             message = 'Correct!' if is_correct else 'Incorrect. Try again.'
 
+    next_puzzles = []
+    if settings.DEBUG or (user and user.is_staff):
+        next_puzzles = list(puzzle.unlocks.order_by('release_at', 'sequence'))
+    elif existing and existing.is_correct and user:
+        next_puzzles = [p for p in puzzle.unlocks.order_by('release_at', 'sequence') if p.is_available_for(user)]
+
     return render(request, 'c_cipher/puzzle_detail.html', {
         'puzzle': puzzle,
         'existing': existing,
         'message': message,
+        'next_puzzles': next_puzzles,
     })
