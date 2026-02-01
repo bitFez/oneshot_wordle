@@ -39,7 +39,7 @@
       </form>
     {% endif %}
 
-    {% if next_puzzles and request.resolver_match.url_name == 'puzzle_preview' %}
+    {% if existing.is_correct and next_puzzles and request.resolver_match.url_name == 'puzzle_preview' %}
       <div class="card bg-base-200 border border-base-300">
         <div class="card-body">
           <h3 class="card-title">{% translate "Next puzzle" %}</h3>
@@ -57,7 +57,7 @@
           </ul>
         </div>
       </div>
-    {% elif next_puzzles %}
+    {% elif next_puzzles and existing.is_correct %}
       <div class="card bg-base-200 border border-base-300">
         <div class="card-body">
           <h3 class="card-title">{% translate "Next puzzle" %}</h3>
@@ -75,7 +75,7 @@
           </ul>
         </div>
       </div>
-    {% else %}
+    {% elif not next_puzzles and existing.is_correct %}
       <div class="card bg-base-200 border border-base-300">
         <div class="card-body">
           <h3 class="card-title">{% translate "Mashallah! Puzzle solved!" %}</h3>
