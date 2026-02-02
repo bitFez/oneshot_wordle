@@ -190,7 +190,7 @@
                     {% if test.topic5 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic5|percentage_format}}</td>{% endif %}
                     {% if test.topic6 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic6|percentage_format}}</td>{% endif %}
                     {% if test.topic7 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic7|percentage_format}}</td>{% endif %}
-                    <td class="text-center col-small">{{test.total|floatformat:1}}%</td>
+                    <td class="text-center col-small">{{test.perc|floatformat:1}}%</td>
                     <td class="text-center col-small">{{test.rank|floatformat:0}}</td>
                 </tr>
                 {% endfor %}

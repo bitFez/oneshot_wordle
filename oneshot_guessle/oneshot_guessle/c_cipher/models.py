@@ -12,7 +12,7 @@ def default_answer_flags():
 
 class Puzzle(models.Model):
     title = models.CharField(max_length=200)
-    slug = models.SlugField(unique=True)  # e.g., "2026-01-21"
+    slug = models.SlugField(unique=True)  # e.g., "1447-1a hijri year-day and puzzle a or b"
     release_at = models.DateTimeField(db_index=True)
     description = models.TextField(blank=True)
     success_message = models.TextField(blank=True)
@@ -80,3 +80,6 @@ class Submission(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["puzzle", "user"], name="one_submission_per_user_per_puzzle")
         ]
+    
+    def __str__(self):
+        return f"{self.puzzle.slug}-{self.user.username}-{'correct' if self.is_correct else 'incorrect'}"

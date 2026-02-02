@@ -344,7 +344,12 @@ def mock_tests_table_ks4(data, student, subject):
                 or get_norm('examNo') or get_norm('Exam ID') or get_norm('exam_ID ')
             )
             rank_val = get_norm('Rank')
-            total_val = get_norm('Total')
+            perc = get_norm('%')
+            if perc is None:
+                for nk in norm.keys():
+                    if isinstance(nk, str) and nk.strip() == '%':
+                        perc = norm[nk]
+                        break
 
             test_name_val = get_norm('Test Name')
             if test_name_val is None:
@@ -362,7 +367,7 @@ def mock_tests_table_ks4(data, student, subject):
         elif isinstance(row, (list, tuple)) and len(row) > 0:
             exam_id_val = row[0]
             rank_val = row[2] if len(row) > 2 else None
-            total_val = row[1] if len(row) > 1 else None
+            perc = row[1] if len(row) > 1 else None
             test_name_val = row[3] if len(row) > 3 else ''
             def topic_val(pos):
                 return row[pos + 4] if len(row) > pos + 4 else 0
@@ -386,7 +391,7 @@ def mock_tests_table_ks4(data, student, subject):
                 'topic9': topic_val(8),
                 'topic10': topic_val(9),
                 'topic11': topic_val(10),
-                'total': f"{total_val}",
+                'perc': f"{perc}",
                 'rank': rank_val or 0,
             }
             mock_table.append(mock_row)
@@ -429,7 +434,12 @@ def mock_tests_table_ks5(data, student, subject):
                 or get_norm('examNo') or get_norm('Exam ID') or get_norm('exam_ID ')
             )
             rank_val = get_norm('Rank')
-            total_val = get_norm('Total')
+            perc = get_norm('%')
+            if perc is None:
+                for nk in norm.keys():
+                    if isinstance(nk, str) and nk.strip() == '%':
+                        perc = norm[nk]
+                        break
 
             test_name_val = get_norm('Test Name')
             if test_name_val is None:
@@ -449,7 +459,7 @@ def mock_tests_table_ks5(data, student, subject):
         elif isinstance(row, (list, tuple)) and len(row) > 0:
             exam_id_val = row[0]
             rank_val = row[2] if len(row) > 2 else None
-            total_val = row[1] if len(row) > 1 else None
+            perc = row[1] if len(row) > 1 else None
             test_name_val = row[3] if len(row) > 3 else ''
             def topic_val(pos):
                 return row[pos + 4] if len(row) > pos + 4 else 0
@@ -473,7 +483,7 @@ def mock_tests_table_ks5(data, student, subject):
                 'topic9': 0,
                 'topic10': 0,
                 'topic11': 0,
-                'total': f"{total_val}",
+                'perc': f"{perc}",
                 'rank': rank_val or 0,
             }
             mock_table.append(mock_row)
