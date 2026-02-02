@@ -179,10 +179,20 @@ def weekly_tests_table_ks4(data, student, subject):
         if not matched:
             continue
 
-        test_no = row.get('Test No') if isinstance(row, dict) else (row[1] if len(row) > 1 else None)
-        total_val = row.get('Total') if isinstance(row, dict) else 0
-        perc = row.get('%') if isinstance(row, dict) else 0
-        rank_val = row.get('Rank') if isinstance(row, dict) else 0
+        if isinstance(row, dict):
+            test_no = row.get('Test No')
+            total_val = row.get('Total')
+            perc = row.get('%')
+            rank_val = row.get('Rank')
+        else:
+            # For list/tuple data, find indices dynamically from keys
+            test_no = row[3] if len(row) > 3 else None
+            total_idx = keys.index('Total') if 'Total' in keys else len(keys) - 2
+            perc_idx = keys.index('%') if '%' in keys else len(keys) - 1
+            rank_idx = keys.index('Rank') if 'Rank' in keys else len(keys)
+            total_val = row[total_idx] if len(row) > total_idx else 0
+            perc = row[perc_idx] if len(row) > perc_idx else 0
+            rank_val = row[rank_idx] if len(row) > rank_idx else 0
 
         def _get_topic(r, k):
             try:
@@ -264,10 +274,20 @@ def weekly_tests_table_ks5(data, student, subject):
         if not matched:
             continue
 
-        test_no = row.get('Test No') if isinstance(row, dict) else (row[1] if len(row) > 1 else None)
-        total_val = row.get('Total') if isinstance(row, dict) else 0
-        perc = row.get('%') if isinstance(row, dict) else 0
-        rank_val = row.get('Rank') if isinstance(row, dict) else 0
+        if isinstance(row, dict):
+            test_no = row.get('Test No')
+            total_val = row.get('Total')
+            perc = row.get('%')
+            rank_val = row.get('Rank')
+        else:
+            # For list/tuple data, find indices dynamically from keys
+            test_no = row[3] if len(row) > 3 else None
+            total_idx = keys.index('Total') if 'Total' in keys else len(keys) - 2
+            perc_idx = keys.index('%') if '%' in keys else len(keys) - 1
+            rank_idx = keys.index('Rank') if 'Rank' in keys else len(keys)
+            total_val = row[total_idx] if len(row) > total_idx else 0
+            perc = row[perc_idx] if len(row) > perc_idx else 0
+            rank_val = row[rank_idx] if len(row) > rank_idx else 0
 
         def _get_topic(r, k):
             try:
