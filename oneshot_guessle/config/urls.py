@@ -2,6 +2,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from oneshot_guessle.core.views_postauth import post_auth_redirect
 from django.views import defaults as default_views
 from django.views.generic import TemplateView
 
@@ -22,6 +23,8 @@ urlpatterns = [
     path("", include("oneshot_guessle.teacher_resources.urls")),
     path("", include("oneshot_guessle.cows_bulls.urls", namespace="cows_bulls")),
     path("", include("oneshot_guessle.c_cipher.urls", namespace="c_cipher")),
+    # helper redirect view used as LOGIN/LOGOUT redirect target
+    path("post-auth-redirect/", post_auth_redirect, name="post_auth_redirect"),
     
 
 

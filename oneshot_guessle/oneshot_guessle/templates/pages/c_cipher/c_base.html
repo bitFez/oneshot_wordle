@@ -21,14 +21,22 @@
 	<main class="min-h-screen flex items-center justify-center p-4">
 		<div class="mockup-window c-cipher-window bg-base-300 border border-base-200 shadow-2xl w-full max-w-5xl">
 			<div class="bg-base-100 px-6 py-6">
-				<div class="flex items-center justify-between mb-4">
-					<div class="text-lg font-semibold tracking-wide">
-						<div>
-							<div id="heading-element"></div>
-							<div id="year-element"></div>
+				<div class="row">
+					<div class="flex items-center justify-between mb-4">
+						<div class="text-lg font-semibold tracking-wide">
+							<a href="{% url 'c_cipher:c_index' %}"><div id="heading-element"></div></a>
+							<a href="{% url 'c_cipher:c_index' %}"><div id="year-element"></div></a>
+						</div>
+						<div class="text-xs opacity-70">
+							{% include "pages/c_cipher/c_cipher_nav.html" %}
 						</div>
 					</div>
-					<div class="text-xs opacity-70">Advent-style challenge</div>
+					
+				</div>
+				<div class="row">
+						<div class="text-lg font-semibold tracking-wide">
+							{% block header_title %}Crescent Cipher{% endblock header_title %}
+						</div>
 				</div>
 
 				{% if messages %}

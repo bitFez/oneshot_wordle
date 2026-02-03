@@ -111,9 +111,15 @@ AUTHENTICATION_BACKENDS = [
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-user-model
 AUTH_USER_MODEL = "users.User"
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-redirect-url
-LOGIN_REDIRECT_URL = "game:home"
+# Use a small redirect view that decides based on previous page whether
+# to return users to the c_cipher app or the general game home.
+LOGIN_REDIRECT_URL = "post_auth_redirect"
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-url
 LOGIN_URL = "account_login"
+
+# Redirect after logout (Django and django-allauth)
+LOGOUT_REDIRECT_URL = "post_auth_redirect"
+ACCOUNT_LOGOUT_REDIRECT_URL = "post_auth_redirect"
 
 # PASSWORDS
 # ------------------------------------------------------------------------------

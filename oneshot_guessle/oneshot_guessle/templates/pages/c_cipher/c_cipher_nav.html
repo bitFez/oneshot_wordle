@@ -1,0 +1,12 @@
+{% load static i18n %}
+<ul class="menu menu-horizontal bg-base-200 rounded-box">
+    <li><a>About</a></li>
+    <!-- <li><a>All Puzzles</a></li> -->
+    {% if request.user.is_authenticated %}
+        <li><a class="" href="{% url 'account_logout' %}">{{user.username}} - {% translate "Sign Out" %}</a></li>
+    {% else %}
+        <li><a href="{% url 'account_signup' %}">Sign Up</a></li>
+        <li><a href="{% url 'account_login' %}">Log In</a></li>
+    {% endif %}
+  
+</ul>

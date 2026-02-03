@@ -3,7 +3,6 @@ const title_heading = [
     "Crescent Cipher",
     "Hilal Şifresi",
     "Chiffre du Croissant",
-    "-.-. .-. . ... -.-. . -. - / -.-. .. .--. .... . .-."
 
 ]
 
