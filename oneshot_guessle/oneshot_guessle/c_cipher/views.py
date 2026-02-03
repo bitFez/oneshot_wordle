@@ -4,6 +4,8 @@ from django.conf import settings
 
 from .models import Puzzle, Submission
 
+def c_about(request):
+    return render(request, 'pages/c_cipher/about.html')
 
 def c_index(request):
     puzzles = Puzzle.objects.order_by('release_at')[:50]
