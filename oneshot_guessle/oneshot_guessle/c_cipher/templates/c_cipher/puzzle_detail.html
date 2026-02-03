@@ -2,12 +2,12 @@
 {% load i18n markdown_filters %}
 
 {% block title %}{{ puzzle.title }}{% endblock title %}
-{% block header_title %}{{ puzzle.title }}{% endblock header_title %}
 
 {% block content %}
   <div class="space-y-6">
     <div class="card bg-base-200 border border-base-300">
       <div class="card-body">
+        <h3 class="card-title">{{ puzzle.title }}</h3>
         <div class="markdown-content opacity-90">
           {{ puzzle.description|markdownify }}
         </div>
