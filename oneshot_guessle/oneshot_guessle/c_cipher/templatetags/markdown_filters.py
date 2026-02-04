@@ -1,18 +1,26 @@
 from django import template
 from django.utils.safestring import mark_safe
 from django.templatetags.static import static
+from django.urls import reverse
 import markdown
 import re
 
 register = template.Library()
 
 
-def process_static_references(text: str) -> str:
+def process_custom_references(text: str) -> str:
     """
-    Process markdown static file references like ![alt](static:path/to/file) 
-    and convert them to proper Django static URLs.
+    Process markdown custom protocol references:
+    - ![alt](static:path/to/file) -> proper Django static URLs
+    - [link text](static:path/to/file) -> proper Django static URLs
+    - [link text](c_cipher:1447/7a) -> Django reverse URL to puzzle preview
+    - [!alert TYPE|Message] -> DaisyUI alert box HTML
     
-    Also handles [link text](static:path/to/file)
+    The c_cipher protocol format is: c_cipher:YEAR/DAY[a|b]
+    which maps to the puzzle preview URL for that puzzle slug.
+    
+    The alert format is: [!alert TYPE|Message content]
+    where TYPE is: success, danger, info, warning, error, dark
     """
     def replace_static_url(match):
         is_image = match.group(1) == "!"
@@ -25,9 +33,40 @@ def process_static_references(text: str) -> str:
         else:
             return f'[{alt_text}]({static_url})'
     
+    def replace_cipher_url(match):
+        link_text = match.group(1)
+        cipher_path = match.group(2)
+        # Convert format like "1447/7a" to slug "1447-7a"
+        puzzle_slug = cipher_path.replace('/', '-')
+        try:
+            puzzle_url = reverse('c_cipher:puzzle_preview', kwargs={'slug': puzzle_slug})
+        except:
+            # If the URL reverse fails, keep the original format
+            return f'[{link_text}]({cipher_path})'
+        return f'[{link_text}]({puzzle_url})'
+    
+    def replace_alert_box(match):
+        alert_type = match.group(1).lower()
+        message = match.group(2)
+        # Validate alert type, default to 'info' if invalid
+        valid_types = {'success', 'danger', 'info', 'warning', 'error', 'dark'}
+        if alert_type not in valid_types:
+            alert_type = 'info'
+        return f'<div class="alert alert-{alert_type}">{message}</div>'
+    
     # Match ![alt](static:path) and [text](static:path)
-    pattern = r'(!?)\[([^\]]+)\]\(static:([^\)]+)\)'
-    return re.sub(pattern, replace_static_url, text)
+    pattern_static = r'(!?)\[([^\]]+)\]\(static:([^\)]+)\)'
+    text = re.sub(pattern_static, replace_static_url, text)
+    
+    # Match [text](c_cipher:YEAR/DAY)
+    pattern_cipher = r'\[([^\]]+)\]\(c_cipher:([^\)]+)\)'
+    text = re.sub(pattern_cipher, replace_cipher_url, text)
+    
+    # Match [!alert TYPE|Message content]
+    pattern_alert = r'\[!alert\s+([a-zA-Z]+)\|([^\]]+)\]'
+    text = re.sub(pattern_alert, replace_alert_box, text)
+    
+    return text
 
 
 def add_external_link_attributes(html: str) -> str:
@@ -54,8 +93,8 @@ def add_external_link_attributes(html: str) -> str:
 def markdownify(value: str) -> str:
     if value is None:
         return ""
-    # Process static file references first
-    processed = process_static_references(value)
+    # Process custom protocol references first (static: and c_cipher:)
+    processed = process_custom_references(value)
     html = markdown.markdown(
         processed,
         extensions=["extra", "sane_lists", "nl2br"],

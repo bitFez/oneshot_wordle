@@ -80,9 +80,19 @@
   margin: 0.25rem 0;
 }
 
-.markdown-content code {
+/* Inline code styling - both in markdown-content and general */
+code {
   background: oklch(14% 0.02 220);
-  padding: 0.125rem 0.5rem;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: oklch(72% 0.16 90);
+}
+
+.markdown-content code {
+  background: oklch(27.274% 0.00003 271.152);
+  padding: 0.125rem 0.15rem;
   border-radius: 0.25rem;
   font-size: 0.875rem;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
