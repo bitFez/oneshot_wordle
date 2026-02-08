@@ -1,6 +1,8 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from django.conf import settings
+from django.utils import timezone
+from django.contrib.admin.views.decorators import staff_member_required
 
 from .models import Puzzle, Submission
 
@@ -9,7 +11,28 @@ def c_about(request):
 
 def c_index(request):
     puzzles = Puzzle.objects.order_by('release_at')[:50]
-    return render(request, 'pages/c_cipher/index.html', {'puzzles': puzzles})
+    
+    # Get the latest hijri_year from released puzzles
+    latest_hijri_year = None
+    latest_released_puzzle = Puzzle.objects.filter(
+        release_at__lte=timezone.now()
+    ).order_by('-release_at').values_list('hijri_year', flat=True).first()
+    
+    if latest_released_puzzle:
+        latest_hijri_year = latest_released_puzzle
+    
+    return render(request, 'pages/c_cipher/index.html', {
+        'puzzles': puzzles,
+        'latest_hijri_year': latest_hijri_year,
+    })
+
+
+@staff_member_required
+def c_preview_hijri_year(request, hijri_year):
+    """Preview template for a specific hijri_year (admin only)."""
+    return render(request, 'pages/c_cipher/index.html', {
+        'preview_hijri_year': hijri_year,
+    })
 
 
 def c_puzzle_view(request, year, day):

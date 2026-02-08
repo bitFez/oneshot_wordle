@@ -13,6 +13,7 @@ def default_answer_flags():
 class Puzzle(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)  # e.g., "1447-1a hijri year-day and puzzle a or b"
+    hijri_year = models.PositiveSmallIntegerField(db_index=True)
     release_at = models.DateTimeField(db_index=True)
     description = models.TextField(blank=True)
     success_message = models.TextField(blank=True)
@@ -30,7 +31,7 @@ class Puzzle(models.Model):
     )
     sequence = models.PositiveSmallIntegerField(default=0)  # optional: ordering within a day/group
     def __str__(self):
-        return f"{self.slug}-{self.sequence}-{self.title}"
+        return f"{self.slug}-{self.title}"
     
     def is_released(self):
         return timezone.now() >= self.release_at

@@ -9,73 +9,85 @@
         
         <div class="card bg-base-200 border border-base-300">
             <div class="card-body">
-                <h2 class="card-title text-primary">{% translate "Welcome to Crescent Cipher" %}</h2>
+                {% comment %} <h2 class="card-title text-primary">{% translate "Welcome to Crescent Cipher" %}</h2> {% endcomment %}
                 <p class="opacity-80">{% translate "Puzzles to work your brain a little (but not too much) during Ramadan" %}</p>
             </div>
         </div>
 
-        <!-- Ramadan Countdown -->
-        <div class="flex flex-col items-center justify-center space-y-4">
-            <h3 class="text-2xl font-bold">{% translate "Ramadan Countdown" %}</h3>
-            <div class="grid grid-flow-col gap-5 text-center auto-cols-max">
-                <div class="flex flex-col p-2 bg-neutral rounded-box text-neutral-content">
-                    <span class="countdown font-mono text-5xl">
-                        <span id="days-countdown" style="--value:0;"></span>
-                    </span>
-                    days
-                </div> 
-                <div class="flex flex-col p-2 bg-neutral rounded-box text-neutral-content">
-                    <span class="countdown font-mono text-5xl">
-                        <span id="hours-countdown" style="--value:0;"></span>
-                    </span>
-                    hours
-                </div> 
-                <div class="flex flex-col p-2 bg-neutral rounded-box text-neutral-content">
-                    <span class="countdown font-mono text-5xl">
-                        <span id="minutes-countdown" style="--value:0;"></span>
-                    </span>
-                    min
-                </div> 
-                <div class="flex flex-col p-2 bg-neutral rounded-box text-neutral-content">
-                    <span class="countdown font-mono text-5xl">
-                        <span id="seconds-countdown" style="--value:0;"></span>
-                    </span>
-                    sec
+        {% if preview_hijri_year %}
+            <!-- Include the hijri year template (admin preview) -->
+            {% with yr=preview_hijri_year|stringformat:"s" %}
+                {% include "pages/c_cipher/"|add:yr|add:".html" %}
+            {% endwith %}
+        {% elif latest_hijri_year %}
+            <!-- Include the hijri year template -->
+            {% with yr=latest_hijri_year|stringformat:"s" %}
+                {% include "pages/c_cipher/"|add:yr|add:".html" %}
+            {% endwith %}
+        {% else %}
+            <!-- Ramadan Countdown -->
+            <div class="flex flex-col items-center justify-center space-y-4">
+                <h3 class="text-2xl font-bold">{% translate "Ramadan Countdown" %}</h3>
+                <div class="grid grid-flow-col gap-5 text-center auto-cols-max">
+                    <div class="flex flex-col p-2 bg-neutral rounded-box text-neutral-content">
+                        <span class="countdown font-mono text-5xl">
+                            <span id="days-countdown" style="--value:0;"></span>
+                        </span>
+                        days
+                    </div> 
+                    <div class="flex flex-col p-2 bg-neutral rounded-box text-neutral-content">
+                        <span class="countdown font-mono text-5xl">
+                            <span id="hours-countdown" style="--value:0;"></span>
+                        </span>
+                        hours
+                    </div> 
+                    <div class="flex flex-col p-2 bg-neutral rounded-box text-neutral-content">
+                        <span class="countdown font-mono text-5xl">
+                            <span id="minutes-countdown" style="--value:0;"></span>
+                        </span>
+                        min
+                    </div> 
+                    <div class="flex flex-col p-2 bg-neutral rounded-box text-neutral-content">
+                        <span class="countdown font-mono text-5xl">
+                            <span id="seconds-countdown" style="--value:0;"></span>
+                        </span>
+                        sec
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <script>
-        // Countdown to February 18, 2026 00:00:00
-        const ramadanDate = new Date('2026-02-18T00:00:00').getTime();
-        
-        function updateCountdown() {
-            const now = new Date().getTime();
-            const distance = ramadanDate - now;
-            
-            if (distance < 0) {
-                // Countdown finished
-                document.getElementById('days-countdown').style.setProperty('--value', 0);
-                document.getElementById('hours-countdown').style.setProperty('--value', 0);
-                document.getElementById('minutes-countdown').style.setProperty('--value', 0);
-                document.getElementById('seconds-countdown').style.setProperty('--value', 0);
-                return;
-            }
-            
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            
-            document.getElementById('days-countdown').style.setProperty('--value', days);
-            document.getElementById('hours-countdown').style.setProperty('--value', hours);
-            document.getElementById('minutes-countdown').style.setProperty('--value', minutes);
-            document.getElementById('seconds-countdown').style.setProperty('--value', seconds);
-        }
-        
-        // Update countdown immediately and then every second
-        updateCountdown();
-        setInterval(updateCountdown, 1000);
-    </script>
+            <script>
+                // Countdown to February 18, 2026 00:00:00
+                const ramadanDate = new Date('2026-02-18T00:00:00').getTime();
+                
+                function updateCountdown() {
+                    const now = new Date().getTime();
+                    const distance = ramadanDate - now;
+                    
+                    if (distance < 0) {
+                        // Countdown finished
+                        document.getElementById('days-countdown').style.setProperty('--value', 0);
+                        document.getElementById('hours-countdown').style.setProperty('--value', 0);
+                        document.getElementById('minutes-countdown').style.setProperty('--value', 0);
+                        document.getElementById('seconds-countdown').style.setProperty('--value', 0);
+                        return;
+                    }
+                    
+                    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                    
+                    document.getElementById('days-countdown').style.setProperty('--value', days);
+                    document.getElementById('hours-countdown').style.setProperty('--value', hours);
+                    document.getElementById('minutes-countdown').style.setProperty('--value', minutes);
+                    document.getElementById('seconds-countdown').style.setProperty('--value', seconds);
+                }
+                
+                // Update countdown immediately and then every second
+                updateCountdown();
+                setInterval(updateCountdown, 1000);
+            </script>
+        {% endif %}
+    </div>
 {% endblock content %}

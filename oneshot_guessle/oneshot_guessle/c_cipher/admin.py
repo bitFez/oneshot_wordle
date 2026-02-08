@@ -7,7 +7,8 @@ from .models import Puzzle, Submission
 
 class PuzzleAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'release_at', 'sequence', 'view_puzzle_link')
-    search_fields = ('title', 'slug')
+    search_fields = ('title', 'slug', 'hijri_year')
+    list_filter = ('hijri_year',)
 
     def view_puzzle_link(self, obj):
         if obj.slug:
