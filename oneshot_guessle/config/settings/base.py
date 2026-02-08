@@ -208,6 +208,7 @@ TEMPLATES = [
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
                 "oneshot_guessle.users.context_processors.allauth_settings",
+                "oneshot_guessle.c_cipher.context_processors.c_cipher_scores",
             ],
         },
     }

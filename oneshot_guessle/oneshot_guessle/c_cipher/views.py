@@ -1,8 +1,10 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.contrib.admin.views.decorators import staff_member_required
+User = get_user_model()
 
 from .models import Puzzle, Submission
 
@@ -10,6 +12,7 @@ def c_about(request):
     return render(request, 'pages/c_cipher/about.html')
 
 def c_index(request):
+    
     puzzles = Puzzle.objects.order_by('release_at')[:50]
     
     # Get the latest hijri_year from released puzzles
@@ -20,11 +23,31 @@ def c_index(request):
     
     if latest_released_puzzle:
         latest_hijri_year = latest_released_puzzle
-    
-    return render(request, 'pages/c_cipher/index.html', {
+
+    context = {
         'puzzles': puzzles,
         'latest_hijri_year': latest_hijri_year,
-    })
+    }
+
+    # Score for specific hijri year
+    if request.user.is_authenticated:
+        year_score = Submission.objects.filter(
+            user=request.user, 
+            is_correct=True, 
+            puzzle__hijri_year=1447
+        ).count()
+
+
+        # Total score across all years
+        total_score = Submission.objects.filter(
+            user=request.user, 
+            is_correct=True
+        ).count()
+
+        context['year_score'] = year_score
+        context['total_score'] = total_score
+
+    return render(request, 'pages/c_cipher/index.html', context)
 
 
 @staff_member_required
