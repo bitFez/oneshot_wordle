@@ -60,7 +60,7 @@ dill==0.3.6
     # via pylint
 distlib==0.3.6
     # via virtualenv
-django==6.0
+django==6.0.2
     # via
     #   -r requirements/top_level_deps.in
     #   crispy-bootstrap5
