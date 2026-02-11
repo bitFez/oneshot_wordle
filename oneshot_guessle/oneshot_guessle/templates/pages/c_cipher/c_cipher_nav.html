@@ -3,13 +3,16 @@
     <li><a href="{% url 'c_cipher:c_about' %}">About</a></li>
     <!-- <li><a>All Puzzles</a></li> -->
     {% if request.user.is_authenticated %}
-        <li>{{user.username}} 
-            <div class="tooltip" data-tip="Current Ramadan Score">
-                <i class="fa-solid fa-moon" style="color: #616161;"></i> {{year_score}} 
+        <li class="join join-horizontal">   
+            <div class="join-item">
+                {{user.username}} 
             </div>
-            <div class="tooltip" data-tip="Total Score Across All Ramadans">
-                <i class="fa-solid fa-star" style="color: #FFD43B;"></i> {{total_score}} 
+            <div class="tooltip join-item" data-tip="Current Ramadan Score">
+                <i class="fa-solid fa-star" style="color: #FFD43B;"></i>{{year_score}} 
             </div>
+            {% comment %} <div class="tooltip join-item" data-tip="Total Score Across All Ramadans">
+                <i class="fa-solid fa-moon" style="color: #616161;"></i>{{total_score}} 
+            </div> {% endcomment %}
         </li>
         <li>
             <a class="" href="{% url 'account_logout' %}">
