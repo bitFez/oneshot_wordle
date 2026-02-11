@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
+set -x
+trap 'echo "ERROR: command failed at line ${LINENO}: ${BASH_COMMAND}"' ERR
 
 cd /root/oneshot_wordle/oneshot_guessle
 
