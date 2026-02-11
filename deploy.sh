@@ -21,10 +21,14 @@ docker-compose -f production.yml up -d --build
 echo "Running migrations"
 docker-compose -f production.yml run --rm django python manage.py migrate --noinput
 echo "Collecting static files"
-if ! docker-compose -f production.yml exec -T django python manage.py collectstatic --noinput --verbosity 2; then
-	echo "Collectstatic failed; dumping recent django container logs"
+set +e
+docker-compose -f production.yml exec -T django python manage.py collectstatic --noinput --verbosity 2
+collectstatic_status=$?
+set -e
+if [ "$collectstatic_status" -ne 0 ]; then
+	echo "Collectstatic failed (exit ${collectstatic_status}); dumping recent django container logs"
 	docker-compose -f production.yml logs --no-color --tail=200 django || true
-	exit 1
+	exit $collectstatic_status
 fi
 
 # clean up unused docker resources to free up disk space
