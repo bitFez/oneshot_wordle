@@ -55,6 +55,7 @@
                 <th scope="col" class="text-center col-small">1.5 legal & moral issues</th>
                 <th scope="col" class="text-center col-small">2.1 Computation Thinking</th>
                 <th scope="col" class="text-center col-small">2.2 Problem Solving</th>
+                <th scope="col" class="text-center col-small">2.3 Algorithms</th>
                 <th scope="col" class="text-center col-small">%</th>
                 <th scope="col" class="text-center col-small">Rank in cohort</th>
             </thead>
@@ -67,6 +68,7 @@
                     {% if analysis.atopic5 == "#DIV/0!" %}<td class="text-center">-</td>{% else %}<td class="text-center">{{analysis.atopic5|percentage_format}}</td>{% endif %}
                     {% if analysis.atopic6 == "#DIV/0!" %}<td class="text-center">-</td>{% else %}<td class="text-center">{{analysis.atopic6|percentage_format}}</td>{% endif %}
                     {% if analysis.atopic7 == "#DIV/0!" %}<td class="text-center">-</td>{% else %}<td class="text-center">{{analysis.atopic7|percentage_format}}</td>{% endif %}
+                    {% if analysis.atopic8 == "#DIV/0!" %}<td class="text-center">-</td>{% else %}<td class="text-center">{{analysis.atopic8|percentage_format}}</td>{% endif %}
                     <td class="text-center col-small">{{analysis.aAv|floatformat:1}}%</td>
                     <td class="text-center col-small">{{analysis.aRank|floatformat:0}}</td>
                 </tr>
@@ -86,6 +88,7 @@
                 <th scope="col" class="text-center col-small">1.5 Legal & moral issues</th>
                 <th scope="col" class="text-center col-small">2.1 Computation Thinking</th>
                 <th scope="col" class="text-center col-small">2.2 Problem Solving</th>
+                <th scope="col" class="text-center col-small">2.3 Algorithms</th>
                 <th scope="col" class="text-center col-small">%</th>
                 <th scope="col" class="text-center col-small">Rank in cohort</th>
             </thead>
@@ -100,6 +103,7 @@
                         {% if test.topic5 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic5|percentage_format}}</td>{% endif %}
                         {% if test.topic6 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic6|percentage_format}}</td>{% endif %}
                         {% if test.topic7 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic7|percentage_format}}</td>{% endif %}
+                        {% if test.topic8 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic8|percentage_format}}</td>{% endif %}
                         <td class="text-center col-small">{{test.perc|floatformat:1}}%</td>
                         <td class="text-center col-small">{{test.rank|floatformat:0}}</td>
                     </tr>
@@ -176,6 +180,7 @@
                 <th scope="col" class="text-center col-small">1.5 legal & moral issues</th>
                 <th scope="col" class="text-center col-small">2.1 Computation Thinking</th>
                 <th scope="col" class="text-center col-small">2.2 Problem Solving</th>
+                <th scope="col" class="text-center col-small">2.3 Algorithms</th>
                 <th scope="col" class="text-center col-small">%</th>
                 <th scope="col">Rank in cohort</th>
             </thead>
@@ -190,6 +195,7 @@
                     {% if test.topic5 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic5|percentage_format}}</td>{% endif %}
                     {% if test.topic6 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic6|percentage_format}}</td>{% endif %}
                     {% if test.topic7 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic7|percentage_format}}</td>{% endif %}
+                    {% if test.topic8 == "#DIV/0!" %}<td class="text-center col-small">-</td>{% else %}<td class="text-center col-small">{{test.topic8|percentage_format}}</td>{% endif %}
                     <td class="text-center col-small">{{test.perc|floatformat:1}}%</td>
                     <td class="text-center col-small">{{test.rank|floatformat:0}}</td>
                 </tr>
