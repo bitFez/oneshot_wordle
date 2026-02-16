@@ -11,22 +11,36 @@ from .models import Puzzle, Submission
 def c_about(request):
     return render(request, 'pages/c_cipher/about.html')
 
-def c_index(request):
-    
-    puzzles = Puzzle.objects.order_by('release_at')[:50]
-    
-    # Get the latest hijri_year from released puzzles
-    latest_hijri_year = None
-    latest_released_puzzle = Puzzle.objects.filter(
-        release_at__lte=timezone.now()
-    ).order_by('-release_at').values_list('hijri_year', flat=True).first()
+def c_index(request, hijri_year=None):
+        
+    # use hijri_year arg or get the latest hijri_year from released puzzles
+    if hijri_year:
+        puzzles = Puzzle.objects.filter(hijri_year=hijri_year).order_by('release_at')[:50]
+    else:
+        latest_hijri_year = None
+        latest_released_puzzle = Puzzle.objects.filter(
+            release_at__lte=timezone.now()
+        ).order_by('-release_at').values_list('hijri_year', flat=True).first()
+        puzzles = Puzzle.objects.filter(hijri_year=latest_released_puzzle).order_by('release_at')[:50]
     
     if latest_released_puzzle:
         latest_hijri_year = latest_released_puzzle
 
+    # Get solved puzzle IDs for the current user
+    solved_puzzle_ids = set()
+    if request.user.is_authenticated:
+        solved_puzzle_ids = set(
+            Submission.objects.filter(
+                user=request.user,
+                is_correct=True,
+                puzzle__in=puzzles
+            ).values_list('puzzle_id', flat=True)
+        )
+    
     context = {
         'puzzles': puzzles,
         'latest_hijri_year': latest_hijri_year,
+        'solved_puzzle_ids': solved_puzzle_ids,
     }
 
     # Score for specific hijri year
@@ -34,7 +48,7 @@ def c_index(request):
         year_score = Submission.objects.filter(
             user=request.user, 
             is_correct=True, 
-            puzzle__hijri_year=1447
+            puzzle__hijri_year=hijri_year if hijri_year else latest_hijri_year
         ).count()
 
 
@@ -53,8 +67,21 @@ def c_index(request):
 @staff_member_required
 def c_preview_hijri_year(request, hijri_year):
     """Preview template for a specific hijri_year (admin only)."""
+    puzzles = Puzzle.objects.filter(hijri_year=hijri_year, sequence=0).order_by('release_at')[:50]
+    
+    # Get solved puzzle IDs for the current user
+    solved_puzzle_ids = set(
+        Submission.objects.filter(
+            user=request.user,
+            is_correct=True,
+            puzzle__in=puzzles
+        ).values_list('puzzle_id', flat=True)
+    )
+    
     return render(request, 'pages/c_cipher/index.html', {
         'preview_hijri_year': hijri_year,
+        'puzzles': puzzles,
+        'solved_puzzle_ids': solved_puzzle_ids,
     })
 
 

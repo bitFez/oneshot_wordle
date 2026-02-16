@@ -17,12 +17,29 @@
         {% if preview_hijri_year %}
             <!-- Include the hijri year template (admin preview) -->
             {% with yr=preview_hijri_year|stringformat:"s" %}
-                {% include "pages/c_cipher/"|add:yr|add:".html" %}
+                {% comment %} {% include "pages/c_cipher/events/"|add:yr|add:".html" %} {% endcomment %}
+                <div class="flex flex-col gap-0">
+                        {% for puzzle in puzzles %}
+                            {% if puzzle.id in solved_puzzle_ids %}
+                                    <a href="{% url 'c_cipher:puzzle_preview' slug=puzzle.slug %}" class="btn btn-success flex justify-between m-0">
+                                        <div>{{ forloop.counter }}</div>
+                                        <div>{{ puzzle.title }}</div>
+                                        <div><i class="fa-solid fa-star fa-xs" style="color: #FFD43B;"></i></div>
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'c_cipher:puzzle_preview' slug=puzzle.slug %}" class="btn btn-neutral flex justify-between m-0">
+                                        <div>{{ forloop.counter }}</div>
+                                        <div>{{ puzzle.title }}</div>
+                                        <div><i class="fa-regular fa-star fa-xs"></i></div>
+                                    </a>
+                            {% endif %}
+                        {% endfor %}
+                </div>
             {% endwith %}
         {% elif latest_hijri_year %}
             <!-- Include the hijri year template -->
             {% with yr=latest_hijri_year|stringformat:"s" %}
-                {% include "pages/c_cipher/"|add:yr|add:".html" %}
+                {% include "pages/c_cipher/events/"|add:yr|add:".html" %}
             {% endwith %}
         {% else %}
             <!-- Ramadan Countdown -->
