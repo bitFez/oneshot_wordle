@@ -19,9 +19,12 @@
                 {% translate "Sign Out" %}
             </a>
         </li>
-    {% else %}
+        {% else %}
         <li><a href="{% url 'account_signup' %}">Sign Up</a></li>
         <li><a href="{% url 'account_login' %}">Log In</a></li>
-    {% endif %}
-  
+        {% endif %}
+        <li class="join join-horizontal">
+            <a class="join-item" href="{% url 'game:home' %}"><img width="16px" src="{% static 'images/favicons/favicon.ico' %}"></a>
+            <a class="join-item" href="{% url 'tangle:tangle_index' %}"><img width="16px" src="{% static 'images/favicons/tw_favicon.ico' %}"></a>
+        </li>   
 </ul>
