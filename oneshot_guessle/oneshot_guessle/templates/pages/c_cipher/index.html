@@ -26,8 +26,14 @@
                                         <div>{{ puzzle.title }}</div>
                                         <div><i class="fa-solid fa-star fa-xs" style="color: #FFD43B;"></i></div>
                                     </a>
-                                {% else %}
-                                    <a href="{% url 'c_cipher:puzzle_preview' slug=puzzle.slug %}" class="btn btn-neutral flex justify-between m-0">
+                            {% elif puzzle.id in attempted_puzzle_ids %}
+                                    <a href="{% url 'c_cipher:puzzle_preview' slug=puzzle.slug %}" class="btn btn-outline flex justify-between m-0">
+                                        <div>{{ forloop.counter }}</div>
+                                        <div>{{ puzzle.title }}</div>
+                                        <div><i class="fa-solid fa-star fa-xs" style="color: #b2e0ff;"></i></div>
+                                    </a>
+                            {% else %}
+                                    <a href="{% url 'c_cipher:puzzle_preview' slug=puzzle.slug %}" class="btn btn-outline flex justify-between m-0">
                                         <div>{{ forloop.counter }}</div>
                                         <div>{{ puzzle.title }}</div>
                                         <div><i class="fa-regular fa-star fa-xs"></i></div>

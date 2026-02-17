@@ -28,6 +28,7 @@ def c_index(request, hijri_year=None):
 
     # Get solved puzzle IDs for the current user
     solved_puzzle_ids = set()
+    attempted_puzzle_ids = set()
     if request.user.is_authenticated:
         solved_puzzle_ids = set(
             Submission.objects.filter(
@@ -36,11 +37,19 @@ def c_index(request, hijri_year=None):
                 puzzle__in=puzzles
             ).values_list('puzzle_id', flat=True)
         )
+        attempted_puzzle_ids = set(
+            Submission.objects.filter(
+                user=request.user,
+                is_correct=False,
+                puzzle__in=puzzles
+            ).values_list('puzzle_id', flat=True)
+        )
     
     context = {
         'puzzles': puzzles,
         'latest_hijri_year': latest_hijri_year,
         'solved_puzzle_ids': solved_puzzle_ids,
+        'attempted_puzzle_ids': attempted_puzzle_ids,
     }
 
     # Score for specific hijri year
@@ -78,10 +87,20 @@ def c_preview_hijri_year(request, hijri_year):
         ).values_list('puzzle_id', flat=True)
     )
     
+    # Get attempted (but not solved) puzzle IDs
+    attempted_puzzle_ids = set(
+        Submission.objects.filter(
+            user=request.user,
+            is_correct=False,
+            puzzle__in=puzzles
+        ).values_list('puzzle_id', flat=True)
+    )
+    
     return render(request, 'pages/c_cipher/index.html', {
         'preview_hijri_year': hijri_year,
         'puzzles': puzzles,
         'solved_puzzle_ids': solved_puzzle_ids,
+        'attempted_puzzle_ids': attempted_puzzle_ids,
     })
 
 
