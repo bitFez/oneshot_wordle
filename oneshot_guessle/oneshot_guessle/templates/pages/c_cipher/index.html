@@ -45,7 +45,30 @@
         {% elif latest_hijri_year %}
             <!-- Include the hijri year template -->
             {% with yr=latest_hijri_year|stringformat:"s" %}
-                {% include "pages/c_cipher/events/"|add:yr|add:".html" %}
+                {% comment %} {% include "pages/c_cipher/events/"|add:yr|add:".html" %} {% endcomment %}
+                <div class="flex flex-col gap-0">
+                    {% for puzzle in puzzles %}
+                        {% if puzzle.id in solved_puzzle_ids %}
+                                <a href="{% url 'c_cipher:puzzle_view' slug=puzzle.slug %}" class="btn btn-success flex justify-between m-0">
+                                    <div>{{ forloop.counter }}</div>
+                                    <div>{{ puzzle.title }}</div>
+                                    <div><i class="fa-solid fa-star fa-xs" style="color: #FFD43B;"></i></div>
+                                </a>
+                        {% elif puzzle.id in attempted_puzzle_ids %}
+                                <a href="{% url 'c_cipher:puzzle_view' slug=puzzle.slug %}" class="btn btn-outline flex justify-between m-0">
+                                    <div>{{ forloop.counter }}</div>
+                                    <div>{{ puzzle.title }}</div>
+                                    <div><i class="fa-solid fa-star fa-xs" style="color: #b2e0ff;"></i></div>
+                                </a>
+                        {% else %}
+                                <a href="{% url 'c_cipher:puzzle_view' slug=puzzle.slug %}" class="btn btn-outline flex justify-between m-0">
+                                    <div>{{ forloop.counter }}</div>
+                                    <div>{{ puzzle.title }}</div>
+                                    <div><i class="fa-regular fa-star fa-xs"></i></div>
+                                </a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
             {% endwith %}
         {% else %}
             <!-- Ramadan Countdown -->
@@ -81,7 +104,7 @@
 
             <script>
                 // Countdown to February 18, 2026 00:00:00
-                const ramadanDate = new Date('2026-02-18T00:00:00').getTime();
+                const ramadanDate = new Date('2026-02-19T00:00:00').getTime();
                 
                 function updateCountdown() {
                     const now = new Date().getTime();
