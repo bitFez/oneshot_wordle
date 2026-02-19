@@ -15,16 +15,21 @@
         <div class="card-body p-4 p-sm-5">
           <div class="relative w-64 h-48">
             <div class="text-center">
-              <div class="position-relative d-inline-block" style="width: 130px; height: 80px;">
+              <div class="position-relative d-inline-block" style="width: 224px; height: 80px;">
                 <!-- Bottom logo - circular -->
                 <img src="{% static 'images/logo.svg' %}" alt="Logo 1"
-                    class="position-absolute start-0 top-50 translate-middle-y rounded-circle border border-white shadow"
-                    style="width: 80px; height: 80px; object-fit: cover;">
+                    class="position-absolute rounded-circle shadow"
+                    style="left: 0; top: 0; width: 80px; height: 80px; object-fit: cover;">
 
-                <!-- Overlapping top-right logo - circular -->
+                <!-- Top-right logo - circular -->
                 <img src="{% static 'images/tangle_words_logo.png' %}" alt="Logo 2"
-                    class="position-absolute top-50 translate-middle-y rounded-circle border border-white shadow"
-                    style="left: 64px; width: 80px; height: 80px; object-fit: cover;">
+                    class="position-absolute rounded-circle shadow"
+                    style="left: 72px; top: 0; width: 80px; height: 80px; object-fit: cover;">
+
+                <!-- Bottom-right logo - circular -->
+                <img src="{% static 'images/crescent_cipher_logo.png' %}" alt="Logo 3"
+                    class="position-absolute rounded-circle shadow"
+                    style="left: 144px; top: 0; width: 83px; height: 83px; object-fit: cover;">
               </div>
             </div>
           
