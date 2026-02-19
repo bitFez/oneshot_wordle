@@ -148,8 +148,12 @@ def c_puzzle_view(request, slug):
     if existing and existing.is_correct and user:
         next_puzzles = [p for p in puzzle.unlocks.order_by('release_at', 'sequence') if p.is_available_for(user)]
 
+    # Show puzzle_file only to authenticated users
+    puzzle_file = puzzle.puzzle_file if request.user.is_authenticated else ''
+
     return render(request, 'c_cipher/puzzle_detail.html', {
         'puzzle': puzzle,
+        'puzzle_file': puzzle_file,
         'existing': existing,
         'message': message,
         'next_puzzles': next_puzzles,
@@ -200,8 +204,12 @@ def c_puzzle_preview(request, slug):
     elif existing and existing.is_correct and user:
         next_puzzles = [p for p in puzzle.unlocks.order_by('release_at', 'sequence') if p.is_available_for(user)]
 
+    # Show puzzle_file to staff/DEBUG (preview always shows it since it's admin-only)
+    puzzle_file = puzzle.puzzle_file
+
     return render(request, 'c_cipher/puzzle_detail.html', {
         'puzzle': puzzle,
+        'puzzle_file': puzzle_file,
         'existing': existing,
         'message': message,
         'next_puzzles': next_puzzles,

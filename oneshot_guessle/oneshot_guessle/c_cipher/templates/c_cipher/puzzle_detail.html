@@ -10,6 +10,19 @@
         <h3 class="card-title">{{ puzzle.title }}</h3>
         <div class="markdown-content opacity-90">
           {{ puzzle.description|markdownify }}
+          <br>
+          {% if puzzle_file %}
+            <div role="alert" class="alert">
+              <i class="fa-regular fa-file"></i>
+              <span>{{ puzzle_file|markdownify }}</span>
+            </div>
+            
+          {% else %}
+            <div role="alert" class="alert alert-warning alert-dash">
+              <i class="fa-regular fa-file"></i>
+              <span>*[Input file not available - please log in]*</span>
+            </div>
+          {% endif %}
         </div>
       </div>
     </div>

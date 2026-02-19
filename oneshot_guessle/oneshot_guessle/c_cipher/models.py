@@ -16,6 +16,7 @@ class Puzzle(models.Model):
     hijri_year = models.PositiveSmallIntegerField(db_index=True)
     release_at = models.DateTimeField(db_index=True)
     description = models.TextField(blank=True)
+    puzzle_file = models.TextField(blank=True)  # Markdown string with input file link, only shown to authenticated users
     success_message = models.TextField(blank=True)
     accepted_answers = models.JSONField(default=list)  # canonical answers
     answer_flags = models.JSONField(
