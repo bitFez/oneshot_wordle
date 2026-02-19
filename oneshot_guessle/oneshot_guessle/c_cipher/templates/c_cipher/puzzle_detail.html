@@ -69,7 +69,7 @@
           <ul class="list-disc pl-5 space-y-1">
             {% for p in next_puzzles %}
               <li>
-                <a class="link link-primary" href="{% url 'c_cipher:puzzle_view' slug=p.slug %}">
+                <a class="link link-primary" href="{% url 'c_cipher:puzzle_preview' slug=p.slug %}">
                   {{ p.title }}
                 </a>
               </li>

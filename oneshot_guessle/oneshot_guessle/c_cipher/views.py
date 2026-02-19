@@ -14,17 +14,23 @@ def c_about(request):
 def c_index(request, hijri_year=None):
         
     # use hijri_year arg or get the latest hijri_year from released puzzles
+    latest_hijri_year = None
     if hijri_year:
-        puzzles = Puzzle.objects.filter(hijri_year=hijri_year).order_by('release_at')[:50]
+        puzzles = Puzzle.objects.filter(
+            hijri_year=hijri_year,
+            release_at__lte=timezone.now(),
+            sequence=0
+        ).order_by('release_at')[:50]
+        latest_hijri_year = hijri_year
     else:
-        latest_hijri_year = None
         latest_released_puzzle = Puzzle.objects.filter(
             release_at__lte=timezone.now()
         ).order_by('-release_at').values_list('hijri_year', flat=True).first()
-        puzzles = Puzzle.objects.filter(hijri_year=latest_released_puzzle).order_by('release_at')[:50]
-    
-    if latest_released_puzzle:
-        latest_hijri_year = latest_released_puzzle
+        if latest_released_puzzle:
+            puzzles = Puzzle.objects.filter(hijri_year=latest_released_puzzle, release_at__lte=timezone.now(), sequence=0).order_by('release_at')[:50]
+            latest_hijri_year = latest_released_puzzle
+        else:
+            puzzles = Puzzle.objects.none()
 
     # Get solved puzzle IDs for the current user
     solved_puzzle_ids = set()
@@ -104,9 +110,50 @@ def c_preview_hijri_year(request, hijri_year):
     })
 
 
-def c_puzzle_view(request, year, day):
-    # Placeholder: production view should locate puzzle by date/sequence.
-    return HttpResponse(status=204)
+def c_puzzle_view(request, slug):
+    """View a puzzle by slug and allow submission."""
+    puzzle = get_object_or_404(Puzzle, slug=slug)
+
+    user = request.user if request.user.is_authenticated else None
+
+    message = None
+
+    existing = None
+    if user:
+        existing = Submission.objects.filter(puzzle=puzzle, user=user).first()
+
+    if request.method == 'POST':
+        if not user:
+            return HttpResponse('Login required to submit', status=403)
+        answer = request.POST.get('answer', '')
+        is_correct = puzzle.check_answer(answer)
+
+        if existing and existing.is_correct:
+            message = 'You have already solved this puzzle.'
+        else:
+            if existing:
+                existing.answer = answer
+                existing.is_correct = is_correct
+                existing.save(update_fields=["answer", "is_correct"])
+            else:
+                existing = Submission.objects.create(
+                    puzzle=puzzle,
+                    user=user,
+                    answer=answer,
+                    is_correct=is_correct,
+                )
+            message = 'Correct!' if is_correct else 'Incorrect. Try again.'
+
+    next_puzzles = []
+    if existing and existing.is_correct and user:
+        next_puzzles = [p for p in puzzle.unlocks.order_by('release_at', 'sequence') if p.is_available_for(user)]
+
+    return render(request, 'c_cipher/puzzle_detail.html', {
+        'puzzle': puzzle,
+        'existing': existing,
+        'message': message,
+        'next_puzzles': next_puzzles,
+    })
 
 
 def c_puzzle_preview(request, slug):

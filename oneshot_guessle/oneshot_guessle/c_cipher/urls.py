@@ -9,7 +9,7 @@ urlpatterns = [
     path('cc/', c_index, name='c_index'),  # Index view for the game
     path('cc/about', c_about, name='c_about'),
     path('cc/preview-hijri/<int:hijri_year>/', c_preview_hijri_year, name='preview_hijri_year'),  # Admin preview for hijri year template
-    path('cc/<int:year>/day/<int:day>/', c_puzzle_view, name='puzzle_view'),
+    path('cc/<slug:slug>/', c_puzzle_view, name='puzzle_view'),
     # Dev preview/test path: bypasses release/prerequisite gating
     path('cc/preview/<slug:slug>/', c_puzzle_preview, name='puzzle_preview'),
 ]
