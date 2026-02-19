@@ -39,10 +39,17 @@
             <p>
               {% translate "Please sign in with one of your existing third party accounts:" %}
               {% if ACCOUNT_ALLOW_REGISTRATION %}
-                {% blocktranslate trimmed %}
-                  Or, <a href="{{ signup_url }}">sign up</a>
-                  for a {{ site_name }} account and sign in below:
-                {% endblocktranslate %}
+                {% if redirect_field_value %}
+                  {% blocktranslate trimmed %}
+                    Or, <a href="{{ signup_url }}?{{ redirect_field_name }}={{ redirect_field_value|urlencode }}">sign up</a>
+                    for a {{ site_name }} account and sign in below:
+                  {% endblocktranslate %}
+                {% else %}
+                  {% blocktranslate trimmed %}
+                    Or, <a href="{{ signup_url }}">sign up</a>
+                    for a {{ site_name }} account and sign in below:
+                  {% endblocktranslate %}
+                {% endif %}
               {% endif %}
             </p>
 
@@ -61,10 +68,17 @@
           {% else %}
             {% if ACCOUNT_ALLOW_REGISTRATION %}
               <p>
-                {% blocktranslate trimmed %}
-                  If you have not created an account yet, then please
-                  <a href="{{ signup_url }}">sign up</a> first.
-                {% endblocktranslate %}
+                {% if redirect_field_value %}
+                  {% blocktranslate trimmed %}
+                    If you have not created an account yet, then please
+                    <a href="{{ signup_url }}?{{ redirect_field_name }}={{ redirect_field_value|urlencode }}">sign up</a> first.
+                  {% endblocktranslate %}
+                {% else %}
+                  {% blocktranslate trimmed %}
+                    If you have not created an account yet, then please
+                    <a href="{{ signup_url }}">sign up</a> first.
+                  {% endblocktranslate %}
+                {% endif %}
               </p>
             {% endif %}
           {% endif %}

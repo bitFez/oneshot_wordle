@@ -20,8 +20,8 @@
             </a>
         </li>
         {% else %}
-        <li><a href="{% url 'account_signup' %}">Sign Up</a></li>
-        <li><a href="{% url 'account_login' %}">Log In</a></li>
+        <li><a href="{% url 'account_signup' %}?next={{ request.path }}">Sign Up</a></li>
+        <li><a href="{% url 'account_login' %}?next={{ request.path }}">Log In</a></li>
         {% endif %}
         <li class="join join-horizontal">
             <a class="join-item" href="{% url 'game:home' %}"><img width="16px" src="{% static 'images/favicons/favicon.ico' %}"></a>

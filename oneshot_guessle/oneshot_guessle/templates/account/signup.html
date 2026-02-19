@@ -31,7 +31,13 @@
             <!-- <img class="d-block mx-auto mb-4 d-none d-sm-block" src="{% static 'images/logo.svg' %}" alt="" width="80" height="80"> -->
           
             <h5>{% translate "Sign Up" %}</h5>
-            <p>{% blocktranslate %}Already have an account? Then please <a href="{{ login_url }}">sign in</a>.{% endblocktranslate %}</p>
+            <p>
+              {% if redirect_field_value %}
+                {% blocktranslate %}Already have an account? Then please <a href="{{ login_url }}?{{ redirect_field_name }}={{ redirect_field_value|urlencode }}">sign in</a>.{% endblocktranslate %}
+              {% else %}
+                {% blocktranslate %}Already have an account? Then please <a href="{{ login_url }}">sign in</a>.{% endblocktranslate %}
+              {% endif %}
+            </p>
 
             <form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
               {% csrf_token %}
