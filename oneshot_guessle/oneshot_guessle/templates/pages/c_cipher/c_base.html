@@ -14,9 +14,19 @@
 	<link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
 	<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 	<link rel="stylesheet" href="{% static 'css/c_cipher.css' %}">
-
+	{% if not user.is_authenticated or user.no_ads is False %}
+      <!-- Google Ads -->
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2072226965226950" crossorigin="anonymous"></script>
+      <!-- Google Ads -->
+    {% endif %}
 	{% block head_extra %}{% endblock head_extra %}
 </head>
+<div class="row my-1 align-items-start no-gutters justify-content-center border-bottom w-100">       
+	<!-- Google Ad - top_of_page -->
+	{% if not user.is_authenticated or user.no_ads is False %}
+		{% include "pages/ads/top_page.html" %}
+	{% endif %}
+</div>
 <body class="min-h-screen bg-base-300 text-base-content font-mono">
 	<main class="min-h-screen flex items-center justify-center p-4">
 		<div class="mockup-window c-cipher-window bg-base-300 border border-base-200 shadow-2xl w-full max-w-5xl">
@@ -48,6 +58,13 @@
 			</div>
 		</div>
 	</main>
+
+	<div class="row my-1 align-items-start no-gutters justify-content-center border-bottom w-100">       
+		<!-- Google Ad - bottom_of_page -->
+		{% if not user.is_authenticated or user.no_ads is False %}
+			{% include "pages/ads/top_page.html" %}
+		{% endif %}
+	</div>
 
 	{% block scripts %}
 		<script src="{% static 'js/c_cipher.js' %}"></script>
