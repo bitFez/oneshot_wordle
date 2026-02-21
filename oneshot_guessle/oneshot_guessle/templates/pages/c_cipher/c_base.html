@@ -21,7 +21,7 @@
     {% endif %}
 	{% block head_extra %}{% endblock head_extra %}
 </head>
-<div class="row my-1 align-items-start no-gutters justify-content-center border-bottom w-100">       
+<div class="row my-0 align-items-center gap-0 justify-content-center border-bottom w-100">       
 	<!-- Google Ad - top_of_page -->
 	{% if not user.is_authenticated or user.no_ads is False %}
 		{% include "pages/ads/top_page.html" %}
@@ -59,7 +59,7 @@
 		</div>
 	</main>
 
-	<div class="row my-1 align-items-start no-gutters justify-content-center border-bottom w-100">       
+	<div class="row my-0 align-items-center gap-0 justify-content-center border-bottom w-100">       
 		<!-- Google Ad - bottom_of_page -->
 		{% if not user.is_authenticated or user.no_ads is False %}
 			{% include "pages/ads/top_page.html" %}
