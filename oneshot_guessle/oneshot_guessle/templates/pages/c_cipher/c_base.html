@@ -21,13 +21,17 @@
     {% endif %}
 	{% block head_extra %}{% endblock head_extra %}
 </head>
-<div class="row my-0 align-items-center gap-0 justify-content-center border-bottom w-100">       
-	<!-- Google Ad - top_of_page -->
-	{% if not user.is_authenticated or user.no_ads is False %}
-		{% include "pages/ads/top_page.html" %}
-	{% endif %}
-</div>
+
 <body class="min-h-screen bg-base-300 text-base-content font-mono">
+	<!-- Ads Top of page -->
+	<div class="flex justify-center items-center w-full border-b py-0">
+		{% if not user.is_authenticated or user.no_ads is False %}
+			<div class="mx-auto">
+				{% include "pages/ads/top_page.html" %}
+			</div>
+		{% endif %}
+	</div>
+
 	<main class="min-h-screen flex items-center justify-center p-4">
 		<div class="mockup-window c-cipher-window bg-base-300 border border-base-200 shadow-2xl w-full max-w-5xl">
 			<div class="bg-base-100 px-6 py-6">
@@ -59,10 +63,12 @@
 		</div>
 	</main>
 
-	<div class="row my-0 align-items-center gap-0 justify-content-center border-bottom w-100">       
-		<!-- Google Ad - bottom_of_page -->
+	<!-- Ads Bottom of page -->
+	<div class="flex justify-center items-center w-full border-b py-0">
 		{% if not user.is_authenticated or user.no_ads is False %}
-			{% include "pages/ads/top_page.html" %}
+			<div class="mx-auto">
+				{% include "pages/ads/top_page.html" %}
+			</div>
 		{% endif %}
 	</div>
 
