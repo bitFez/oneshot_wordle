@@ -58,7 +58,7 @@ dill==0.3.6
     # via pylint
 distlib==0.3.6
     # via virtualenv
-django==6.0.2
+django==6.0.3
     # via
     #   -r requirements/top_level_deps.in
     #   crispy-bootstrap5
@@ -104,7 +104,7 @@ factory-boy==3.2.1
     # via -r requirements/top_level_deps.in
 faker==18.4.0
     # via factory-boy
-filelock==3.20.1
+filelock==3.25.0
     # via virtualenv
 flake8==6.0.0
     # via flake8-isort

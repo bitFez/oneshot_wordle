@@ -3,7 +3,7 @@ async-timeout==4.0.2
 crispy-bootstrap5==0.7
 cryptography>=46.0.5
 asgiref>=3.9.1
-Django==6.0.2
+Django==6.0.3
 django-allauth>=65.13.0
 django-coverage-plugin==3.0.0
 django_debug_toolbar==3.8.1
