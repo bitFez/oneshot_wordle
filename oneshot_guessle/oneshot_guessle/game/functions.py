@@ -1,6 +1,7 @@
 from .models import Word,WordsHard
 import re
 import inflect
+import random
 
 p = inflect.engine()
 
@@ -111,88 +112,242 @@ def get_clues_rows(clues, TARGET_WORD, **kwargs):
     return cluesRow, alphabet
 
 def get_random_clues(oneshotWord, **kwargs):
-    """
-        This function will cycle through clues until it produces a clues list that matches the 
-        setting for the difficulty of the word. eg:
-        easy: 2 yellow, 2 green clues
-        normal: 1 green, 2 yellow clues
-        hard: 2 green ,3 yellow clues
+    """Return five clue words for `oneshotWord`.
+
+    New behaviour: pick one random clue plus four words that are more closely
+    related to the target word. Relatedness is computed by a simple score:
+    score = 3*bulls + cows (bulls = same-position matches, cows = unique shared
+    letters excluding bulls). This produces clues that are more informative and
+    generally easier for players.
     """
     difficulty = kwargs.get("difficulty", None)
-    if difficulty == "easy":
-        bulls_diff, cows_diff = 2, 2
-    elif difficulty == "hard":
-        bulls_diff, cows_diff = 2, 3
-    else:
-        bulls_diff, cows_diff = 1, 3
 
-    # This normalises the target word to a plain string. If the object 
-    # is a model instance, it extracts the word as a string from the model.
+    # Normalise target
     target = getattr(oneshotWord, "word", oneshotWord)
     target = str(target).lower()
     target_len = len(target)
 
     qs = WordsHard.objects if difficulty == "hard" else Word.objects
 
-    max_attempts = 50
-    attempt = 0
-    while attempt < max_attempts:
-        attempt += 1
+    # determine bulls cap: regular/default => 3, hard => 4, easy => no cap
+    is_easy = difficulty == "easy"
+    is_hard = difficulty == "hard"
+    if is_easy:
+        bulls_cap = None
+    else:
+        bulls_cap = 4 if is_hard else 3
 
-        # sample a number of random candidates (slice to avoid huge query materialisation)
-        sample = list(qs.order_by("?")[:20])
-        # build clues_list of candidates that are not the target and same length as target
-        clues_list = []
-        for cand in sample:
-            cand_word = str(getattr(cand, "word", cand)).lower()
-            if cand_word == target:
-                continue
-            if len(cand_word) != target_len:
-                continue
-            # store the plain word string (simpler for downstream rendering)
-            clues_list.append(cand_word)
-            if len(clues_list) == 5:
-                break
+    # sample a batch of candidates randomly for scoring (avoid iterating entire DB)
+    sample_size = 200
+    sample_qs = list(qs.order_by("?")[:sample_size])
 
-        # if we didn't collect 5 valid clues, try again
-        if len(clues_list) < 5:
-            continue
-
-        # compute cows (unique letters in candidates that appear in target) and bulls (correct-position letters)
-        cows = []
-        bulls = []
-        for cand in clues_list:
-            cand_word = str(getattr(cand, "word", cand)).lower()
-            # cows: any letter in candidate that's in target (add uniquely)
-            for letter in cand_word:
-                if letter in target and letter not in cows:
-                    cows.append(letter)
-            # bulls: same-position matches (safe because lengths match)
-            for i in range(target_len):
-                if cand_word[i] == target[i] and cand_word[i] not in bulls:
-                    bulls.append(cand_word[i])
-                    # ensure bull not counted also as cow
-                    if cand_word[i] in cows:
-                        cows.remove(cand_word[i])
-
-        if len(bulls) == bulls_diff and len(cows) == cows_diff:
-            # ensure we return a list of strings
-            assert isinstance(clues_list, (list, tuple)), "get_random_clues must return a list"
-            return list(clues_list)
-
-    # fallback: gather the first 5 matching-length non-target words from DB
-    fallback = []
-    for cand in qs.all():
+    # build candidate words of the same length and not equal to target
+    candidates = []
+    for cand in sample_qs:
         cand_word = str(getattr(cand, "word", cand)).lower()
         if cand_word == target:
             continue
         if len(cand_word) != target_len:
             continue
-        fallback.append(cand_word)
-        if len(fallback) == 5:
-            break
+        candidates.append(cand_word)
 
-    return fallback
+    # if sampling didn't yield enough candidates, fall back to scanning the DB
+    if len(candidates) < 10:
+        candidates = []
+        for cand in qs.all():
+            cand_word = str(getattr(cand, "word", cand)).lower()
+            if cand_word == target:
+                continue
+            if len(cand_word) != target_len:
+                continue
+            candidates.append(cand_word)
+
+    # if still not enough, return simple fallback list
+    if not candidates:
+        return []
+
+    # compute similarity scores for each candidate
+    scored = []
+    # also track bulls letters per candidate to allow enforcing caps later
+    bulls_letters_map = {}
+    for cand in candidates:
+        bulls_letters = {cand[i] for i in range(min(len(cand), target_len)) if cand[i] == target[i]}
+        bulls = len(bulls_letters)
+        # cows: unique letters in cand that appear in target but not counted as bulls
+        cows_set = set()
+        for i, ch in enumerate(cand):
+            if i < len(target) and ch == target[i]:
+                continue
+            if ch in target:
+                cows_set.add(ch)
+        cows = len(cows_set)
+        score = bulls * 3 + cows
+        scored.append((cand, score, bulls, cows))
+        bulls_letters_map[cand] = bulls_letters
+
+    # sort descending by score
+    scored.sort(key=lambda x: x[1], reverse=True)
+
+    # choose top candidates (keep some headroom for randomness)
+    top_pool = [s[0] for s in scored[:20]] if len(scored) > 20 else [s[0] for s in scored]
+
+    # pick primary + related according to difficulty
+    related = []
+    if difficulty == "easy":
+        # easy: pick the highest-scoring candidate as primary (most informative)
+        primary = top_pool[0] if top_pool else random.choice(candidates)
+        # prepare accumulated bull positions and letters from primary
+        primary_positions = {i for i, ch in enumerate(primary) if i < target_len and ch == target[i]}
+        accumulated_positions = set(primary_positions)
+        accumulated_bulls = set(bulls_letters_map.get(primary, set()))
+        for w in top_pool:
+            if w == primary:
+                continue
+            # bulls letters and positions for candidate
+            w_bulls = bulls_letters_map.get(w, set())
+            w_positions = {i for i, ch in enumerate(w) if i < target_len and ch == target[i]}
+            # enforce bulls cap for non-easy modes
+            if bulls_cap is not None and len(accumulated_bulls.union(w_bulls)) > bulls_cap:
+                continue
+            # skip candidate if adding it would reveal all positions
+            if len(accumulated_positions.union(w_positions)) == target_len:
+                continue
+            if w not in related:
+                related.append(w)
+                accumulated_positions.update(w_positions)
+                accumulated_bulls.update(w_bulls)
+            if len(related) == 4:
+                break
+    else:
+        # regular (default): pick one random primary and then the top related words
+        # try to pick a random primary that will allow keeping total unique bulls <= 3
+        # fallback to any random primary after a few attempts
+        max_primary_attempts = 10
+        primary = None
+        for _ in range(max_primary_attempts):
+            cand_primary = random.choice(candidates)
+            primary_bulls = set(bulls_letters_map.get(cand_primary, set()))
+            if bulls_cap is None or len(primary_bulls) <= bulls_cap:
+                primary = cand_primary
+                break
+        if primary is None:
+            primary = random.choice(candidates)
+
+        # accumulate bulls letters and add related words only if they don't push unique bulls > 3
+        accumulated_bulls = set(bulls_letters_map.get(primary, set()))
+        # also track bull positions to avoid revealing full word
+        primary_positions = {i for i, ch in enumerate(primary) if i < target_len and ch == target[i]}
+        accumulated_positions = set(primary_positions)
+        for w in top_pool:
+            if w == primary:
+                continue
+            # bulls letters for candidate
+            w_bulls = bulls_letters_map.get(w, set())
+            # bull positions for candidate
+            w_positions = {i for i, ch in enumerate(w) if i < target_len and ch == target[i]}
+            # if adding this candidate would exceed allowed unique bulls, skip it
+            if bulls_cap is not None and len(accumulated_bulls.union(w_bulls)) > bulls_cap:
+                continue
+            # if adding this candidate would reveal all positions, skip it
+            if len(accumulated_positions.union(w_positions)) == target_len:
+                continue
+            if w not in related:
+                related.append(w)
+                accumulated_bulls.update(w_bulls)
+                accumulated_positions.update(w_positions)
+            if len(related) == 4:
+                break
+
+    # if there aren't enough related words, pad from candidates
+    if len(related) < 4:
+        # build current accumulated bulls and positions from primary + related
+        current_positions = {i for i, ch in enumerate(primary) if i < target_len and ch == target[i]}
+        current_bulls = set(bulls_letters_map.get(primary, set()))
+        for r in related:
+            current_positions.update({i for i, ch in enumerate(r) if i < target_len and ch == target[i]})
+            current_bulls.update(bulls_letters_map.get(r, set()))
+
+        for w in candidates:
+            if w == primary or w in related:
+                continue
+            w_positions = {i for i, ch in enumerate(w) if i < target_len and ch == target[i]}
+            w_bulls = bulls_letters_map.get(w, set())
+            # enforce bulls cap when present
+            if bulls_cap is not None and len(current_bulls.union(w_bulls)) > bulls_cap:
+                continue
+            # ensure adding won't reveal full word
+            if len(current_positions.union(w_positions)) == target_len:
+                continue
+            related.append(w)
+            current_positions.update(w_positions)
+            current_bulls.update(w_bulls)
+            if len(related) == 4:
+                break
+
+    clues_list = [primary] + related[:4]
+    # If easy mode accidentally reveals all positions across the five clues,
+    # attempt to repair by replacing/removing one related word so the union of
+    # bull positions is strictly less than the target length.
+    def revealed_positions_for_list(lst):
+        pos = set()
+        for w in lst:
+            for i, ch in enumerate(w):
+                if i < target_len and ch == target[i]:
+                    pos.add(i)
+        return pos
+
+    # repair loop (only necessary for easy mode but safe to run generally)
+    positions = revealed_positions_for_list(clues_list)
+    if len(positions) == target_len:
+        # try to replace one related word with a less-revealing candidate
+        pool = top_pool + [w for w in candidates if w not in top_pool]
+        # ensure uniqueness
+        pool = [w for w in pool if w not in clues_list]
+
+        replaced = False
+        # try each related slot to see if a replacement exists
+        for idx in range(len(related)):
+            # build baseline positions excluding this related
+            baseline = revealed_positions_for_list([primary] + [r for j, r in enumerate(related[:4]) if j != idx])
+            for cand in pool:
+                cand_pos = {i for i, ch in enumerate(cand) if i < target_len and ch == target[i]}
+                if len(baseline.union(cand_pos)) < target_len:
+                    # perform replacement
+                    related[idx] = cand
+                    replaced = True
+                    break
+            if replaced:
+                break
+
+        if not replaced:
+            # as a fallback, remove the related word that contributes the most new
+            # positions and then attempt to pad with any candidate that doesn't
+            # complete the set of positions.
+            contrib = []
+            base_primary = revealed_positions_for_list([primary])
+            for r in related[:4]:
+                contrib.append((r, len(revealed_positions_for_list([primary, r]) - base_primary)))
+            # sort by contribution descending and drop the highest contributor
+            contrib.sort(key=lambda x: x[1], reverse=True)
+            if contrib:
+                to_remove = contrib[0][0]
+                related = [r for r in related if r != to_remove]
+
+            # rebuild current positions and try to pad with safe candidates
+            current_positions = revealed_positions_for_list([primary] + related)
+            for cand in pool:
+                if cand in related:
+                    continue
+                cand_pos = {i for i, ch in enumerate(cand) if i < target_len and ch == target[i]}
+                if len(current_positions.union(cand_pos)) == target_len:
+                    continue
+                related.append(cand)
+                current_positions.update(cand_pos)
+                if len(related) >= 4:
+                    break
+
+    # ensure we return a list of strings
+    return list([primary] + related[:4])
 
 try:
     from nltk.corpus import wordnet as wn

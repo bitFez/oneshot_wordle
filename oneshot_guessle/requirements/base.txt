@@ -142,7 +142,7 @@ markupsafe==2.1.2
     # via
     #   jinja2
     #   werkzeug
-markdown==3.6
+markdown==3.10.2
     # via -r requirements/top_level_deps.in
 matplotlib-inline==0.1.6
     # via ipython
@@ -206,7 +206,7 @@ pygments==2.15.1
     # via
     #   ipython
     #   sphinx
-pyjwt[crypto]==2.6.0
+pyjwt[crypto]==2.12.1
     # via django-allauth
 pylint==2.17.2
     # via
