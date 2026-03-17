@@ -82,12 +82,18 @@
       <li class="nav-item">
         <a href="https://codefez.github.io/" class="nav-link" target="_blank" > <img class="avatar" src="https://avatars.githubusercontent.com/u/5003973?s=96&v=4" height="40px" alt=""> Learn to codefez!</a>
       </li>
-      <li class="nav-item">
+      <!-- <li class="nav-item">
         <a class="nav-link" href="{% url 'teacher_resources:res_page' %}">{% translate "Codefez Computing Resources" %}</a>
-      </li>
-      <li>
-        <a href="https://twitter.com/oneshotguessle" target="_blank"><i class="bi bi-twitter-x" style="font-size: 2rem;"></i></a>
-      </li>
+      </li> -->
+      <ul class="list-group list-group-horizontal">
+        <li class="list-group-item">
+          <a href="https://twitter.com/oneshotguessle" target="_blank"><i class="bi bi-twitter-x" style="font-size: 2rem;"></i></a>
+        </li>
+        <li class="list-group-item">
+          <a href="https://bsky.app/profile/oneshotguessle.bsky.social" target="_blank"><i class="bi bi-bluesky" style="font-size: 2rem;"></i></a>
+        </li>
+      </ul>
+            
       <li>
         <a class="btn btn-link mx-1 px-0 text-light" hx-get='{% url "game:shareto" %}' hx-target="#modal_placeholder" hx-trigger="click" @htmx:after-on-load.camel="setTimeout(function() { my_modal=new bootstrap.Modal($refs.modaldiv);my_modal.show()},100)"><i class="bi bi-share-fill"></i> Share {{request.site.name}} </a>
       </li>
