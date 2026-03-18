@@ -129,13 +129,17 @@ def get_random_clues(oneshotWord, **kwargs):
 
     qs = WordsHard.objects if difficulty == "hard" else Word.objects
 
-    # determine bulls cap: regular/default => 3, hard => 4, easy => no cap
-    is_easy = difficulty == "easy"
-    is_hard = difficulty == "hard"
-    if is_easy:
-        bulls_cap = None
+    # determine per-difficulty limits (total unique letters revealed across clues)
+    # regular: max 2 bulls and 1 cow
+    # easy:    max 2 bulls and 2 cows
+    # hard:    max 2 bulls and 2 cows
+    if difficulty == "hard":
+        bulls_limit, cows_limit = 2, 2
+    elif difficulty == "easy":
+        bulls_limit, cows_limit = 2, 2
     else:
-        bulls_cap = 4 if is_hard else 3
+        # regular / default
+        bulls_limit, cows_limit = 2, 1
 
     # sample a batch of candidates randomly for scoring (avoid iterating entire DB)
     sample_size = 200
@@ -168,8 +172,9 @@ def get_random_clues(oneshotWord, **kwargs):
 
     # compute similarity scores for each candidate
     scored = []
-    # also track bulls letters per candidate to allow enforcing caps later
+    # also track bulls and cows letters per candidate to allow enforcing caps
     bulls_letters_map = {}
+    cows_letters_map = {}
     for cand in candidates:
         bulls_letters = {cand[i] for i in range(min(len(cand), target_len)) if cand[i] == target[i]}
         bulls = len(bulls_letters)
@@ -184,6 +189,7 @@ def get_random_clues(oneshotWord, **kwargs):
         score = bulls * 3 + cows
         scored.append((cand, score, bulls, cows))
         bulls_letters_map[cand] = bulls_letters
+        cows_letters_map[cand] = cows_set
 
     # sort descending by score
     scored.sort(key=lambda x: x[1], reverse=True)
@@ -200,14 +206,18 @@ def get_random_clues(oneshotWord, **kwargs):
         primary_positions = {i for i, ch in enumerate(primary) if i < target_len and ch == target[i]}
         accumulated_positions = set(primary_positions)
         accumulated_bulls = set(bulls_letters_map.get(primary, set()))
+        accumulated_cows = set(cows_letters_map.get(primary, set()))
         for w in top_pool:
             if w == primary:
                 continue
             # bulls letters and positions for candidate
             w_bulls = bulls_letters_map.get(w, set())
             w_positions = {i for i, ch in enumerate(w) if i < target_len and ch == target[i]}
-            # enforce bulls cap for non-easy modes
-            if bulls_cap is not None and len(accumulated_bulls.union(w_bulls)) > bulls_cap:
+            w_cows = cows_letters_map.get(w, set())
+            # enforce bulls and cows caps
+            if len(accumulated_bulls.union(w_bulls)) > bulls_limit:
+                continue
+            if len(accumulated_cows.union(w_cows)) > cows_limit:
                 continue
             # skip candidate if adding it would reveal all positions
             if len(accumulated_positions.union(w_positions)) == target_len:
@@ -216,6 +226,7 @@ def get_random_clues(oneshotWord, **kwargs):
                 related.append(w)
                 accumulated_positions.update(w_positions)
                 accumulated_bulls.update(w_bulls)
+                accumulated_cows.update(w_cows)
             if len(related) == 4:
                 break
     else:
@@ -227,7 +238,8 @@ def get_random_clues(oneshotWord, **kwargs):
         for _ in range(max_primary_attempts):
             cand_primary = random.choice(candidates)
             primary_bulls = set(bulls_letters_map.get(cand_primary, set()))
-            if bulls_cap is None or len(primary_bulls) <= bulls_cap:
+            primary_cows = set(cows_letters_map.get(cand_primary, set()))
+            if len(primary_bulls) <= bulls_limit and len(primary_cows) <= cows_limit:
                 primary = cand_primary
                 break
         if primary is None:
@@ -235,6 +247,7 @@ def get_random_clues(oneshotWord, **kwargs):
 
         # accumulate bulls letters and add related words only if they don't push unique bulls > 3
         accumulated_bulls = set(bulls_letters_map.get(primary, set()))
+        accumulated_cows = set(cows_letters_map.get(primary, set()))
         # also track bull positions to avoid revealing full word
         primary_positions = {i for i, ch in enumerate(primary) if i < target_len and ch == target[i]}
         accumulated_positions = set(primary_positions)
@@ -245,8 +258,11 @@ def get_random_clues(oneshotWord, **kwargs):
             w_bulls = bulls_letters_map.get(w, set())
             # bull positions for candidate
             w_positions = {i for i, ch in enumerate(w) if i < target_len and ch == target[i]}
-            # if adding this candidate would exceed allowed unique bulls, skip it
-            if bulls_cap is not None and len(accumulated_bulls.union(w_bulls)) > bulls_cap:
+            w_cows = cows_letters_map.get(w, set())
+            # if adding this candidate would exceed allowed unique bulls or cows, skip it
+            if len(accumulated_bulls.union(w_bulls)) > bulls_limit:
+                continue
+            if len(accumulated_cows.union(w_cows)) > cows_limit:
                 continue
             # if adding this candidate would reveal all positions, skip it
             if len(accumulated_positions.union(w_positions)) == target_len:
@@ -254,35 +270,53 @@ def get_random_clues(oneshotWord, **kwargs):
             if w not in related:
                 related.append(w)
                 accumulated_bulls.update(w_bulls)
+                accumulated_cows.update(w_cows)
                 accumulated_positions.update(w_positions)
             if len(related) == 4:
                 break
 
     # if there aren't enough related words, pad from candidates
     if len(related) < 4:
-        # build current accumulated bulls and positions from primary + related
+        # build current accumulated bulls, cows and positions from primary + related
         current_positions = {i for i, ch in enumerate(primary) if i < target_len and ch == target[i]}
         current_bulls = set(bulls_letters_map.get(primary, set()))
+        current_cows = set(cows_letters_map.get(primary, set()))
         for r in related:
             current_positions.update({i for i, ch in enumerate(r) if i < target_len and ch == target[i]})
             current_bulls.update(bulls_letters_map.get(r, set()))
+            current_cows.update(cows_letters_map.get(r, set()))
 
-        for w in candidates:
-            if w == primary or w in related:
-                continue
-            w_positions = {i for i, ch in enumerate(w) if i < target_len and ch == target[i]}
-            w_bulls = bulls_letters_map.get(w, set())
-            # enforce bulls cap when present
-            if bulls_cap is not None and len(current_bulls.union(w_bulls)) > bulls_cap:
-                continue
-            # ensure adding won't reveal full word
-            if len(current_positions.union(w_positions)) == target_len:
-                continue
-            related.append(w)
-            current_positions.update(w_positions)
-            current_bulls.update(w_bulls)
-            if len(related) == 4:
-                break
+            # try padding with multiple relaxation passes to ensure we return 4 related words
+            for pass_mode in ("strict", "allow_cows", "allow_any"):
+                for w in candidates:
+                    if w == primary or w in related:
+                        continue
+                    w_positions = {i for i, ch in enumerate(w) if i < target_len and ch == target[i]}
+                    w_bulls = bulls_letters_map.get(w, set())
+                    w_cows = cows_letters_map.get(w, set())
+                    # avoid full reveal
+                    if len(current_positions.union(w_positions)) == target_len:
+                        continue
+                    if pass_mode == "strict":
+                        if len(current_bulls.union(w_bulls)) > bulls_limit:
+                            continue
+                        if len(current_cows.union(w_cows)) > cows_limit:
+                            continue
+                    elif pass_mode == "allow_cows":
+                        if len(current_bulls.union(w_bulls)) > bulls_limit:
+                            continue
+                        # allow cows overflow
+                    else:
+                        # allow_any: only avoid full reveal
+                        pass
+                    related.append(w)
+                    current_positions.update(w_positions)
+                    current_bulls.update(w_bulls)
+                    current_cows.update(w_cows)
+                    if len(related) == 4:
+                        break
+                if len(related) == 4:
+                    break
 
     clues_list = [primary] + related[:4]
     # If easy mode accidentally reveals all positions across the five clues,
@@ -309,13 +343,25 @@ def get_random_clues(oneshotWord, **kwargs):
         for idx in range(len(related)):
             # build baseline positions excluding this related
             baseline = revealed_positions_for_list([primary] + [r for j, r in enumerate(related[:4]) if j != idx])
+            # also compute baseline bulls/cows
+            baseline_bulls = set(bulls_letters_map.get(primary, set()))
+            baseline_cows = set(cows_letters_map.get(primary, set()))
+            for j, r in enumerate(related[:4]):
+                if j == idx:
+                    continue
+                baseline_bulls.update(bulls_letters_map.get(r, set()))
+                baseline_cows.update(cows_letters_map.get(r, set()))
+
             for cand in pool:
                 cand_pos = {i for i, ch in enumerate(cand) if i < target_len and ch == target[i]}
-                if len(baseline.union(cand_pos)) < target_len:
-                    # perform replacement
-                    related[idx] = cand
-                    replaced = True
-                    break
+                # only require replacement to avoid full position coverage; allow
+                # blades that may temporarily change bulls/cows counts
+                if len(baseline.union(cand_pos)) >= target_len:
+                    continue
+                # perform replacement (ignore bulls/cows caps for repair)
+                related[idx] = cand
+                replaced = True
+                break
             if replaced:
                 break
 
@@ -335,14 +381,139 @@ def get_random_clues(oneshotWord, **kwargs):
 
             # rebuild current positions and try to pad with safe candidates
             current_positions = revealed_positions_for_list([primary] + related)
-            for cand in pool:
-                if cand in related:
+            current_bulls = set(bulls_letters_map.get(primary, set()))
+            current_cows = set(cows_letters_map.get(primary, set()))
+            for r in related:
+                current_bulls.update(bulls_letters_map.get(r, set()))
+                current_cows.update(cows_letters_map.get(r, set()))
+
+            # attempt padding in multiple passes: strict -> allow cows overflow -> allow any (but avoid full reveal)
+            for pass_mode in ("strict", "allow_cows", "allow_any"):
+                for cand in pool:
+                    if cand in related:
+                        continue
+                    cand_pos = {i for i, ch in enumerate(cand) if i < target_len and ch == target[i]}
+                    cand_bulls = bulls_letters_map.get(cand, set())
+                    cand_cows = cows_letters_map.get(cand, set())
+                    # always avoid completing full position reveal
+                    if len(current_positions.union(cand_pos)) == target_len:
+                        continue
+                    if pass_mode == "strict":
+                        if len(current_bulls.union(cand_bulls)) > bulls_limit:
+                            continue
+                        if len(current_cows.union(cand_cows)) > cows_limit:
+                            continue
+                    elif pass_mode == "allow_cows":
+                        if len(current_bulls.union(cand_bulls)) > bulls_limit:
+                            continue
+                        # allow cows to exceed cows_limit in this pass
+                    else:
+                        # allow_any: only avoid full reveal
+                        pass
+                    related.append(cand)
+                    current_positions.update(cand_pos)
+                    current_bulls.update(cand_bulls)
+                    current_cows.update(cand_cows)
+                    if len(related) >= 4:
+                        break
+                if len(related) >= 4:
+                    break
+
+    # If after repair we still reveal all positions, try alternative primaries
+    # from the top pool (this can often find a safer primary that allows four
+    # related clues without full coverage).
+    if len(positions) == target_len:
+        for alt in top_pool:
+            if alt == primary:
+                continue
+            # attempt to build related for this alt primary
+            alt_related = []
+            alt_positions = {i for i, ch in enumerate(alt) if i < target_len and ch == target[i]}
+            alt_bulls = set(bulls_letters_map.get(alt, set()))
+            alt_cows = set(cows_letters_map.get(alt, set()))
+            for w in top_pool:
+                if w == alt:
                     continue
-                cand_pos = {i for i, ch in enumerate(cand) if i < target_len and ch == target[i]}
-                if len(current_positions.union(cand_pos)) == target_len:
+                w_bulls = bulls_letters_map.get(w, set())
+                w_cows = cows_letters_map.get(w, set())
+                w_pos = {i for i, ch in enumerate(w) if i < target_len and ch == target[i]}
+                if len(alt_bulls.union(w_bulls)) > bulls_limit:
                     continue
-                related.append(cand)
-                current_positions.update(cand_pos)
+                if len(alt_cows.union(w_cows)) > cows_limit:
+                    continue
+                if len(alt_positions.union(w_pos)) == target_len:
+                    continue
+                alt_related.append(w)
+                alt_bulls.update(w_bulls)
+                alt_cows.update(w_cows)
+                alt_positions.update(w_pos)
+                if len(alt_related) >= 4:
+                    break
+            # padding for alt_primary if needed
+            if len(alt_related) < 4:
+                pool = [w for w in candidates if w != alt and w not in alt_related]
+                random.shuffle(pool)
+                for pass_mode in ("strict", "allow_cows", "allow_any"):
+                    for w in pool:
+                        if w in alt_related:
+                            continue
+                        w_pos = {i for i, ch in enumerate(w) if i < target_len and ch == target[i]}
+                        w_bulls = bulls_letters_map.get(w, set())
+                        w_cows = cows_letters_map.get(w, set())
+                        if len(alt_positions.union(w_pos)) == target_len:
+                            continue
+                        if pass_mode == "strict":
+                            if len(alt_bulls.union(w_bulls)) > bulls_limit:
+                                continue
+                            if len(alt_cows.union(w_cows)) > cows_limit:
+                                continue
+                        elif pass_mode == "allow_cows":
+                            if len(alt_bulls.union(w_bulls)) > bulls_limit:
+                                continue
+                        alt_related.append(w)
+                        alt_positions.update(w_pos)
+                        alt_bulls.update(w_bulls)
+                        alt_cows.update(w_cows)
+                        if len(alt_related) >= 4:
+                            break
+                    if len(alt_related) >= 4:
+                        break
+            if len(alt_related) >= 4 and len(alt_positions) < target_len:
+                primary = alt
+                related = alt_related[:4]
+                positions = alt_positions
+                break
+
+    # final fallback: if we still don't have enough related words (strict caps
+    # may have prevented filling), add random candidates (excluding primary)
+    # until we have four related words. This ensures callers always receive
+    # five clues; caps are attempted but not guaranteed when impossible.
+    if len(related) < 4:
+        pool = [w for w in candidates if w != primary and w not in related]
+        random.shuffle(pool)
+        # only add candidates that do NOT complete the set of bull positions
+        def positions_for_list(lst):
+            pos = set()
+            for ww in lst:
+                for i, ch in enumerate(ww):
+                    if i < target_len and ch == target[i]:
+                        pos.add(i)
+            return pos
+
+        for w in pool:
+            if len(related) >= 4:
+                break
+            cand_pos = {i for i, ch in enumerate(w) if i < target_len and ch == target[i]}
+            current_positions = positions_for_list([primary] + related)
+            if len(current_positions.union(cand_pos)) == target_len:
+                continue
+            related.append(w)
+        # if still short, as a last resort add any remaining candidates (keeps tests' len==5)
+        if len(related) < 4:
+            for w in pool:
+                if w in related:
+                    continue
+                related.append(w)
                 if len(related) >= 4:
                     break
 
