@@ -1156,9 +1156,17 @@ def history(request):
             'date': osw.date,
             'attempted': attempted,
         })
-    context = {'guessles': guessles}
-    
-    return render(request, 'pages/games/history.html', context)
+    # paginate the results
+    paginator = Paginator(guessles, 10)
+    page_number = request.GET.get('page')
+    guessles_page = paginator.get_page(page_number)
+    context = {'guessles_page': guessles_page, 'guessles': guessles}
+
+    # If HTMX request, return just the table body partial
+    if request.htmx:
+        return render(request, 'pages/games/partials/history_list.html', context)
+    else:
+        return render(request, 'pages/games/history.html', context)
 
 
 def play_oneshot(request, pk):

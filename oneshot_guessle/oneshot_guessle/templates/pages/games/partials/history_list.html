@@ -1,0 +1,40 @@
+{% load static %}
+<div id="page-section">
+    <table class="table table-dark table-striped">
+      <thead>
+        <tr class="table-dark">
+          <th scope="col">Guessle #</th>
+          <th scope="col">Play</th>
+          <th scope="col">Clue 1</th>
+          <th scope="col">Clue 2</th>
+          <th scope="col">Clue 3</th>
+          <th scope="col">Clue 4</th>
+          <th scope="col">Clue 5</th>
+          <th scope="col">% of correct guesses</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for guessle in guessles_page %}
+            <tr>
+                <th scope="row" class="table-dark">#{{ guessle.id }} - {{ guessle.date|date:"D d M Y" }}</th>
+                <td class="table-dark">
+                {% if user.is_authenticated and guessle.attempted %}
+                    <span class="badge bg-secondary">Played</span>
+                {% else %}
+                        <a class="btn btn-sm btn-primary" href="{% url 'game:play' guessle.id %}">Play</a>
+                {% endif %}
+                </td>
+                <td class="table-dark">{{ guessle.clue1 }}</td>
+                <td class="table-dark">{{ guessle.clue2 }}</td>
+                <td class="table-dark">{{ guessle.clue3 }}</td>
+                <td class="table-dark">{{ guessle.clue4 }}</td>
+                <td class="table-dark">{{ guessle.clue5 }}</td>
+                <td class="table-dark">{{ guessle.per }}%</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+        <!-- Boostrap Solution to Pagination buttons -->
+        <nav>
+          {% include "pages/games/partials/pg_navbar.html" %}
+        </nav>
+    </div>
