@@ -2,7 +2,7 @@ from django.urls import path
 
 from oneshot_guessle.game.views import (
     guessle, load_words, supporter,shareto_modal,privacy_policy,terms_and_conditions,disclaimer,
-    help_menu, results, history, halloffame, support_menu, guessle_easy, guessle_hard, scan_for_plurals,serve_ads_txt
+    help_menu, results, history, halloffame, support_menu, guessle_easy, guessle_hard, scan_for_plurals,serve_ads_txt, play_oneshot
 )
 
 app_name = "game"
@@ -18,6 +18,7 @@ urlpatterns = [
     path('shareto',shareto_modal, name='shareto'),
     path('results', results, name='results'),
     path('history', history, name='history'),
+    path('play/<int:pk>/', play_oneshot, name='play'),
     path('halloffame', halloffame, name='hof'),
     path('privacy_policy', privacy_policy, name='privacy_policy'),
     path('terms', terms_and_conditions, name='tsandcs'),

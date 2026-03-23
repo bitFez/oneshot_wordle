@@ -170,6 +170,15 @@ def guessle(request):
     #initiate formset for guesslist
     GuessFormSet = formset_factory(GuessForm, extra=1, max_num=1)
 
+    # allow playing an older oneshot via ?oneshot=<id>
+    override_oneshot = None
+    play_id = request.GET.get('oneshot') or request.GET.get('id')
+    if play_id:
+        try:
+            override_oneshot = OneshotWord.objects.get(pk=play_id)
+        except Exception:
+            override_oneshot = None
+
     context = {}
     # ensure these exist for anonymous users so later code can safely call .exists()/first()
     attempts = Guessle_Attempt.objects.none()
@@ -190,8 +199,11 @@ def guessle(request):
         # Get or create the single Daily_Stars record for this calendar day
         stars = _get_daily_stars_for_date(user, today_dt)
         context['stars'] = stars
-        # Check for previous attempts by calendar date
-        attempts = Guessle_Attempt.objects.filter(date__date=today_date, user=user).order_by('-date')
+        # Check for previous attempts. If playing an older oneshot, check attempts for that oneshot
+        if override_oneshot is not None:
+            attempts = Guessle_Attempt.objects.filter(word=override_oneshot, user=user).order_by('-date')
+        else:
+            attempts = Guessle_Attempt.objects.filter(date__date=today_date, user=user).order_by('-date')
         # check if there was an attempt yesterday
         yesterday_date = (today_dt - timedelta(days=1)).date()
         yesterday_qs = Guessle_Attempt.objects.filter(date__date=yesterday_date, user=user)
@@ -205,9 +217,46 @@ def guessle(request):
 
         # add numeric count for templates/JS to use (always present)
         context['attempts_count'] = attempts.count() if attempts is not None else 0
+        # store previous attempt word (plain string) so frontend can decide whether to show definitions
+        prev_attempt = attempts.first() if hasattr(attempts, 'exists') and attempts.exists() else None
+        if prev_attempt:
+            try:
+                prev_word_text = getattr(prev_attempt.word, 'word', prev_attempt.word)
+            except Exception:
+                prev_word_text = str(prev_attempt.word)
+        else:
+            prev_word_text = ''
+        context['previous_attempt_word'] = str(prev_word_text)
 
     # query if a word has been created already today in the DB.
-    if OneshotWord.objects.filter(date__date=today_date).exists():
+    if override_oneshot is not None:
+        # playing an older oneshot selected from history
+        todaysGuessle = override_oneshot
+        todaysword = todaysGuessle
+        todayclues = getattr(todaysGuessle, "clues", None)
+        TARGET_WORD = todaysGuessle.word
+        # ensure TARGET_WORD is a string (Word may be a model instance)
+        if hasattr(TARGET_WORD, "word"):
+            TARGET_WORD = TARGET_WORD.word
+        elif not isinstance(TARGET_WORD, str):
+            TARGET_WORD = str(TARGET_WORD)
+
+        # coerce clue fields to plain strings (handle Word model instances)
+        def _clue_text(c):
+            if c is None:
+                return ""
+            if hasattr(c, "word"):
+                return c.word
+            return str(c)
+
+        clues = [
+            _clue_text(getattr(todayclues, "clue1", None)),
+            _clue_text(getattr(todayclues, "clue2", None)),
+            _clue_text(getattr(todayclues, "clue3", None)),
+            _clue_text(getattr(todayclues, "clue4", None)),
+            _clue_text(getattr(todayclues, "clue5", None)),
+        ]
+    elif OneshotWord.objects.filter(date__date=today_date).exists():
         todaysGuessle = OneshotWord.objects.filter(date__date=today_date).first()
         todaysword = todaysGuessle
         todayclues = getattr(todaysGuessle, "clues", None)
@@ -269,9 +318,10 @@ def guessle(request):
             clue4 = clue_texts[3],
             clue5 = clue_texts[4]
         )
-        oneshot_obj, _ = OneshotWord.objects.update_or_create(
+        # create a new OneshotWord row for today (don't update historical rows with the same word)
+        oneshot_obj = OneshotWord.objects.create(
             word=todaysword.word,
-            defaults={"clues": clues_obj, "date": today},
+            clues=clues_obj,
         )
         # use the created oneshot as today's guessle
         todaysGuessle = oneshot_obj
@@ -309,6 +359,8 @@ def guessle(request):
 
     # ensure target word is always present in context (needed by client JS)
     context['t_word'] = str(TARGET_WORD or "")
+    # expose previous attempt word for frontend checks
+    context['previous_attempt_word'] = context.get('previous_attempt_word', '')
     
     new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.data,prefix='alphabet')
     context['alphabet_formset'] = new_alphabet_formset
@@ -410,9 +462,17 @@ def guessle(request):
                     user.daysincorrect+=1
                     user.streak = 0
                 
+                # prevent duplicate plays of historical oneshots
+                if override_oneshot is not None and Guessle_Attempt.objects.filter(user=user, word=override_oneshot).exists():
+                    messages.add_message(request=request, level=messages.ERROR, message="You have already attempted this Guessle")
+                    return HttpResponseRedirect(reverse('game:history'))
+
+                # If user is playing an older oneshot, save the attempt with the original oneshot date
+                attempt_date = override_oneshot.date if override_oneshot is not None else today
+
                 att = Guessle_Attempt.objects.update_or_create(
                         user=user,
-                        date=today,
+                        date=attempt_date,
                         word=todaysGuessle,
                         guess=guess
                     )
@@ -433,10 +493,19 @@ def guessle(request):
     
     else:
         # not a POST: if the user already attempted today show their attempt and coloured result
-        previous_attempt = attempts.first() if attempts.exists() else None
+        # Determine previous attempt explicitly:
+        # - if viewing/playing an override oneshot, show attempts for that oneshot
+        # - otherwise only show attempts that match today's oneshot (avoid showing historical attempts)
+        if override_oneshot is not None:
+            previous_attempt = Guessle_Attempt.objects.filter(user=user, word=override_oneshot).order_by('-date').first()
+        else:
+            previous_attempt = Guessle_Attempt.objects.filter(user=user, word=todaysGuessle, date__date=today_date).order_by('-date').first()
         if previous_attempt:
             # show message and populate the form with the previous guess (readonly behaviour)
-            messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's Guessle")
+            if override_oneshot is not None:
+                messages.add_message(request=request, level=messages.ERROR, message="You have already attempted this Guessle")
+            else:
+                messages.add_message(request=request, level=messages.ERROR, message="You have already attempted today's Guessle")
             # pre-fill form with the user's previous guess and zero attempts left
             form = GuessleForm(initial={
                 'guess':previous_attempt.guess,
@@ -574,9 +643,9 @@ def guessle_easy(request):
             clue4 = clue_texts[3],
             clue5 = clue_texts[4]
         )
-        oneshot_obj, _ = OneshotWordEasy.objects.update_or_create(
+        oneshot_obj = OneshotWordEasy.objects.create(
             word=todaysword.word,
-            defaults={"clues": clues_obj, "date": today},
+            clues=clues_obj,
         )
         # use the created oneshot as today's guessle
         todaysGuessle = oneshot_obj
@@ -858,9 +927,9 @@ def guessle_hard(request):
                 clue4 = clue_texts[3],
                 clue5 = clue_texts[4]
             )
-            oneshot_obj, _ = OneshotWordHard.objects.update_or_create(
+            oneshot_obj = OneshotWordHard.objects.create(
                 word=todaysword.word,
-                defaults={"clues": clues_obj, "date": today},
+                clues=clues_obj,
             )
 
             # use the created oneshot as today's guessle
@@ -1052,30 +1121,53 @@ def guessle_hard(request):
 
 
 def history(request):
-    #dailyOsW = OneshotWord.objects.all()
-    dailyOsW = OneshotWord.objects.annotate(
-    last_action=Subquery(
-        OneshotWord.objects.filter(
-            word=OuterRef('pk')
-        ).order_by('-date').values('word')[:1]
-    )
-)
+    today_date = timezone.localtime(timezone.now()).date()
+    # Exclude today's oneshot explicitly and order by date desc
+    dailyOsW = OneshotWord.objects.exclude(date__date=today_date).annotate(
+        last_action=Subquery(
+            OneshotWord.objects.filter(
+                word=OuterRef('word')
+            ).order_by('-date').values('word')[:1]
+        )
+    ).order_by('-date')
 
-    guessles = {}
-    # Loops through all words excluding today's date or last word
-    for i in range(0,len(dailyOsW)-1):
-        # if percentage correct for the day is 0 stops division by 0 error
+    guessles = []
+    # Loop through all previous oneshots (excluding today's), ordered by puzzle date desc
+    for osw in dailyOsW:
         try:
-            per=round((dailyOsW[i].correctAnswers/dailyOsW[i].attempts)*100,2)
-        except:
-            per=0
-        a = {i:{'id':dailyOsW[i].id, 'word':dailyOsW[i].word, 'clue1':dailyOsW[i].clues.clue1, 'clue2':dailyOsW[i].clues.clue2,
-             'clue3':dailyOsW[i].clues.clue3,'clue4':dailyOsW[i].clues.clue4,'clue5':dailyOsW[i].clues.clue5,'per':per, 'date':dailyOsW[i].date}}
-        # adds each item in the guesses and clues tables to a dict
-        guessles.update(a)
-    context = {'guessles':guessles}
+            per = round((osw.correctAnswers / osw.attempts) * 100, 2)
+        except Exception:
+            per = 0
+        attempted = False
+        try:
+            if request.user.is_authenticated:
+                attempted = Guessle_Attempt.objects.filter(user=request.user, word=osw).exists()
+        except Exception:
+            attempted = False
+        guessles.append({
+            'id': osw.id,
+            'word': osw.word,
+            'clue1': osw.clues.clue1,
+            'clue2': osw.clues.clue2,
+            'clue3': osw.clues.clue3,
+            'clue4': osw.clues.clue4,
+            'clue5': osw.clues.clue5,
+            'per': per,
+            'date': osw.date,
+            'attempted': attempted,
+        })
+    context = {'guessles': guessles}
     
     return render(request, 'pages/games/history.html', context)
+
+
+def play_oneshot(request, pk):
+    """Redirect to the main guessle view for an explicit play URL.
+
+    We keep the home route as the renderer for playing; this URL makes
+    it explicit and easier to link to from templates.
+    """
+    return HttpResponseRedirect(reverse('game:home') + f'?oneshot={pk}')
 
 def halloffame(request):
     users = User.objects.all().order_by("-stars","-highestStreak", "-streak", "-dayscorrect")

@@ -196,7 +196,7 @@
 <div id="dictionary-popup" class="my-3"></div>
 
 <!-- metadata element that is updated by server HTML on each render/swap -->
-<div id="game-meta" data-t_word="{{ t_word|default:'' }}" data-attempts="{{ attempts_count|default:0 }}"></div>
+<div id="game-meta" data-t_word="{{ t_word|default:'' }}" data-attempts="{{ attempts_count|default:0 }}" data-prev_attempt_word="{{ previous_attempt_word|default:'' }}"></div>
 
 <script>
 (function () {
@@ -208,7 +208,8 @@
             const meta = document.querySelector(metaSelector);
             return {
                 target: meta ? (meta.dataset.t_word || '') : '',
-                attempts: meta ? Number(meta.dataset.attempts || 0) : 0
+                attempts: meta ? Number(meta.dataset.attempts || 0) : 0,
+                prev: meta ? (meta.dataset.prev_attempt_word || '') : ''
             };
         }
 
@@ -230,8 +231,11 @@
                 const meta = readMeta();
                 const TARGET_WORD = meta.target;
                 const ATTEMPTS_COUNT = meta.attempts;
+                const PREV_ATTEMPT_WORD = meta.prev;
                 console.debug('fetchDictionary meta', {TARGET_WORD, ATTEMPTS_COUNT});
+                // Only fetch definition when there is at least one attempt for this same target word.
                 if (!TARGET_WORD || ATTEMPTS_COUNT <= 0) return;
+                if (PREV_ATTEMPT_WORD && PREV_ATTEMPT_WORD !== TARGET_WORD) return;
                 const url = `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(TARGET_WORD)}`;
                 console.debug('Fetching dictionary:', url);
                 const r = await fetch(url);
