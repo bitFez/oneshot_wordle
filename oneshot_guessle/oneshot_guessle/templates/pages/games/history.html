@@ -35,22 +35,22 @@
       <br>Previous guessles only list the regular game and not the easy and hard modes, so if you want to play those modes you will need to play on the day!
     </div>
 
-    <div id="page-section">
-    <table class="table table-dark table-striped">
-      <thead>
-        <tr class="table-dark">
-          <th scope="col">Guessle #</th>
-          <th scope="col">Play</th>
-          <th scope="col">Clue 1</th>
-          <th scope="col">Clue 2</th>
-          <th scope="col">Clue 3</th>
-          <th scope="col">Clue 4</th>
-          <th scope="col">Clue 5</th>
-          <th scope="col">% of correct guesses</th>
-        </tr>
-      </thead>
+    <div id="page-section" hx-get="?page=1{% if difficulty %}&difficulty={{ difficulty }}{% endif %}" hx-trigger="load" hx-swap="outerHTML">
+      <table class="table table-dark table-striped">
+        <thead>
+          <tr class="table-dark">
+            <th scope="col">Guessle #</th>
+            <th scope="col">Play</th>
+            <th scope="col">Clue 1</th>
+            <th scope="col">Clue 2</th>
+            <th scope="col">Clue 3</th>
+            <th scope="col">Clue 4</th>
+            <th scope="col">Clue 5</th>
+            <th scope="col">🌍 % correct</th>
+          </tr>
+        </thead>
         <tbody>
-
+          <noscript>
             {% for guessle in guessles %}
                 <tr>
                     <th scope="row" class="table-dark">#{{ guessle.id }} - {{ guessle.date|date:"D d M Y" }}</th>
@@ -69,13 +69,8 @@
                     <td class="table-dark">{{ guessle.per }}%</td>
                 </tr>
             {% endfor %}
-
+          </noscript>
         </tbody>
-      
-        <!-- Boostrap Solution to Pagination buttons -->
-        <nav>
-          {% include "pages/games/partials/pg_navbar.html" %}
-        </nav>
-  </div>
-</div>
+      </table>
+    </div>
 {% endblock content %}
