@@ -496,10 +496,13 @@ def guessle(request):
         # Determine previous attempt explicitly:
         # - if viewing/playing an override oneshot, show attempts for that oneshot
         # - otherwise only show attempts that match today's oneshot (avoid showing historical attempts)
-        if override_oneshot is not None:
-            previous_attempt = Guessle_Attempt.objects.filter(user=user, word=override_oneshot).order_by('-date').first()
+        if request.user.is_authenticated:
+            if override_oneshot is not None:
+                previous_attempt = Guessle_Attempt.objects.filter(user=user, word=override_oneshot).order_by('-date').first()
+            else:
+                previous_attempt = Guessle_Attempt.objects.filter(user=user, word=todaysGuessle, date__date=today_date).order_by('-date').first()
         else:
-            previous_attempt = Guessle_Attempt.objects.filter(user=user, word=todaysGuessle, date__date=today_date).order_by('-date').first()
+            previous_attempt = None
         if previous_attempt:
             # show message and populate the form with the previous guess (readonly behaviour)
             if override_oneshot is not None:
