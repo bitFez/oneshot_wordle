@@ -51,6 +51,7 @@ class OneshotWord(models.Model):
         verbose_name_plural = "Oneshot Regular Daily Words"
 
     word = models.CharField(max_length=5)
+    puzzle_number = models.PositiveIntegerField(null=True, blank=True, unique=True, help_text="Override the displayed puzzle number. Leave blank to use the database ID.")
     date = models.DateTimeField(auto_now_add=True)
     attempts = models.PositiveIntegerField(default=0)
     correctAnswers = models.PositiveIntegerField(default=0)
@@ -65,6 +66,7 @@ class OneshotWordEasy(models.Model):
         verbose_name_plural = "Oneshot Easy Daily Words"
 
     word = models.CharField(max_length=5)
+    puzzle_number = models.PositiveIntegerField(null=True, blank=True, unique=True, help_text="Override the displayed puzzle number. Leave blank to use the database ID.")
     date = models.DateTimeField(auto_now_add=True)
     attempts = models.PositiveIntegerField(default=0)
     correctAnswers = models.PositiveIntegerField(default=0)
@@ -79,6 +81,7 @@ class OneshotWordHard(models.Model):
         verbose_name_plural = "Oneshot Hard Daily Words"
 
     word = models.CharField(max_length=6)
+    puzzle_number = models.PositiveIntegerField(null=True, blank=True, unique=True, help_text="Override the displayed puzzle number. Leave blank to use the database ID.")
     date = models.DateTimeField(auto_now_add=True)
     attempts = models.PositiveIntegerField(default=0)
     correctAnswers = models.PositiveIntegerField(default=0)

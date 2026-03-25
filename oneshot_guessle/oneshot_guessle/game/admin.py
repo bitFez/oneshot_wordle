@@ -19,19 +19,22 @@ class OneshotWordAdmin(admin.ModelAdmin):
     model = OneshotWord
     search_fields = ('id', 'word','date','attempts','correctAnswers',)
     list_filter =('word','date','attempts','correctAnswers',)
-    list_display = ('id','word','date','attempts','correctAnswers',)
+    list_display = ('id','puzzle_number','word','date','attempts','correctAnswers',)
+    list_editable = ('puzzle_number',)
 
 class OneshotWordEasyAdmin(admin.ModelAdmin):
     model = OneshotWordEasy
     search_fields = ('id', 'word','date','attempts','correctAnswers',)
     list_filter =('word','date','attempts','correctAnswers',)
-    list_display = ('id','word','date','attempts','correctAnswers',)
+    list_display = ('id','puzzle_number','word','date','attempts','correctAnswers',)
+    list_editable = ('puzzle_number',)
 
 class OneshotWordHardAdmin(admin.ModelAdmin):
     model = OneshotWordHard
     search_fields = ('id', 'word','date','attempts','correctAnswers',)
     list_filter =('word','date','attempts','correctAnswers',)
-    list_display = ('id','word','date','attempts','correctAnswers',)
+    list_display = ('id','puzzle_number','word','date','attempts','correctAnswers',)
+    list_editable = ('puzzle_number',)
 
 class OneshotCluesAdmin(admin.ModelAdmin):
     model = OneshotClues

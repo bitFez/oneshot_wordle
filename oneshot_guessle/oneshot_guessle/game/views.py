@@ -1,11 +1,12 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.management import call_command
 from django.core.paginator import Paginator
-from django.db.models import Q, Subquery, OuterRef
+from django.db.models import Q, Subquery, OuterRef, Max
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
@@ -319,9 +320,12 @@ def guessle(request):
             clue5 = clue_texts[4]
         )
         # create a new OneshotWord row for today (don't update historical rows with the same word)
+        # auto-increment puzzle_number based on highest existing number
+        max_puzzle_num = OneshotWord.objects.aggregate(Max('puzzle_number'))['puzzle_number__max'] or 0
         oneshot_obj = OneshotWord.objects.create(
             word=todaysword.word,
             clues=clues_obj,
+            puzzle_number=max_puzzle_num + 1,
         )
         # use the created oneshot as today's guessle
         todaysGuessle = oneshot_obj
@@ -365,7 +369,7 @@ def guessle(request):
     new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.data,prefix='alphabet')
     context['alphabet_formset'] = new_alphabet_formset
     context['cluesRow'] = cluesRow
-    context['guessleNo'] = todaysGuessle.id
+    context['guessleNo'] = todaysGuessle.puzzle_number or todaysGuessle.id
     context['coloured_alpha'] = alphabet
     
     # Dealing with the post of a guess
@@ -646,9 +650,12 @@ def guessle_easy(request):
             clue4 = clue_texts[3],
             clue5 = clue_texts[4]
         )
+        # auto-increment puzzle_number based on highest existing number
+        max_puzzle_num = OneshotWordEasy.objects.aggregate(Max('puzzle_number'))['puzzle_number__max'] or 0
         oneshot_obj = OneshotWordEasy.objects.create(
             word=todaysword.word,
             clues=clues_obj,
+            puzzle_number=max_puzzle_num + 1,
         )
         # use the created oneshot as today's guessle
         todaysGuessle = oneshot_obj
@@ -690,7 +697,7 @@ def guessle_easy(request):
     new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.data,prefix='alphabet')
     context['alphabet_formset'] = new_alphabet_formset
     context['cluesRow'] = cluesRow
-    context['guessleNo'] = todaysGuessle.id
+    context['guessleNo'] = todaysGuessle.puzzle_number or todaysGuessle.id
     context['coloured_alpha'] = alphabet
     context['stars'] = stars
     context['difficulty'] = 'easy'
@@ -930,9 +937,12 @@ def guessle_hard(request):
                 clue4 = clue_texts[3],
                 clue5 = clue_texts[4]
             )
+            # auto-increment puzzle_number based on highest existing number
+            max_puzzle_num = OneshotWordHard.objects.aggregate(Max('puzzle_number'))['puzzle_number__max'] or 0
             oneshot_obj = OneshotWordHard.objects.create(
                 word=todaysword.word,
                 clues=clues_obj,
+                puzzle_number=max_puzzle_num + 1,
             )
 
             # use the created oneshot as today's guessle
@@ -975,7 +985,7 @@ def guessle_hard(request):
         new_alphabet_formset = AlphabetFormSet(initial = alphabet_formset.data,prefix='alphabet')
         context['alphabet_formset'] = new_alphabet_formset
         context['cluesRow'] = cluesRow
-        context['guessleNo'] = todaysGuessle.id
+        context['guessleNo'] = todaysGuessle.puzzle_number or todaysGuessle.id
         context['coloured_alpha'] = alphabet
         context['stars'] = stars
         context['difficulty'] = 'hard'
@@ -1244,3 +1254,10 @@ def results(request):
                 
     context['result'] = results
     return render(request=request, template_name='pages/games/results.html',context=context)
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def autonumber_puzzles_view(request):
+    """Run the autonumber_puzzles management command and display result"""
+    call_command('autonumber_puzzles')
+    return HttpResponse("<h1>✅ Puzzles Autonumbered</h1><p>All guessles have been auto-numbered in chronological order.</p><p><a href='/admin/'>Return to Admin</a></p>")
