@@ -1158,7 +1158,7 @@ def history(request):
         except Exception:
             attempted = False
         guessles.append({
-            'id': osw.id,
+            'puzzle_number': osw.puzzle_number or osw.id,
             'word': osw.word,
             'clue1': osw.clues.clue1,
             'clue2': osw.clues.clue2,
@@ -1182,13 +1182,21 @@ def history(request):
         return render(request, 'pages/games/history.html', context)
 
 
-def play_oneshot(request, pk):
+def play_oneshot(request, puzzle_number):
     """Redirect to the main guessle view for an explicit play URL.
 
     We keep the home route as the renderer for playing; this URL makes
     it explicit and easier to link to from templates.
     """
-    return HttpResponseRedirect(reverse('game:home') + f'?oneshot={pk}')
+    # Try to find the oneshot by puzzle_number, fallback to id for backwards compatibility
+    try:
+        oneshot = OneshotWord.objects.get(puzzle_number=puzzle_number)
+        oneshot_id = oneshot.id
+    except OneshotWord.DoesNotExist:
+        # Fallback to using the number as an id for backwards compatibility
+        oneshot_id = puzzle_number
+    
+    return HttpResponseRedirect(reverse('game:home') + f'?oneshot={oneshot_id}')
 
 def halloffame(request):
     users = User.objects.all().order_by("-stars","-highestStreak", "-streak", "-dayscorrect")

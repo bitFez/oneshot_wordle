@@ -53,12 +53,12 @@
           <noscript>
             {% for guessle in guessles %}
                 <tr>
-                    <th scope="row" class="table-dark">#{{ guessle.id }} - {{ guessle.date|date:"D d M Y" }}</th>
+                    <th scope="row" class="table-dark">#{{ guessle.puzzle_number }} - {{ guessle.date|date:"D d M Y" }}</th>
                     <td class="table-dark">
                       {% if user.is_authenticated and guessle.attempted %}
                         <span class="badge bg-secondary">Played</span>
                       {% else %}
-                            <a class="btn btn-sm btn-primary" href="{% url 'game:play' guessle.id %}">Play</a>
+                            <a class="btn btn-sm btn-primary" href="{% url 'game:play' guessle.puzzle_number %}">Play</a>
                       {% endif %}
                     </td>
                     <td class="table-dark">{{ guessle.clue1 }}</td>
