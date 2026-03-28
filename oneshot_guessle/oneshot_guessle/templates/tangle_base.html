@@ -18,7 +18,7 @@
   <div class="card bg-base-300 w-full max-w-lg">
     <div class="card-body p-4">
 
-      <div class="navbar bg-base-100 shadow-sm relative z-20">
+      <div class="navbar bg-base-100 shadow-sm z-20">
         <div class="navbar-start">
           <div class="avatar">
               <div class="w-14 rounded">
@@ -67,10 +67,12 @@
           {% endif %}
           
         </div>
-        <br>
+      </div>
+
+      <div class="w-full bg-base-100">
         <!-- Google Ad - top_of_page -->
         {% if not user.is_authenticated or user.no_ads is False %}
-            {% include "pages/ads/top_page.html" %}
+            {% include "pages/ads/top_page_tangle.html" %}
         {% endif %}
       </div>
       
