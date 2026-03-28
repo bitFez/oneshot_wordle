@@ -67,6 +67,11 @@
           {% endif %}
           
         </div>
+        <br>
+        <!-- Google Ad - top_of_page -->
+        {% if not user.is_authenticated or user.no_ads is False %}
+            {% include "pages/ads/top_page.html" %}
+        {% endif %}
       </div>
       
 
