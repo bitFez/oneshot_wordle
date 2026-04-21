@@ -6,6 +6,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management import call_command
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import Q, Subquery, OuterRef, Max
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect
@@ -15,6 +16,7 @@ from django.views.generic import DetailView, RedirectView, UpdateView
 from django.views import View
 from django.shortcuts import render, redirect, get_object_or_404
 import json
+import base64
 from django.forms.formsets import formset_factory
 from django.contrib import messages
 from django.utils import timezone
@@ -31,6 +33,11 @@ from django.core.mail import send_mail
 from .forms import GuessleForm, GuessForm, GuessleFormHard, GuessFormHard, AlphabetForm
 from .models import *
 from .functions import guess_result, get_random_clues, get_clues_rows, check_plural
+from .bluesky import (
+    build_daily_main_post_text,
+    build_daily_puzzle_image_bytes,
+    post_daily_main_puzzle_to_bluesky,
+)
 # from .forms import MessageForm
 
 ENCODING_FORMAT='utf8' 
@@ -351,6 +358,15 @@ def guessle(request):
             _clue_text(getattr(todayclues, "clue4", None)),
             _clue_text(getattr(todayclues, "clue5", None)),
         ]
+
+        # Fire-and-forget style hook: posting failures should never break puzzle generation.
+        transaction.on_commit(
+            lambda: post_daily_main_puzzle_to_bluesky(
+                puzzle_number=oneshot_obj.puzzle_number or 0,
+                target_word=str(TARGET_WORD or ""),
+                clues=clues,
+            )
+        )
         # increment frequency on the todaysword instance if present
         try:
             todaysword.frequency = (todaysword.frequency or 0) + 1
@@ -1247,6 +1263,59 @@ def disclaimer(request):
 
 def shareto_modal(request):
     return render(request=request,template_name='pages/games/shareto.html')
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def bluesky_mock_post(request):
+    today_date = timezone.localdate()
+    oneshot = OneshotWord.objects.filter(date__date=today_date).first()
+
+    if oneshot:
+        puzzle_number = oneshot.puzzle_number or 0
+        target_word = str(oneshot.word or "").lower()
+        clues_obj = oneshot.clues
+        clues = [
+            str(getattr(clues_obj, "clue1", "") or "").lower(),
+            str(getattr(clues_obj, "clue2", "") or "").lower(),
+            str(getattr(clues_obj, "clue3", "") or "").lower(),
+            str(getattr(clues_obj, "clue4", "") or "").lower(),
+            str(getattr(clues_obj, "clue5", "") or "").lower(),
+        ]
+    else:
+        word_obj = get_random_word()
+        target_word = str(getattr(word_obj, "word", "") or "").lower()
+        clues = list(get_random_clues(target_word, difficulty="regular") or [])
+        clues = [str(c or "").lower() for c in clues]
+        while len(clues) < 5:
+            clues.append("")
+        clues = clues[:5]
+        last_number = OneshotWord.objects.aggregate(Max('puzzle_number'))['puzzle_number__max'] or 0
+        puzzle_number = last_number + 1
+
+    game_url = getattr(settings, "BLUESKY_MAIN_GAME_URL", "https://oneshotguessle.com")
+    post_text = build_daily_main_post_text(
+        puzzle_number=puzzle_number,
+        target_word=target_word,
+        game_url=game_url,
+    )
+
+    image_bytes = build_daily_puzzle_image_bytes(
+        puzzle_number=puzzle_number,
+        target_word=target_word,
+        clues=clues,
+        game_url=game_url,
+    )
+    image_b64 = base64.b64encode(image_bytes).decode("ascii")
+
+    context = {
+        "post_text": post_text,
+        "image_b64": image_b64,
+        "puzzle_number": puzzle_number,
+        "target_word": target_word,
+        "clues": clues,
+        "used_today_puzzle": bool(oneshot),
+    }
+    return render(request=request, template_name='pages/games/bluesky_mock_post.html', context=context)
 
 def results(request):
     user = get_object_or_404(User, pk=request.user.id)

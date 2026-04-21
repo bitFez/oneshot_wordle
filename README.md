@@ -89,6 +89,26 @@ This project separates top-level dependency intent from pinned installs.
 
 The build and docker image use `requirements/base.txt` for reproducible installs. Keep `top_level_deps.in` minimal — list only direct dependencies you maintain.
 
+### Bluesky Daily Auto-Post (Main Puzzle)
+
+The app can automatically publish a daily Bluesky post when the new main daily puzzle is first generated.
+
+Set these environment variables:
+
+- `BLUESKY_DAILY_POST_ENABLED=true`
+- `BLUESKY_HANDLE=<your-handle>` (for example `oneshotguessle.com`)
+- `BLUESKY_APP_PASSWORD=<app-password>`
+- `BLUESKY_SERVICE_URL=https://bsky.social` (optional)
+- `BLUESKY_MAIN_GAME_URL=https://oneshotguessle.com` (optional)
+
+Behavior:
+
+- It only triggers for the main daily game (`/`), not easy/hard variants.
+- The post includes a short how-to-play message.
+- The post image includes the 5 clue rows and a keyboard with letter colors.
+- If Bluesky is down or credentials are missing, puzzle generation still succeeds.
+- Duplicate same-day posts are prevented with cache keys.
+
 
 ### More game ideas
 - Oneshot Guess who

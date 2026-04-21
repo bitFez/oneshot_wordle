@@ -310,3 +310,10 @@ SOCIALACCOUNT_PROVIDERS = {
 # ------------------------------------------------------------------------------
 mimetypes.add_type("image/svg+xml", ".svg", True)
 mimetypes.add_type("image/svg+xml", ".svgz", True)
+
+# Bluesky automation
+BLUESKY_DAILY_POST_ENABLED = env.bool("BLUESKY_DAILY_POST_ENABLED", default=False)
+BLUESKY_HANDLE = env("BLUESKY_HANDLE", default="")
+BLUESKY_APP_PASSWORD = env("BLUESKY_APP_PASSWORD", default="")
+BLUESKY_SERVICE_URL = env("BLUESKY_SERVICE_URL", default="https://bsky.social")
+BLUESKY_MAIN_GAME_URL = env("BLUESKY_MAIN_GAME_URL", default="https://oneshotguessle.com")

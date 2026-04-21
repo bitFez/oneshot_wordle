@@ -2,7 +2,8 @@ from django.urls import path
 
 from oneshot_guessle.game.views import (
     guessle, load_words, supporter,shareto_modal,privacy_policy,terms_and_conditions,disclaimer,
-    help_menu, results, history, halloffame, support_menu, guessle_easy, guessle_hard, scan_for_plurals,serve_ads_txt, play_oneshot, autonumber_puzzles_view
+    help_menu, results, history, halloffame, support_menu, guessle_easy, guessle_hard, scan_for_plurals,serve_ads_txt, play_oneshot, autonumber_puzzles_view,
+    bluesky_mock_post
 )
 
 app_name = "game"
@@ -30,4 +31,5 @@ urlpatterns = [
     
     # Admin utilities
     path('autonumber_puzzles/', autonumber_puzzles_view, name='autonumber_puzzles'),
+    path('bluesky', bluesky_mock_post, name='bluesky_mock_post'),
 ]
