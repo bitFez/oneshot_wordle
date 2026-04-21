@@ -109,6 +109,26 @@ Behavior:
 - If Bluesky is down or credentials are missing, puzzle generation still succeeds.
 - Duplicate same-day posts are prevented with cache keys.
 
+### Cron-based Daily Puzzle Generation
+
+You can pre-generate daily puzzles with a management command:
+
+```bash
+docker-compose -f production.yml run --rm django python manage.py generate_daily_games
+```
+
+Notes:
+
+- The command is idempotent for the current day (creates only missing puzzles).
+- It generates main, easy, and hard daily puzzles.
+- It also triggers the main Bluesky daily post unless you pass `--skip-bluesky`.
+
+Example cron (server local time, every day at 00:05):
+
+```cron
+30 2 * * * cd /root/oneshot_wordle/oneshot_guessle && /usr/bin/docker-compose -f production.yml run --rm django python manage.py generate_daily_games >> /var/log/oneshot_daily_games.log 2>&1
+```
+
 
 ### More game ideas
 - Oneshot Guess who

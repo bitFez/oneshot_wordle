@@ -94,7 +94,7 @@ def build_daily_puzzle_image_bytes(
     image = Image.new("RGB", (width, height), "#121213")
     draw = ImageDraw.Draw(image)
 
-    tile_font = _get_font(82, bold=True)
+    tile_font = _get_font(64, bold=True)
     key_font = _get_font(64, bold=True)
 
     cols = len(target_word)
