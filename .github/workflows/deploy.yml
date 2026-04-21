@@ -16,8 +16,52 @@ jobs:
           username: ${{ secrets.HETZNER_USER }}
           key: ${{ secrets.HETZNER_SSH_KEY }}
           port: ${{ secrets.HETZNER_PORT }}
-          script: cd /root/oneshot_wordle && bash deploy.sh
+          envs: YR10_MOCKS,YR11_MOCKS,BLUESKY_DAILY_POST_ENABLED,BLUESKY_HANDLE,BLUESKY_APP_PASSWORD,BLUESKY_SERVICE_URL,BLUESKY_MAIN_GAME_URL
+          script: |
+            cd /root/oneshot_wordle/oneshot_guessle
+            python3 - <<'PY'
+            import os
+            from pathlib import Path
+
+            env_path = Path(".env")
+            existing_lines = env_path.read_text(encoding="utf-8").splitlines() if env_path.exists() else []
+
+            updates = {
+              "BLUESKY_DAILY_POST_ENABLED": os.getenv("BLUESKY_DAILY_POST_ENABLED", ""),
+              "BLUESKY_HANDLE": os.getenv("BLUESKY_HANDLE", ""),
+              "BLUESKY_APP_PASSWORD": os.getenv("BLUESKY_APP_PASSWORD", ""),
+              "BLUESKY_SERVICE_URL": os.getenv("BLUESKY_SERVICE_URL", ""),
+              "BLUESKY_MAIN_GAME_URL": os.getenv("BLUESKY_MAIN_GAME_URL", ""),
+            }
+
+            untouched = []
+            managed = set(updates.keys())
+            for line in existing_lines:
+              if "=" not in line:
+                untouched.append(line)
+                continue
+              key = line.split("=", 1)[0].strip()
+              if key not in managed:
+                untouched.append(line)
+
+            for key, value in updates.items():
+              untouched.append(f"{key}={value}")
+
+            env_path.write_text("\n".join(untouched) + "\n", encoding="utf-8")
+
+            # Safe logging: only indicate whether each key is non-empty, never print secret values.
+            print("Bluesky env presence:")
+            for key in updates:
+              print(f"  {key}: {'set' if bool(updates[key]) else 'missing'}")
+            PY
+            cd /root/oneshot_wordle
+            bash deploy.sh
 
 env:
   YR10_MOCKS: ${{ secrets.YR10_MOCKS }}
   YR11_MOCKS: ${{ secrets.YR11_MOCKS }}
+  BLUESKY_DAILY_POST_ENABLED: ${{ secrets.BLUESKY_DAILY_POST_ENABLED }}
+  BLUESKY_HANDLE: ${{ secrets.BLUESKY_HANDLE }}
+  BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
+  BLUESKY_SERVICE_URL: ${{ secrets.BLUESKY_SERVICE_URL }}
+  BLUESKY_MAIN_GAME_URL: ${{ secrets.BLUESKY_MAIN_GAME_URL }}
