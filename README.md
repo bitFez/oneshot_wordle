@@ -89,6 +89,46 @@ This project separates top-level dependency intent from pinned installs.
 
 The build and docker image use `requirements/base.txt` for reproducible installs. Keep `top_level_deps.in` minimal — list only direct dependencies you maintain.
 
+### Bluesky Daily Auto-Post (Main Puzzle)
+
+The app can automatically publish a daily Bluesky post when the new main daily puzzle is first generated.
+
+Set these environment variables:
+
+- `BLUESKY_DAILY_POST_ENABLED=true`
+- `BLUESKY_HANDLE=<your-handle>` (for example `oneshotguessle.com`)
+- `BLUESKY_APP_PASSWORD=<app-password>`
+- `BLUESKY_SERVICE_URL=https://bsky.social` (optional)
+- `BLUESKY_MAIN_GAME_URL=https://oneshotguessle.com` (optional)
+
+Behavior:
+
+- It only triggers for the main daily game (`/`), not easy/hard variants.
+- The post includes a short how-to-play message.
+- The post image includes the 5 clue rows and a keyboard with letter colors.
+- If Bluesky is down or credentials are missing, puzzle generation still succeeds.
+- Duplicate same-day posts are prevented with cache keys.
+
+### Cron-based Daily Puzzle Generation
+
+You can pre-generate daily puzzles with a management command:
+
+```bash
+docker-compose -f production.yml run --rm django python manage.py generate_daily_games
+```
+
+Notes:
+
+- The command is idempotent for the current day (creates only missing puzzles).
+- It generates main, easy, and hard daily puzzles.
+- It also triggers the main Bluesky daily post unless you pass `--skip-bluesky`.
+
+Example cron (server local time, every day at 00:05):
+
+```cron
+30 2 * * * cd /root/oneshot_wordle/oneshot_guessle && /usr/bin/docker-compose -f production.yml run --rm django python manage.py generate_daily_games >> /var/log/oneshot_daily_games.log 2>&1
+```
+
 
 ### More game ideas
 - Oneshot Guess who
