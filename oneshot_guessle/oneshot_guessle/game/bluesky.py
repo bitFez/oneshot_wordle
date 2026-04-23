@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Dict, List, Sequence
 
 import requests
+from requests import HTTPError
 from django.conf import settings
 from django.core.cache import cache
 from django.utils import timezone
@@ -23,6 +24,13 @@ COLOUR_MAP = {
     "dark": "#3a3a3c",
     "light": "#818384",
 }
+
+
+def _normalize_bluesky_credential(value: str) -> str:
+    cleaned = (value or "").strip()
+    if len(cleaned) >= 2 and cleaned[0] == cleaned[-1] and cleaned[0] in {'"', "'"}:
+        cleaned = cleaned[1:-1].strip()
+    return cleaned
 
 
 def _get_font(size: int, bold: bool = False) -> ImageFont.ImageFont:
@@ -234,8 +242,8 @@ def post_daily_main_puzzle_to_bluesky(puzzle_number: int, target_word: str, clue
     if not enabled:
         return False
 
-    handle = getattr(settings, "BLUESKY_HANDLE", "")
-    app_password = getattr(settings, "BLUESKY_APP_PASSWORD", "")
+    handle = _normalize_bluesky_credential(getattr(settings, "BLUESKY_HANDLE", ""))
+    app_password = _normalize_bluesky_credential(getattr(settings, "BLUESKY_APP_PASSWORD", ""))
     service_url = getattr(settings, "BLUESKY_SERVICE_URL", "https://bsky.social").rstrip("/")
     game_url = getattr(settings, "BLUESKY_MAIN_GAME_URL", "https://oneshotguessle.com")
 
@@ -271,6 +279,22 @@ def post_daily_main_puzzle_to_bluesky(puzzle_number: int, target_word: str, clue
         cache.set(success_key, True, timeout=7 * 24 * 3600)
         logger.info("Posted daily main puzzle #%s to Bluesky.", puzzle_number)
         return True
+    except HTTPError as exc:
+        response = getattr(exc, "response", None)
+        status = getattr(response, "status_code", "unknown")
+        body = ""
+        if response is not None:
+            try:
+                body = (response.text or "")[:400]
+            except Exception:
+                body = ""
+        logger.error(
+            "Failed to post daily main puzzle to Bluesky (HTTP %s). Response body (truncated): %s",
+            status,
+            body,
+            exc_info=True,
+        )
+        return False
     except Exception:
         logger.exception("Failed to post daily main puzzle to Bluesky.")
         return False

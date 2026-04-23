@@ -96,7 +96,7 @@ The app can automatically publish a daily Bluesky post when the new main daily p
 Set these environment variables:
 
 - `BLUESKY_DAILY_POST_ENABLED=true`
-- `BLUESKY_HANDLE=<your-handle>` (for example `oneshotguessle.com`)
+- `BLUESKY_HANDLE=<your-handle>` (for example `oneshotgames.bsky.social`)
 - `BLUESKY_APP_PASSWORD=<app-password>`
 - `BLUESKY_SERVICE_URL=https://bsky.social` (optional)
 - `BLUESKY_MAIN_GAME_URL=https://oneshotguessle.com` (optional)

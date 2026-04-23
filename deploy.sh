@@ -9,6 +9,57 @@ cd /root/oneshot_wordle/oneshot_guessle
 git fetch --all --prune
 git reset --hard origin/main
 
+# Sync selected runtime secrets from root .env (written by CI) into
+# the production Django env file consumed by docker-compose.
+if [ -f ".env" ]; then
+	python3 - <<'PY'
+from pathlib import Path
+
+source = Path(".env")
+target = Path(".envs/.production/.django")
+managed = {
+	"BLUESKY_DAILY_POST_ENABLED",
+	"BLUESKY_HANDLE",
+	"BLUESKY_APP_PASSWORD",
+	"BLUESKY_SERVICE_URL",
+	"BLUESKY_MAIN_GAME_URL",
+}
+
+def parse_env_lines(lines):
+	result = {}
+	for raw in lines:
+		line = raw.strip()
+		if not line or line.startswith("#") or "=" not in line:
+			continue
+		k, v = line.split("=", 1)
+		result[k.strip()] = v
+	return result
+
+src_values = parse_env_lines(source.read_text(encoding="utf-8").splitlines())
+target_lines = target.read_text(encoding="utf-8").splitlines() if target.exists() else []
+
+preserved = []
+for line in target_lines:
+	if "=" not in line:
+		preserved.append(line)
+		continue
+	key = line.split("=", 1)[0].strip()
+	if key not in managed:
+		preserved.append(line)
+
+for key in sorted(managed):
+	if key in src_values:
+		preserved.append(f"{key}={src_values[key]}")
+
+target.parent.mkdir(parents=True, exist_ok=True)
+target.write_text("\n".join(preserved) + "\n", encoding="utf-8")
+
+print("Synced Bluesky vars into .envs/.production/.django:")
+for key in sorted(managed):
+	print(f"  {key}: {'set' if bool(src_values.get(key, '')) else 'missing'}")
+PY
+fi
+
 # build and start services (uses production.yml in repo root)
 echo "Bringing down existing services"
 docker-compose -f production.yml down --remove-orphans
