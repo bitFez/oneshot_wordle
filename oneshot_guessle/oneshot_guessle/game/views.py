@@ -359,12 +359,18 @@ def guessle(request):
             _clue_text(getattr(todayclues, "clue5", None)),
         ]
 
+        previous_main = OneshotWord.objects.filter(date__date__lt=today_date).order_by("-date").first()
+        previous_attempts = int(getattr(previous_main, "attempts", 0) or 0) if previous_main else 0
+        previous_correct = int(getattr(previous_main, "correctAnswers", 0) or 0) if previous_main else 0
+
         # Fire-and-forget style hook: posting failures should never break puzzle generation.
         transaction.on_commit(
             lambda: post_daily_main_puzzle_to_bluesky(
                 puzzle_number=oneshot_obj.puzzle_number or 0,
                 target_word=str(TARGET_WORD or ""),
                 clues=clues,
+                attempts=previous_attempts,
+                correct_answers=previous_correct,
             )
         )
         # increment frequency on the todaysword instance if present
@@ -1297,6 +1303,9 @@ def bluesky_mock_post(request):
         puzzle_number=puzzle_number,
         target_word=target_word,
         game_url=game_url,
+        daily_message=f"#oneshotguessle{puzzle_number}\n🧩5 Clues\n🎯1 💉 to guess the daily word\nChallenge yourself and your friends.\noneshotguessle.com #osg{puzzle_number} #Wordle #puzzle #braingames #wordporn #wordgames",
+        attempts=int(getattr(oneshot, "attempts", 0) or 0) if oneshot else 0,
+        correct_answers=int(getattr(oneshot, "correctAnswers", 0) or 0) if oneshot else 0,
     )
 
     image_bytes = build_daily_puzzle_image_bytes(

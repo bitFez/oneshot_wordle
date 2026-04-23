@@ -38,10 +38,16 @@ class Command(BaseCommand):
         hard_obj, hard_created = self._ensure_hard(today_date)
 
         if main_created and not skip_bluesky:
+            previous_main = OneshotWord.objects.filter(date__date__lt=today_date).order_by("-date").first()
+            previous_attempts = int(getattr(previous_main, "attempts", 0) or 0) if previous_main else 0
+            previous_correct = int(getattr(previous_main, "correctAnswers", 0) or 0) if previous_main else 0
+
             posted = post_daily_main_puzzle_to_bluesky(
                 puzzle_number=main_obj.puzzle_number or 0,
                 target_word=str(main_obj.word or ""),
                 clues=main_clues,
+                attempts=previous_attempts,
+                correct_answers=previous_correct,
             )
             msg = "posted" if posted else "skipped/failed"
             self.stdout.write(self.style.WARNING(f"Main Bluesky post: {msg}"))

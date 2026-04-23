@@ -51,9 +51,9 @@ ARG BUILD_ENVIRONMENT=production
 ARG APP_HOME=/app
 
 # Set environment variables for Python to improve performance and logging in Docker.
-ENV PYTHONUNBUFFERED 1
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV BUILD_ENV ${BUILD_ENVIRONMENT}
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV BUILD_ENV=${BUILD_ENVIRONMENT}
 
 # Set the working directory for the application inside the container.
 WORKDIR ${APP_HOME}

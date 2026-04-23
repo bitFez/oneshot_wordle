@@ -227,17 +227,45 @@ def _create_post(service_url: str, access_jwt: str, did: str, text: str, image_b
     response.raise_for_status()
 
 
-def build_daily_main_post_text(puzzle_number: int, target_word: str, game_url: str) -> str:
-    text = (f"#oneshotguessle{puzzle_number}\n🧩5 Clues\n🎯1 💉 to guess the daily word\nChallenge yourself and your friends.\noneshotguessle.com #osg{puzzle_number} #Wordle #puzzle #braingames #wordporn #wordgames"
-        # f"Oneshot Guessle #{puzzle_number} is live. "
-        # f"Guess the hidden {len(target_word)}-letter word in one shot. "
-        # "Use the clue colors to solve it. "
-        # f"Play now: {game_url}"
-    )
-    return text[:290]
+def build_daily_main_post_text(
+    puzzle_number: int,
+    target_word: str,
+    game_url: str,
+    daily_message: str = "",
+    attempts: int = 0,
+    correct_answers: int = 0,
+) -> str:
+    if attempts > 1:
+        success_rate = (float(correct_answers) / float(attempts)) * 100.0
+        emoji = "✅" if success_rate >= 50.0 else "🫢"
+        base_text = (
+            f"#oneshotguessle{puzzle_number}\n"
+            "🧩5 Clues\n"
+            "🎯1 💉 to guess the daily word\n"
+            f"Yesterday, {success_rate:.1f}% of players guessled correctly! {emoji}\n"
+            "Challenge yourself and your friends.\n"
+            f"oneshotguessle.com #osg{puzzle_number} #Wordle #puzzle #braingames #wordporn #wordgames"
+        )
+    else:
+        base_text = daily_message or (
+            f"#oneshotguessle{puzzle_number}\n"
+            "🧩5 Clues\n"
+            "🎯1 💉 to guess the daily word\n"
+            "Challenge yourself and your friends.\n"
+            f"oneshotguessle.com #osg{puzzle_number} #Wordle #puzzle #braingames #wordporn #wordgames"
+        )
+
+    return base_text[:290]
 
 
-def post_daily_main_puzzle_to_bluesky(puzzle_number: int, target_word: str, clues: List[str]) -> bool:
+def post_daily_main_puzzle_to_bluesky(
+    puzzle_number: int,
+    target_word: str,
+    clues: List[str],
+    post_text: str = "",
+    attempts: int = 0,
+    correct_answers: int = 0,
+) -> bool:
     enabled = bool(getattr(settings, "BLUESKY_DAILY_POST_ENABLED", False))
     if not enabled:
         return False
@@ -271,6 +299,9 @@ def post_daily_main_puzzle_to_bluesky(puzzle_number: int, target_word: str, clue
             puzzle_number=puzzle_number,
             target_word=target_word,
             game_url=game_url,
+            daily_message=post_text,
+            attempts=attempts,
+            correct_answers=correct_answers,
         )
 
         session_data = _create_session(service_url, handle, app_password)
