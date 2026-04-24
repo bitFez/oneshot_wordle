@@ -317,3 +317,10 @@ BLUESKY_HANDLE = env("BLUESKY_HANDLE", default="oneshotgames.bsky.social")
 BLUESKY_APP_PASSWORD = env("BLUESKY_APP_PASSWORD", default="")
 BLUESKY_SERVICE_URL = env("BLUESKY_SERVICE_URL", default="https://bsky.social")
 BLUESKY_MAIN_GAME_URL = env("BLUESKY_MAIN_GAME_URL", default="https://oneshotguessle.com")
+
+# Twitter/X automation
+TWITTER_DAILY_POST_ENABLED = env.bool("TWITTER_DAILY_POST_ENABLED", default=False)
+TWITTER_API_KEY = env("TWITTER_API_KEY", default="")
+TWITTER_API_SECRET = env("TWITTER_API_SECRET", default="")
+TWITTER_ACCESS_TOKEN = env("TWITTER_ACCESS_TOKEN", default="")
+TWITTER_ACCESS_SECRET = env("TWITTER_ACCESS_SECRET", default="")

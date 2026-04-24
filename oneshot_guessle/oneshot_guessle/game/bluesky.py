@@ -227,6 +227,61 @@ def _create_post(service_url: str, access_jwt: str, did: str, text: str, image_b
     response.raise_for_status()
 
 
+def _post_daily_main_puzzle_to_twitter(text: str, image_bytes: bytes, puzzle_number: int) -> bool:
+    enabled = bool(getattr(settings, "TWITTER_DAILY_POST_ENABLED", False))
+    if not enabled:
+        return False
+
+    day_key = timezone.localdate().isoformat()
+    success_key = f"twitter:daily-main-posted:{day_key}"
+    lock_key = f"twitter:daily-main-posting-lock:{day_key}"
+
+    if cache.get(success_key):
+        return False
+    if not cache.add(lock_key, True, timeout=300):
+        return False
+
+    try:
+        api_key = _normalize_bluesky_credential(getattr(settings, "TWITTER_API_KEY", ""))
+        api_secret = _normalize_bluesky_credential(getattr(settings, "TWITTER_API_SECRET", ""))
+        access_token = _normalize_bluesky_credential(getattr(settings, "TWITTER_ACCESS_TOKEN", ""))
+        access_secret = _normalize_bluesky_credential(getattr(settings, "TWITTER_ACCESS_SECRET", ""))
+
+        if not all([api_key, api_secret, access_token, access_secret]):
+            logger.warning("Twitter daily post enabled but credentials are missing.")
+            return False
+
+        try:
+            import tweepy
+        except Exception:
+            logger.exception("Twitter daily post enabled but tweepy import failed.")
+            return False
+
+        client = tweepy.Client(
+            consumer_key=api_key,
+            consumer_secret=api_secret,
+            access_token=access_token,
+            access_token_secret=access_secret,
+        )
+
+        auth = tweepy.OAuth1UserHandler(api_key, api_secret, access_token, access_secret)
+        api = tweepy.API(auth)
+
+        image_file = io.BytesIO(image_bytes)
+        image_file.name = f"oneshotguessle-{puzzle_number}.png"
+        media = api.media_upload(filename=image_file.name, file=image_file)
+
+        client.create_tweet(text=text[:280], media_ids=[media.media_id])
+        cache.set(success_key, True, timeout=7 * 24 * 3600)
+        logger.info("Posted daily main puzzle #%s to Twitter/X.", puzzle_number)
+        return True
+    except Exception:
+        logger.exception("Failed to post daily main puzzle to Twitter/X.")
+        return False
+    finally:
+        cache.delete(lock_key)
+
+
 def build_daily_main_post_text(
     puzzle_number: int,
     target_word: str,
@@ -307,6 +362,7 @@ def post_daily_main_puzzle_to_bluesky(
         session_data = _create_session(service_url, handle, app_password)
         blob = _upload_blob(service_url, session_data["access_jwt"], image_bytes)
         _create_post(service_url, session_data["access_jwt"], session_data["did"], text, blob)
+        _post_daily_main_puzzle_to_twitter(text=text, image_bytes=image_bytes, puzzle_number=puzzle_number)
         cache.set(success_key, True, timeout=7 * 24 * 3600)
         logger.info("Posted daily main puzzle #%s to Bluesky.", puzzle_number)
         return True
