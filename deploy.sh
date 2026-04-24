@@ -23,6 +23,11 @@ managed = {
 	"BLUESKY_APP_PASSWORD",
 	"BLUESKY_SERVICE_URL",
 	"BLUESKY_MAIN_GAME_URL",
+	"TWITTER_DAILY_POST_ENABLED",
+	"TWITTER_API_KEY",
+	"TWITTER_API_SECRET",
+	"TWITTER_ACCESS_TOKEN",
+	"TWITTER_ACCESS_SECRET",
 }
 
 def parse_env_lines(lines):
@@ -54,7 +59,7 @@ for key in sorted(managed):
 target.parent.mkdir(parents=True, exist_ok=True)
 target.write_text("\n".join(preserved) + "\n", encoding="utf-8")
 
-print("Synced Bluesky vars into .envs/.production/.django:")
+print("Synced social posting vars into .envs/.production/.django:")
 for key in sorted(managed):
 	print(f"  {key}: {'set' if bool(src_values.get(key, '')) else 'missing'}")
 PY
