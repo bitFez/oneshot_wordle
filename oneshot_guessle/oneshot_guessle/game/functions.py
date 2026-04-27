@@ -286,39 +286,95 @@ def get_random_clues(oneshotWord, **kwargs):
             current_bulls.update(bulls_letters_map.get(r, set()))
             current_cows.update(cows_letters_map.get(r, set()))
 
-            # try padding with multiple relaxation passes to ensure we return 4 related words
-            for pass_mode in ("strict", "allow_cows", "allow_any"):
-                for w in candidates:
-                    if w == primary or w in related:
+        # try padding with multiple relaxation passes to ensure we return 4 related words
+        for pass_mode in ("strict", "allow_cows", "allow_any"):
+            for w in candidates:
+                if w == primary or w in related:
+                    continue
+                w_positions = {i for i, ch in enumerate(w) if i < target_len and ch == target[i]}
+                w_bulls = bulls_letters_map.get(w, set())
+                w_cows = cows_letters_map.get(w, set())
+                # avoid full reveal
+                if len(current_positions.union(w_positions)) == target_len:
+                    continue
+                if pass_mode == "strict":
+                    if len(current_bulls.union(w_bulls)) > bulls_limit:
                         continue
-                    w_positions = {i for i, ch in enumerate(w) if i < target_len and ch == target[i]}
-                    w_bulls = bulls_letters_map.get(w, set())
-                    w_cows = cows_letters_map.get(w, set())
-                    # avoid full reveal
-                    if len(current_positions.union(w_positions)) == target_len:
+                    if len(current_cows.union(w_cows)) > cows_limit:
                         continue
-                    if pass_mode == "strict":
-                        if len(current_bulls.union(w_bulls)) > bulls_limit:
-                            continue
-                        if len(current_cows.union(w_cows)) > cows_limit:
-                            continue
-                    elif pass_mode == "allow_cows":
-                        if len(current_bulls.union(w_bulls)) > bulls_limit:
-                            continue
-                        # allow cows overflow
-                    else:
-                        # allow_any: only avoid full reveal
-                        pass
-                    related.append(w)
-                    current_positions.update(w_positions)
-                    current_bulls.update(w_bulls)
-                    current_cows.update(w_cows)
-                    if len(related) == 4:
-                        break
+                elif pass_mode == "allow_cows":
+                    if len(current_bulls.union(w_bulls)) > bulls_limit:
+                        continue
+                    # allow cows overflow
+                else:
+                    # allow_any: only avoid full reveal
+                    pass
+                related.append(w)
+                current_positions.update(w_positions)
+                current_bulls.update(w_bulls)
+                current_cows.update(w_cows)
                 if len(related) == 4:
                     break
+            if len(related) == 4:
+                break
 
     clues_list = [primary] + related[:4]
+
+    def _build_strict_regular_clues():
+        """Build 5 clues with exactly 2 greens and 1 orange (orange != green)."""
+        pool = list(dict.fromkeys(top_pool + candidates))
+        if len(pool) < 5:
+            return None
+
+        random.shuffle(pool)
+        primaries = pool[: min(len(pool), 40)]
+
+        def _bull_positions(word):
+            return {i for i, ch in enumerate(word) if i < target_len and ch == target[i]}
+
+        for cand_primary in primaries:
+            selected = [cand_primary]
+            green_letters = set(bulls_letters_map.get(cand_primary, set()))
+            orange_letters = set(cows_letters_map.get(cand_primary, set())) - green_letters
+            revealed_positions = _bull_positions(cand_primary)
+
+            if len(green_letters) > 2 or len(orange_letters) > 1:
+                continue
+
+            for word in pool:
+                if word in selected:
+                    continue
+
+                word_greens = set(bulls_letters_map.get(word, set()))
+                new_greens = green_letters.union(word_greens)
+                if len(new_greens) > 2:
+                    continue
+
+                word_oranges = set(cows_letters_map.get(word, set()))
+                new_oranges = (orange_letters.union(word_oranges)) - new_greens
+                if len(new_oranges) > 1:
+                    continue
+
+                word_positions = _bull_positions(word)
+                if len(revealed_positions.union(word_positions)) == target_len:
+                    continue
+
+                selected.append(word)
+                green_letters = new_greens
+                orange_letters = new_oranges
+                revealed_positions.update(word_positions)
+
+                if len(selected) == 5:
+                    if len(green_letters) == 2 and len(orange_letters) == 1:
+                        return selected
+                    break
+
+        return None
+
+    if difficulty not in ("easy", "hard"):
+        strict_regular = _build_strict_regular_clues()
+        if strict_regular is not None:
+            return strict_regular
     # If easy mode accidentally reveals all positions across the five clues,
     # attempt to repair by replacing/removing one related word so the union of
     # bull positions is strictly less than the target length.
@@ -518,7 +574,7 @@ def get_random_clues(oneshotWord, **kwargs):
                     break
 
     # ensure we return a list of strings
-    return list([primary] + related[:4])
+    return list(clues_list)
 
 try:
     from nltk.corpus import wordnet as wn

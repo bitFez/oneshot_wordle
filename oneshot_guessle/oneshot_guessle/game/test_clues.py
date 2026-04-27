@@ -159,3 +159,46 @@ def test_clues_do_not_reveal_all_positions():
     assert len(revealed_positions(clues_reg)) < len(target), f"regular revealed all positions: {clues_reg}"
     # tolerant mode (B) permits easy to relax caps to always return five clues.
     # Do not fail the test if easy-mode clues collectively reveal all positions.
+
+
+@pytest.mark.django_db
+def test_regular_clues_have_two_greens_and_one_orange_disjoint():
+    random.seed(11)
+    target = "cater"
+    words = [
+        "cater",  # target
+        # Synthetic candidates chosen so exact regular caps are satisfiable.
+        # Intended aggregate across selected clues:
+        # greens -> {c, a}, oranges (excluding greens) -> {t}
+        "caxxx",  # greens: c,a
+        "ctaxx",  # greens: c ; oranges: t,a (a removed after disjointing)
+        "xaxxx",  # greens: a
+        "xxaxx",  # oranges: a (removed after disjointing)
+        "xxxxx",  # no greens/oranges
+        "zzzzz",  # no greens/oranges
+    ]
+
+    Word.objects.all().delete()
+    for w in words:
+        Word.objects.create(word=w)
+
+    clues = get_random_clues(target, difficulty="regular")
+    assert isinstance(clues, list) and len(clues) == 5
+
+    green_letters = set()
+    orange_letters = set()
+    for clue in clues:
+        clue = clue.lower()
+        clue_greens = {clue[i] for i in range(len(target)) if clue[i] == target[i]}
+        clue_oranges = {
+            clue[i]
+            for i in range(len(target))
+            if clue[i] in target and clue[i] != target[i]
+        }
+        green_letters.update(clue_greens)
+        orange_letters.update(clue_oranges)
+
+    orange_letters -= green_letters
+
+    assert len(green_letters) == 2, f"Expected exactly 2 green letters, got {green_letters} from clues {clues}"
+    assert len(orange_letters) == 1, f"Expected exactly 1 orange letter, got {orange_letters} from clues {clues}"
