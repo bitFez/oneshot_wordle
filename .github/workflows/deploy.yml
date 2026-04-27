@@ -16,7 +16,7 @@ jobs:
           username: ${{ secrets.HETZNER_USER }}
           key: ${{ secrets.HETZNER_SSH_KEY }}
           port: ${{ secrets.HETZNER_PORT }}
-          envs: YR10_MOCKS,YR11_MOCKS,BLUESKY_DAILY_POST_ENABLED,BLUESKY_HANDLE,BLUESKY_APP_PASSWORD,BLUESKY_SERVICE_URL,BLUESKY_MAIN_GAME_URL
+          envs: YR10_MOCKS,YR11_MOCKS,BLUESKY_DAILY_POST_ENABLED,BLUESKY_HANDLE,BLUESKY_APP_PASSWORD,BLUESKY_SERVICE_URL,BLUESKY_MAIN_GAME_URL,TWITTER_DAILY_POST_ENABLED,TWITTER_API_KEY,TWITTER_API_SECRET,TWITTER_ACCESS_TOKEN,TWITTER_ACCESS_SECRET
           script: |
             cd /root/oneshot_wordle/oneshot_guessle
             python3 - <<'PY'
@@ -32,6 +32,11 @@ jobs:
               "BLUESKY_APP_PASSWORD": os.getenv("BLUESKY_APP_PASSWORD", ""),
               "BLUESKY_SERVICE_URL": os.getenv("BLUESKY_SERVICE_URL", ""),
               "BLUESKY_MAIN_GAME_URL": os.getenv("BLUESKY_MAIN_GAME_URL", ""),
+              "TWITTER_DAILY_POST_ENABLED": os.getenv("TWITTER_DAILY_POST_ENABLED", ""),
+              "TWITTER_API_KEY": os.getenv("TWITTER_API_KEY", ""),
+              "TWITTER_API_SECRET": os.getenv("TWITTER_API_SECRET", ""),
+              "TWITTER_ACCESS_TOKEN": os.getenv("TWITTER_ACCESS_TOKEN", ""),
+              "TWITTER_ACCESS_SECRET": os.getenv("TWITTER_ACCESS_SECRET", ""),
             }
 
             untouched = []
@@ -50,7 +55,7 @@ jobs:
             env_path.write_text("\n".join(untouched) + "\n", encoding="utf-8")
 
             # Safe logging: only indicate whether each key is non-empty, never print secret values.
-            print("Bluesky env presence:")
+            print("Social env presence:")
             for key in updates:
               print(f"  {key}: {'set' if bool(updates[key]) else 'missing'}")
             PY
@@ -65,3 +70,8 @@ env:
   BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
   BLUESKY_SERVICE_URL: ${{ secrets.BLUESKY_SERVICE_URL }}
   BLUESKY_MAIN_GAME_URL: ${{ secrets.BLUESKY_MAIN_GAME_URL }}
+  TWITTER_DAILY_POST_ENABLED: ${{ secrets.TWITTER_DAILY_POST_ENABLED }}
+  TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
+  TWITTER_API_SECRET: ${{ secrets.TWITTER_API_SECRET }}
+  TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+  TWITTER_ACCESS_SECRET: ${{ secrets.TWITTER_ACCESS_SECRET }}
