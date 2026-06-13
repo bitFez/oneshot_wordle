@@ -91,6 +91,7 @@ LOCAL_APPS = [
     "oneshot_guessle.tangle",
     "oneshot_guessle.cows_bulls",
     "oneshot_guessle.c_cipher",
+    "oneshot_guessle.wordmorph.apps.WordmorphConfig",
 
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
