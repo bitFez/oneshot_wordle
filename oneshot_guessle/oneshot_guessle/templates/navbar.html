@@ -6,20 +6,39 @@
   </div>
   <div class="offcanvas-body">
     <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'game:home' %}">
-          <button class="btn btn-warning">Home / Daily Main challenge</button>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'game:easy' %}">
-          <button class="btn btn-primary">Daily Easy Guessle</button>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'game:hard' %}">
-          <button class="btn btn-danger">Daily Hard Guessle <br>(for supporters)</button>
-        </a>
+      <li class="nav-item d-flex align-items-center">
+        <img src="{% static 'images/logo.svg' %}" width="20px" class="me-2" alt="Guessle Favicon">
+        <span class="me-3">Guessle Games</span>
+        
+          <a class="nav-link me-2" href="{% url 'game:easy' %}">
+            {% if request.user.is_authenticated %}
+              <button class="btn btn-sm btn-primary">Easy</button>
+            {% else %}
+              <button class="btn btn-sm btn-primary position-relative" data-bs-toggle="tooltip" data-bs-placement="top" title="Sign in to play this mode">
+                Easy
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
+                  <i class="bi bi-lock"></i>
+                </span>
+              </button>
+            {% endif %}
+          </a>
+
+          <a class="nav-link me-2" href="{% url 'game:home' %}">
+            <button class="btn btn-sm btn-warning">Main</button>
+          </a>
+
+          <a class="nav-link" href="{% url 'game:hard' %}">
+            {% if request.user.is_authenticated and request.user.supporter %}
+              <button class="btn btn-sm btn-danger position-relative">Hard</button>
+            {% else %}
+              <button class="btn btn-sm btn-danger position-relative" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Sign in and become a supporter to play this mode">
+                Hard
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary">
+                  <i class="bi bi-lock"></i>
+                </span>
+              </button>
+            {% endif %}
+          </a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="{% url 'c_cipher:c_index' %}"><img width="20px" src="{% static 'images/favicons/c_cipher_favicon.ico' %}">
