@@ -1,0 +1,29 @@
+{% load static %}
+
+{# Loop through existing clues and any new attempts #}
+
+{% for clue, text in clues %}
+    <div class="flex items-center gap-4 p-4 bg-base-300/50 rounded-lg border border-base-300 hover:border-primary/50 transition-all group">
+        <!-- Digit Display -->
+        <div class="flex gap-1.5 flex-shrink-0">
+            {% for digit in clue %}
+                <div class="w-8 h-8 bg-primary/20 border border-primary/50 rounded text-base-content text-xs font-bold font-mono flex items-center justify-center group-hover:border-primary group-hover:bg-primary/30 transition-all">
+                    {{ digit }}
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Result Text -->
+        <div class="flex-grow text-sm text-base-content/80">{{ text|safe }}</div>
+    </div>
+{% endfor %}
+
+{# Solved Message #}
+{% if is_solved_today %}
+    <div class="flex items-center gap-3 p-4 bg-success/20 border border-success/50 rounded-lg">
+        <div class="text-lg">🎉</div>
+        <div class="text-sm text-success font-medium">
+            Puzzle solved in <span class="font-bold">{{ attempt_number }}</span> attempt{{ attempt_number|pluralize }}!
+        </div>
+    </div>
+{% endif %}

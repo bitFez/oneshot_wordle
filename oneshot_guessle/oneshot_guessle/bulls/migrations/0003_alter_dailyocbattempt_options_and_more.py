@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cows_bulls', '0002_alter_dailyocbattempt_options_and_more'),
+        ('bulls', '0002_alter_dailyocbattempt_options_and_more'),
     ]
 
     operations = [

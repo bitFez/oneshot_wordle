@@ -8,9 +8,9 @@ class DailyOCBAdmin(admin.ModelAdmin):
     """
     Admin interface for the Daily Cows and Bulls game.
     """
-    list_display = ('date', 'number', 'clue1', 'clue2', 'clue3', 'clue4')
-    search_fields = ('date', 'number')
-    ordering = ('-date',)
+    list_display = ('challenge_number', 'date', 'number', 'clue1', 'clue2', 'clue3', 'clue4')
+    search_fields = ('date', 'number', 'challenge_number')
+    ordering = ('-challenge_number',)
     list_filter = ('date',) 
 
 @admin.register(DailyOCBAttempt)
@@ -18,11 +18,16 @@ class DailyOCBAttemptAdmin(admin.ModelAdmin):
     """
     Admin interface for the Daily Cows and Bulls attempts.
     """
-    list_display = ('user', 'ocb', 'guess', 'points_awarded', 'cows', 'bulls')
-    search_fields = ('user__username', 'ocb__date', 'guess')
-    ordering = ('-ocb__date', '-points_awarded')
-    list_filter = ('ocb__date', 'user')
+    list_display = ('user', 'ocb', 'attempt_count', 'is_solved', 'solved_on_attempt', 'points_awarded')
+    search_fields = ('user__username', 'ocb__date')
+    ordering = ('-ocb__date', '-is_solved', '-points_awarded')
+    list_filter = ('ocb__date', 'user', 'is_solved')
     raw_id_fields = ('user', 'ocb')
+    readonly_fields = ('timestamp', 'updated_at', 'attempts')
+
+    def attempt_count(self, obj):
+        return len(obj.attempts)
+    attempt_count.short_description = 'Total Attempts'
 
     
 

@@ -1,0 +1,148 @@
+{% extends "cb_base.html" %}
+
+{% load static %}
+
+{% load scrabble_tags %}
+
+{% block content %}
+
+<div class="min-h-screen bg-base-200 px-4 py-8">
+    <div class="max-w-2xl mx-auto">
+        <!-- Header Section -->
+        <div class="text-center mb-2">
+            <p class="text-base-content/70 text-lg">Guess the 5-digit code</p>
+        </div>
+
+        <!-- Main Game Card -->
+        <div class="card bg-base-100 shadow-xl border border-base-300">
+            <!-- Clues Section -->
+            <div class="card-body bg-base-200/50 border-b border-base-300">
+                <h2 class="text-sm font-semibold text-base-content uppercase tracking-wider mb-1">Clues</h2>
+                
+                <div id="clues-container" class="space-y-3">
+                    {% include 'pages/bulls/partials/_clues_table_body.html' with clues=clues is_solved_today=is_solved_today ocb=ocb %}
+                </div>
+            </div>
+
+            <!-- Input Section -->
+            <div class="card-body">
+                <div id="form-container">
+                    {% if not is_solved_today %}
+                        <form id="submitForm"
+                            hx-post="{% url 'bulls:cb_index' %}"
+                            hx-target="#clues-container"
+                            hx-swap="innerHTML"
+                            hx-trigger="submit"
+                            class="space-y-6">
+                            <input type="hidden" name="cba_id" value="{{ ocb.id }}">
+                            {% csrf_token %}
+                            
+                            <div>
+                                <label class="text-sm font-semibold text-base-content uppercase tracking-wider block mb-1">Your Guess</label>
+                                <div class="flex justify-center gap-2 mb-2">
+                                    {% for i in "12345" %}
+                                        <input type="text"
+                                            name="digit{{ i }}"
+                                            maxlength="1"
+                                            pattern="[0-9]"
+                                            title="Single digit only"
+                                            required
+                                            autocomplete="off"
+                                            inputmode="numeric"
+                                            class="w-12 h-14 bg-base-300 border-2 border-primary/30 text-base-content text-2xl font-bold font-mono text-center rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-base-200 transition-all digit-input hover:border-primary/50"
+                                        />
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-full">
+                                Submit Guess
+                            </button>
+                        </form>
+                    {% else %}
+                        <div class="text-center py-8">
+                            <div class="inline-block bg-success/20 border border-success rounded-xl p-6 mb-4">
+                                <div class="text-4xl mb-3">✨</div>
+                                <h3 class="text-xl font-bold text-success mb-2">Puzzle Solved!</h3>
+                            <p class="text-base-content/70">
+                                {% if attempt_number %}
+                                    Completed in <span class="font-bold text-primary">{{ attempt_number }}</span> attempt{{ attempt_number|pluralize }}
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Stats -->
+        <!-- <div class="text-center mt-8 text-base-content/50 text-sm">
+            <p>Daily Challenge #{{ ocb.challenge_number }}</p>
+        </div> -->
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        initInputHandlers();
+    });
+
+    function initInputHandlers() {
+        const inputs = document.querySelectorAll(".digit-input");
+        
+        inputs.forEach((input, index) => {
+            input.addEventListener("input", (e) => {
+                if (e.target.value.length === 1 && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+            });
+            
+            input.addEventListener("keydown", (e) => {
+                if (e.key === "Backspace" && !e.target.value && index > 0) {
+                    inputs[index - 1].focus();
+                }
+            });
+            
+            if (!input.value) {
+                input.value = "";
+            }
+        });
+        
+        if (inputs.length > 0) {
+            inputs[0].focus();
+        }
+    }
+
+    document.body.addEventListener('htmx:afterSwap', function(e) {
+        if (e.detail.target.id === 'clues-container') {
+            htmx.process(e.detail.target);
+            // Clear form inputs after successful attempt
+            const inputs = document.querySelectorAll(".digit-input");
+            inputs.forEach(input => input.value = "");
+            initInputHandlers();
+        }
+    });
+
+    // Listen for puzzleSolved event and replace form with solved message
+    document.addEventListener('puzzleSolved', function(e) {
+        const formContainer = document.getElementById('form-container');
+        if (formContainer) {
+            formContainer.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="inline-block bg-success/20 border border-success rounded-xl p-6 mb-4">
+                        <div class="text-4xl mb-3">✨</div>
+                        <h3 class="text-xl font-bold text-success mb-2">Puzzle Solved!</h3>
+                        <p class="text-base-content/70">
+                            Great work! Come back tomorrow for the next challenge.
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+    });
+</script>
+
+{% include 'pages/tangle/partials/modals.html' %}
+
+{% endblock content %}

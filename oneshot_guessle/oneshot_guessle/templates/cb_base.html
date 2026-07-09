@@ -2,7 +2,7 @@
 {% load static i18n %}
 
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="nord">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,10 +10,10 @@
   <link href="https://cdn.jsdelivr.net/npm/daisyui@latest/dist/full.css" rel="stylesheet" type="text/css" />
   <link rel="stylesheet" href="{% static 'css/cb.css' %}">
   <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-  <title>Daily Word Tangle #{{ tangle.id }}</title>
+  <title>Daily Bulls Challenge #{{ ocb.challenge_number|default:ocb.id }}</title>
   <link rel="icon" type="image/png" href="{% static 'images/favicons/tw_favicon.ico' %}"> 
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-4" >
+<body class="min-h-screen flex flex-col items-center justify-center p-4 bg-base-200">
 
   <div class="card bg-base-300 w-full max-w-lg">
     <div class="card-body p-4">
@@ -21,8 +21,8 @@
       <div class="navbar bg-base-100 shadow-sm relative z-20">
         <div class="navbar-start">
           <div class="avatar">
-              <div class="w-14 rounded">
-                <a href="/cows_bulls"><img src="{% static 'images/tangle_words_logo.png' %}" /></a>
+              <div class="w-14 rounded-full">
+                <a href="{% url 'bulls:cb_index' %}"><img src="{% static 'images/bulls_logo.png' %}" /></a>
               </div>
             </div>
           
@@ -30,7 +30,7 @@
         <div class="navbar-center">
           
           <h1 class="card-title">
-            <a href="/cows_bulls">Daily 🐄 & 🐂 #{{ ocb.id }}</a>
+            <a href="{% url 'bulls:cb_index' %}">Daily 🐂 Challenge #{{ ocb.challenge_number|default:ocb.id }}</a>
           </h1>
 
         </div>
