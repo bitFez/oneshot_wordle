@@ -21,7 +21,7 @@ urlpatterns = [
     path("", include("oneshot_guessle.tangle.urls", namespace="tangle")),
     path("", include("oneshot_guessle.students.urls", namespace="students")),
     path("", include("oneshot_guessle.teacher_resources.urls")),
-    path("", include("oneshot_guessle.cows_bulls.urls", namespace="cows_bulls")),
+    path("", include("oneshot_guessle.bulls.urls", namespace="bulls")),
     path("", include("oneshot_guessle.c_cipher.urls", namespace="c_cipher")),
     # helper redirect view used as LOGIN/LOGOUT redirect target
     path("post-auth-redirect/", post_auth_redirect, name="post_auth_redirect"),

@@ -12,12 +12,12 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='user',
-            name='cows_bulls_attempts',
+            name='bulls_attempts',
             field=models.IntegerField(default=0),
         ),
         migrations.AddField(
             model_name='user',
-            name='cows_bulls_points',
+            name='bulls_points',
             field=models.IntegerField(default=0),
         ),
     ]

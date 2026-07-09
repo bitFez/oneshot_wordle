@@ -1,8 +1,17 @@
 {% load static i18n %}
 <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="offcanvasNavbarDark" aria-labelledby="offcanvasNavbarDarkLabel">
   <div class="offcanvas-header">
-    <h5 class="offcanvas-title" id="offcanvasNavbarDarkLabel">Menu</h5>
-    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    <div class="d-flex align-items-around">
+      <h5 class="offcanvas-title" id="offcanvasNavbarDarkLabel">Menu
+        {% if request.user.is_authenticated %}
+          <a class="nav-link" href="{% url 'account_logout' %}"><i class="bi bi-door-closed"></i></a>
+        {% else %}
+          <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}?next={{ request.path }}"><i class="bi bi-door-open"></i></a>
+        {% endif %}
+      </h5>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    
   </div>
   <div class="offcanvas-body">
     <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
@@ -40,20 +49,22 @@
             {% endif %}
           </a>
       </li>
+      
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'bulls:cb_index' %}"><img width="20px" src="{% static 'images/favicons/bull_favicon.png' %}">
+          Play Bulls Challenge
+          <span class="badge text-bg-info">New</span>
+        </a>
+      </li>
       <li class="nav-item">
         <a class="nav-link" href="{% url 'c_cipher:c_index' %}"><img width="20px" src="{% static 'images/favicons/c_cipher_favicon.ico' %}">
           Play The Crescent Cipher
-          <span class="badge text-bg-info">New</span>
         </a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="{% url 'tangle:tangle_index' %}"><img width="20px" src="{% static 'images/favicons/tw_favicon.ico' %}">
           Play Daily Tangle
-          <span class="badge text-bg-secondary">New</span>
         </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'game:supporterredirect' %}">About, Help and FAQs</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="{% url 'game:history' %}">Previous Guessles</a>
@@ -61,6 +72,7 @@
       <li class="nav-item">
         <a class="nav-link" href="{% url 'game:hof' %}">Hall of Fame</a>
       </li>
+      
       {% if request.user.is_authenticated %}
         <li class="nav-item">
             {# URL provided by django-allauth/account/urls.py #}
@@ -87,7 +99,9 @@
           <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}?next={{ request.path }}">{% translate "Sign In" %}</a>
         </li>
       {% endif %}
-
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'game:supporterredirect' %}">About, Help and FAQs</a>
+      </li>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
           Policies

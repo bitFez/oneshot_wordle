@@ -27,7 +27,7 @@ def generate_clue(answer, correct_count, correct_position_count):
 
     return ''.join(clue)
 
-def calculate_cows_bulls(secret_number, guess):
+def calculate_bulls(secret_number, guess):
     cows = 0
     bulls = 0
 
@@ -102,7 +102,7 @@ def handle_guess_submission(request, ocb, base_clues):
         return HttpResponse(status=200)
 
     attempt_number = len(attempt_record.attempts) + 1
-    cows, bulls = calculate_cows_bulls(ocb.number, guess)
+    cows, bulls = calculate_bulls(ocb.number, guess)
 
     # Append new attempt to the attempts array
     attempt_record.attempts.append({
@@ -125,7 +125,7 @@ def handle_guess_submission(request, ocb, base_clues):
 
     clues = build_clues_list_from_attempts(ocb, attempt_record.attempts)
 
-    clues_html = render_to_string('pages/cows_bulls/partials/_clues_table_body.html', {
+    clues_html = render_to_string('pages/bulls/partials/_clues_table_body.html', {
         'clues': clues,
         'is_solved_today': bulls == 5,
         'ocb': ocb,
@@ -165,16 +165,14 @@ def handle_page_load(request, ocb, base_clues):
     if is_solved_today and attempt_record:
         context['attempt_number'] = attempt_record.solved_on_attempt
 
-    return render(request, 'pages/cows_bulls/cb_index.html', context)
+    return render(request, 'pages/bulls/cb_index.html', context)
 
 def update_user_stats(user, attempt_number, is_solved):
-    if not user.cows_bulls_attempts:
-        user.cows_bulls_attempts = 0
-    user.cows_bulls_attempts += 1
+    user.bulls_attempts = (user.bulls_attempts or 0) + 1
 
     if is_solved:
         points_awarded = max(0, 6 - attempt_number)
-        user.cows_bulls_points += points_awarded
+        user.bulls_points = (user.bulls_points or 0) + points_awarded
     user.save()
 
 def create_response_messages(request, puzzle_number, guess, cows, bulls, attempt_number):
