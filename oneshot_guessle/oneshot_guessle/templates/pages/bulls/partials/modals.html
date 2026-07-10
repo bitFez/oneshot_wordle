@@ -1,0 +1,122 @@
+
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDF8F0; /* Warm Neutral Background */
+            color: #4F4A45; /* Dark text for contrast */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .modal-box {
+            background-color: white; /* Modal background */
+            max-width: 90vw;
+            max-height: 90vh; /* Limit modal height */
+            overflow-y: auto; /* Enable scrolling for modal content */
+            padding: 2rem;
+            border-radius: 1rem;
+        }
+        .example-tile {
+            background-color: #d4a276; /* Accent color for main words */
+            color: white;
+            padding: 0.75rem;
+            border-radius: 0.5rem; /* rounded-lg */
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 700; /* font-bold */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 1 / 1; /* Make them square */
+        }
+        .highlight-source-tile {
+            background-color: #fde68a; /* amber-200 */
+            border: 2px solid #fcd34d; /* amber-300 */
+            color: #4F4A45; /* Darker text for contrast on light highlight */
+        }
+        .target-tile {
+            background-color: #f59e0b; /* amber-500 */
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-size: 1.5rem; /* text-2xl */
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 1 / 1;
+        }
+</style>
+<dialog id="tangle_help_modal" class="modal">
+  <div class="modal-box">
+        <header class="text-center mb-6">
+            <h1 class="text-4xl sm:text-3xl font-bold text-[#D4A276]">How to Play</h1>
+            <h2 class="text-2xl sm:text-xl font-semibold text-[#6C5F5B]">Cows and Bulls</h2>
+        </header>
+
+        <section id="goal" class="mb-8">
+            <div class="bg-[#F5EFE6] p-5 rounded-xl shadow-inner border border-gray-100">
+                <h3 class="text-2xl font-bold mb-3 text-[#B5835A]">🎯 The Goal</h3>
+                <p class="text-lg">
+                    Guess the hidden number in as few attempts as possible.
+                </p>
+            </div>
+        </section>
+
+        <section id="rules" class="mb-8">
+            <div class="bg-[#F5EFE6] p-5 rounded-xl shadow-inner border border-gray-100">
+                <h3 class="text-2xl font-bold mb-3 text-[#B5835A]">📜 The Rules</h3>
+                <p class="text-lg mb-3">After each guess, you get feedback as Bulls and Cows:</p>
+                <p class="text-lg mb-2"><strong>Bull:</strong> a correct digit in the correct position.</p>
+                <p class="text-lg"><strong>Cow:</strong> a correct digit in the wrong position.</p>
+            </div>
+        </section>
+
+        <section id="example" class="mb-8">
+            <div class="bg-[#F5EFE6] p-5 rounded-xl shadow-inner border border-gray-100">
+                <h3 class="text-2xl font-bold mb-3 text-[#B5835A]">🧠 Example</h3>
+                <p class="text-lg mb-2">Hidden number: 
+                    <span class="flex gap-1.5 flex-shrink-0">
+                        {% for digit in "4271" %}
+                            <span class="w-8 h-8 bg-primary/20 border border-primary/50 rounded text-base-content text-xs font-bold font-mono flex items-center justify-center group-hover:border-primary group-hover:bg-primary/30 transition-all">
+                                {{ digit }}
+                            </span>
+                        {% endfor %}
+                    </span>
+                </p>
+                <p class="text-lg mb-2">Your guess: 
+                    <span class="flex gap-1.5 flex-shrink-0">
+                        {% for digit in "1234" %}
+                            <span class="w-8 h-8 bg-primary/20 border border-primary/50 rounded text-base-content text-xs font-bold font-mono flex items-center justify-center group-hover:border-primary group-hover:bg-primary/30 transition-all">
+                                {{ digit }}
+                            </span>
+                        {% endfor %}
+                    </span>
+                </p>
+                <p class="text-lg mb-2">Result: <strong>1 Bull, 2 Cows</strong></p>
+                <p class="text-md text-[#6C5F5B]">The digit 2 is in the correct position (Bull). Digits 4 and 1 are in the number but in different positions (Cows).</p>
+            </div>
+        </section>
+
+        <section id="tips" class="mb-8">
+            <div class="bg-[#F5EFE6] p-5 rounded-xl shadow-inner border border-gray-100">
+                <h3 class="text-2xl font-bold mb-3 text-[#B5835A]">💡 Tips</h3>
+                <p class="text-lg mb-2">Use each result to eliminate impossible digits and positions.</p>
+                <p class="text-lg">Start with a guess using different digits to gather more information quickly.</p>
+            </div>
+        </section>
+
+        <footer class="text-center mt-10 pb-4">
+            <p class="text-xl font-bold text-[#D4A276]">Good luck and happy solving!</p>
+        </footer>
+    <div class="modal-action">
+      <form method="dialog">
+        <!-- if there is a button in form, it will close the modal -->
+        <button class="btn">Close</button>
+      </form>
+    </div>
+  </div>
+</dialog>
+    
+  
