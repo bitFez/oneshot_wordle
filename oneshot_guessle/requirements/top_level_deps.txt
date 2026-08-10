@@ -1,7 +1,7 @@
 argon2-cffi==21.3.0
 async-timeout==4.0.2
 crispy-bootstrap5==0.7
-cryptography==46.0.5
+cryptography>=50.0.0
 asgiref>=3.9.1
 Django==6.0.4
 django-allauth>=65.13.0

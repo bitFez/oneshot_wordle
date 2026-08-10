@@ -44,7 +44,7 @@ coverage==7.1.0
     # via django-coverage-plugin
 crispy-bootstrap5==0.7
     # via -r requirements/top_level_deps.in
-cryptography>=46.0.5
+cryptography>=50.0.0
     # via
     #   -r requirements/top_level_deps.in
     #   pyjwt

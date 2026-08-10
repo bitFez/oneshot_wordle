@@ -49,12 +49,12 @@
           </a>
       </li>
       
-      <li class="nav-item">
+      {% comment %} <li class="nav-item">
         <a class="nav-link" href="{% url 'bulls:cb_index' %}"><span class="avatar"><img class="rounded-circle" width="20px" src="{% static 'images/favicons/bull_favicon.png' %}"></span>
           Play Bulls Challenge
           <span class="badge text-bg-info">New</span>
         </a>
-      </li>
+      </li> {% endcomment %}
       <li class="nav-item">
         <a class="nav-link" href="{% url 'c_cipher:c_index' %}"><span class="avatar"><img class="rounded-full" width="20px" src="{% static 'images/favicons/c_cipher_favicon.ico' %}"></span>
           Play The Crescent Cipher
